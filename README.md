@@ -4,6 +4,6 @@ Aplikasi desktop C# (WPF) yang membantu mengubah sampah organik menjadi kompos s
 Kelompok Composta  
 Ketua Kelompok: Nayla Thalita - 24/535820/TK/59467
 Anggota 1:  
-Anggota 2:  
+Anggota 2:  Gilbert S. H. Nainggolan - 24/54341/TK/60447
 
 
