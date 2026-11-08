@@ -172,7 +172,11 @@ namespace Composta
             }
 
             await LoadDashboard(batch.Id);
-            await ShowMessage("Berhasil", AppData.GetBatchName(batch) + " berhasil ditambahkan ke database.");
+
+            // Setelah dimuat ulang, batch baru adalah objek lain dengan Id yang sama
+            CompostBatch? savedBatch = AppData.CurrentUser.Batches.FirstOrDefault(b => b.Id == batch.Id);
+            string batchName = savedBatch != null ? AppData.GetBatchName(savedBatch) : "Batch baru";
+            await ShowMessage("Berhasil", batchName + " berhasil ditambahkan ke database.");
         }
 
         // UPDATE: batch yang sudah matang ditandai sudah dipanen
