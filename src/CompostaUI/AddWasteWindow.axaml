@@ -7,7 +7,6 @@
         WindowStartupLocation="CenterOwner"
         Background="#F3F6F1">
     <StackPanel>
-        <!-- Header -->
         <Border Background="#2E7D32" Padding="24,16">
             <StackPanel Spacing="2">
                 <TextBlock Text="Catat Sampah" FontSize="20" FontWeight="Bold" Foreground="White" />
@@ -42,7 +41,6 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Hanya untuk sampah yang bisa dikomposkan -->
             <StackPanel x:Name="pnlCompostable" Spacing="14">
                 <StackPanel>
                     <TextBlock Classes="field" Text="Jenis bahan" />
@@ -63,14 +61,12 @@
                 </StackPanel>
             </StackPanel>
 
-            <!-- Hanya untuk sampah yang tidak bisa dikomposkan -->
             <StackPanel x:Name="pnlNonCompostable" IsVisible="False">
                 <TextBlock Classes="field" Text="Alasan tidak dapat dikomposkan" />
                 <TextBox x:Name="tbReason" Watermark="contoh: tidak dapat terurai secara alami"
                          TextChanged="Input_Changed" />
             </StackPanel>
 
-            <!-- Pratinjau dampak -->
             <Border x:Name="brdPreview" Background="#E8F5E9" CornerRadius="10" Padding="14,12">
                 <StackPanel Spacing="2">
                     <TextBlock x:Name="lblPreviewTitle" FontSize="13" FontWeight="SemiBold" Foreground="#1B5E20" />

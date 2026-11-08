@@ -21,7 +21,6 @@ namespace Composta
             await LoadDashboard(null);
         }
 
-        // READ: ambil data dari PostgreSQL lalu tampilkan di dashboard
         private async Task LoadDashboard(string? selectedBatchId)
         {
             try
@@ -157,7 +156,6 @@ namespace Composta
             }
         }
 
-        // CREATE: batch kompos baru dengan estimasi matang 60 hari
         private async void btnNewBatch_Click(object? sender, RoutedEventArgs e)
         {
             CompostBatch batch = new CompostBatch(AppData.CurrentUser.Id, DateTime.Now, 60);
@@ -173,13 +171,11 @@ namespace Composta
 
             await LoadDashboard(batch.Id);
 
-            // Setelah dimuat ulang, batch baru adalah objek lain dengan Id yang sama
             CompostBatch? savedBatch = AppData.CurrentUser.Batches.FirstOrDefault(b => b.Id == batch.Id);
             string batchName = savedBatch != null ? AppData.GetBatchName(savedBatch) : "Batch baru";
             await ShowMessage("Berhasil", batchName + " berhasil ditambahkan ke database.");
         }
 
-        // UPDATE: batch yang sudah matang ditandai sudah dipanen
         private async void btnHarvest_Click(object? sender, RoutedEventArgs e)
         {
             CompostBatch? batch = SelectedBatch;
@@ -206,7 +202,6 @@ namespace Composta
             await ShowMessage("Berhasil", batchName + " berhasil dipanen.");
         }
 
-        // DELETE: hapus batch beserta seluruh sampah di dalamnya
         private async void btnDeleteBatch_Click(object? sender, RoutedEventArgs e)
         {
             CompostBatch? batch = SelectedBatch;
@@ -245,7 +240,6 @@ namespace Composta
             await MessageBoxManager.GetMessageBoxStandard(title, message).ShowWindowDialogAsync(this);
         }
 
-        // Data satu baris pada daftar batch
         private class BatchRow
         {
             public BatchRow(CompostBatch batch)

@@ -2,10 +2,8 @@ using Npgsql;
 
 namespace Composta.Data
 {
-    // Kelas induk untuk semua repository PostgreSQL (Inheritance)
     public abstract class PostgresRepository<T> where T : class
     {
-        // Encapsulation: connection string hanya bisa diakses dari dalam kelas ini
         private readonly string _connstring;
 
         protected PostgresRepository(string connstring)
@@ -18,8 +16,6 @@ namespace Composta.Data
             _connstring = connstring;
         }
 
-        // Polymorphism: setiap repository turunan menentukan sendiri cara mengubah
-        // satu baris hasil query menjadi objek
         protected abstract T MapRow(NpgsqlDataReader rd);
 
         protected NpgsqlConnection OpenConnection()
@@ -51,7 +47,6 @@ namespace Composta.Data
             return result;
         }
 
-        // Menjalankan fungsi st_insert / st_update / st_delete yang mengembalikan 1 (berhasil) atau 0 (gagal)
         protected int ExecuteFunction(string sql, Action<NpgsqlParameterCollection> addParameters)
         {
             using NpgsqlConnection conn = OpenConnection();

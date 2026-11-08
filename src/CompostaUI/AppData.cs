@@ -7,13 +7,10 @@ using Npgsql;
 
 namespace Composta
 {
-    // Data yang dipakai bersama oleh semua form, diambil dari database PostgreSQL
     public static class AppData
     {
         public const string Location = "Yogyakarta";
 
-        // Sesuaikan dengan server PostgreSQL masing-masing (misal Port=5434),
-        // atau atur lewat environment variable COMPOSTA_DB
         private const string DefaultConnstring =
             "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=composta";
 
@@ -55,7 +52,6 @@ namespace Composta
             }
         }
 
-        // Memuat ulang user, kategori, dan batch dari database
         public static void Load()
         {
             User user = UserRepository.GetAll().FirstOrDefault()

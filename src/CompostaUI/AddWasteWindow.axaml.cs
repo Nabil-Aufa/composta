@@ -9,7 +9,6 @@ namespace Composta
 {
     public partial class AddWasteWindow : Window
     {
-        // Hanya batch yang masih berjalan yang bisa ditambah sampah
         private readonly List<CompostBatch> _batches;
 
         public AddWasteWindow() : this(null)
@@ -144,7 +143,6 @@ namespace Composta
             WasteItem item = CreateWasteItem();
             if (item is NonCompostableWaste)
             {
-                // Sampah anorganik tidak dimasukkan ke batch kompos
                 ShowError("Sampah anorganik tidak dapat dimasukkan ke batch kompos. Pisahkan ke bank sampah.");
                 return;
             }

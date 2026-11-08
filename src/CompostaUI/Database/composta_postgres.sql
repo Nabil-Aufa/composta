@@ -1,18 +1,6 @@
--- =====================================================================
--- Database Composta (PostgreSQL)
--- Konversi dari docs/schema.sql (SQLite) ke PostgreSQL, ditambah fungsi
--- CRUD (st_insert / st_select / st_update / st_delete) seperti pada Modul 8.
--- Jalankan pada database "composta":
---   psql -U postgres -d composta -f composta_postgres.sql
--- =====================================================================
-
--- Bersihkan objek lama agar script bisa dijalankan ulang
 DROP TABLE IF EXISTS compost_recommendations, maintenance_schedules, waste_items,
     waste_categories, compost_batches, user_badges, badges, users CASCADE;
 
--- ---------------------------------------------------------------------
--- TABEL
--- ---------------------------------------------------------------------
 CREATE TABLE users (
     id          VARCHAR(36)  PRIMARY KEY,
     name        VARCHAR(100) NOT NULL,
@@ -23,7 +11,7 @@ CREATE TABLE users (
 CREATE TABLE badges (
     id          VARCHAR(36)  PRIMARY KEY,
     name        VARCHAR(50)  NOT NULL,
-    criteria    VARCHAR(50)  NOT NULL,          -- format "CO2E:10", "BATCH:3", "HARVEST:1"
+    criteria    VARCHAR(50)  NOT NULL,
     icon_path   VARCHAR(255)
 );
 
@@ -59,9 +47,9 @@ CREATE TABLE waste_items (
     name              VARCHAR(100)  NOT NULL,
     weight            NUMERIC(8,2)  NOT NULL CHECK (weight >= 0),
     date_added        TIMESTAMP     NOT NULL,
-    brown_green_type  VARCHAR(5)    CHECK (brown_green_type IN ('Brown', 'Green')),  -- hanya compostable
-    moisture_content  NUMERIC(5,2)  CHECK (moisture_content BETWEEN 0 AND 100),     -- hanya compostable
-    reason            VARCHAR(255)                                                   -- hanya noncompostable
+    brown_green_type  VARCHAR(5)    CHECK (brown_green_type IN ('Brown', 'Green')),
+    moisture_content  NUMERIC(5,2)  CHECK (moisture_content BETWEEN 0 AND 100),
+    reason            VARCHAR(255)
 );
 
 CREATE TABLE maintenance_schedules (
@@ -80,9 +68,6 @@ CREATE TABLE compost_recommendations (
     created_at  TIMESTAMP    NOT NULL
 );
 
--- ---------------------------------------------------------------------
--- FUNGSI READ (st_select)
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION st_select_users()
     RETURNS TABLE (id VARCHAR, name VARCHAR, email VARCHAR, joined_at TIMESTAMP)
     LANGUAGE plpgsql
@@ -107,7 +92,6 @@ BEGIN
 END;
 $$;
 
--- _user_id NULL = semua batch
 CREATE OR REPLACE FUNCTION st_select_batches(_user_id VARCHAR DEFAULT NULL)
     RETURNS TABLE (id VARCHAR, user_id VARCHAR, start_date TIMESTAMP, status VARCHAR,
                    brown_green_ratio NUMERIC, estimated_maturity_date TIMESTAMP)
@@ -154,9 +138,6 @@ BEGIN
 END;
 $$;
 
--- ---------------------------------------------------------------------
--- FUNGSI CREATE (st_insert) - mengembalikan 1 jika berhasil, 0 jika gagal
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION st_insert_batch(_id VARCHAR, _user_id VARCHAR, _start_date TIMESTAMP,
                                            _status VARCHAR, _brown_green_ratio NUMERIC,
                                            _estimated_maturity_date TIMESTAMP)
@@ -192,9 +173,6 @@ EXCEPTION
 END;
 $$;
 
--- ---------------------------------------------------------------------
--- FUNGSI UPDATE (st_update)
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION st_update_batch(_id VARCHAR, _status VARCHAR, _brown_green_ratio NUMERIC,
                                            _estimated_maturity_date TIMESTAMP)
     RETURNS INTEGER
@@ -218,9 +196,6 @@ EXCEPTION
 END;
 $$;
 
--- ---------------------------------------------------------------------
--- FUNGSI DELETE (st_delete) - waste_items & jadwal ikut terhapus (ON DELETE CASCADE)
--- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION st_delete_batch(_id VARCHAR)
     RETURNS INTEGER
     LANGUAGE plpgsql
@@ -239,9 +214,6 @@ EXCEPTION
 END;
 $$;
 
--- ---------------------------------------------------------------------
--- DATA AWAL
--- ---------------------------------------------------------------------
 INSERT INTO users (id, name, email, joined_at) VALUES
     ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', 'Nabil Aufa Danaputra', 'nabil@composta.id', NOW() - INTERVAL '90 days');
 

@@ -3,7 +3,6 @@ using Composta.Models;
 
 namespace Composta.Services
 {
-    // Data cuaca contoh, dipakai selama API key OpenWeatherMap/Azure Maps belum diatur
     public class OfflineWeatherService : IWeatherService
     {
         public WeatherData GetCurrentWeather(string loc)

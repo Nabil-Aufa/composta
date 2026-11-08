@@ -12,7 +12,6 @@ namespace Composta.Data
         {
         }
 
-        // READ: seluruh batch beserta sampah dan jadwal perawatannya
         public List<CompostBatch> GetAll()
         {
             return GetByUser(null);
@@ -50,7 +49,6 @@ namespace Composta.Data
             return GetAll().FirstOrDefault(b => b.Id == id);
         }
 
-        // CREATE: batch baru beserta sampah yang sudah ada di dalamnya
         public void Add(CompostBatch entity)
         {
             ArgumentNullException.ThrowIfNull(entity);
@@ -78,7 +76,6 @@ namespace Composta.Data
             tx.Commit();
         }
 
-        // UPDATE: status, rasio brown/green, dan estimasi tanggal matang
         public void Update(CompostBatch entity)
         {
             ArgumentNullException.ThrowIfNull(entity);
@@ -87,15 +84,12 @@ namespace Composta.Data
             EnsureSuccess(UpdateBatch(conn, null, entity), "Gagal memperbarui batch di database.");
         }
 
-        // DELETE: sampah dan jadwal milik batch ikut terhapus (ON DELETE CASCADE)
         public void Delete(string id)
         {
             EnsureSuccess(ExecuteFunction("SELECT st_delete_batch(:_id)", p => p.AddWithValue("_id", id)),
                 "Gagal menghapus batch dari database.");
         }
 
-        // Proses "Catat Sampah": memasukkan sampah ke batch lalu memperbarui rasio brown/green
-        // batch tersebut. Keduanya dijalankan dalam satu transaksi agar data tetap konsisten.
         public void AddWasteItem(CompostBatch batch, WasteItem item)
         {
             ArgumentNullException.ThrowIfNull(batch);
@@ -118,7 +112,6 @@ namespace Composta.Data
             }
             catch
             {
-                // Kembalikan objek batch seperti semula jika penyimpanan gagal
                 batch.WasteItems.Remove(item);
                 batch.BrownGreenRatio = batch.CalculateRatio();
                 throw;
@@ -137,7 +130,6 @@ namespace Composta.Data
             return batch;
         }
 
-        // Baris waste_items dipetakan ke subclass WasteItem sesuai kolom item_type
         private static WasteItem MapWasteItem(NpgsqlDataReader rd)
         {
             WasteCategory? category = null;

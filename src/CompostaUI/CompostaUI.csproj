@@ -19,7 +19,6 @@
     <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 
-  <!-- Model, enum, interface, dan service dipakai bersama dengan project WPF src/Composta -->
   <ItemGroup>
     <Compile Include="../Composta/Models/**/*.cs" Link="Models/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../Composta/Enums/**/*.cs" Link="Enums/%(RecursiveDir)%(Filename)%(Extension)" />
