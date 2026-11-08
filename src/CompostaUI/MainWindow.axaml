@@ -1,0 +1,119 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Composta.MainWindow"
+        Title="Composta - Dashboard"
+        Width="980" Height="640"
+        MinWidth="860" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3F6F1">
+    <DockPanel>
+        <!-- Header -->
+        <Border DockPanel.Dock="Top" Background="#2E7D32" Padding="28,18">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="🌱 Composta" FontSize="24" FontWeight="Bold" Foreground="White" />
+                    <TextBlock x:Name="lblGreeting" FontSize="13" Foreground="#C8E6C9" />
+                    <Border x:Name="brdDbStatus" CornerRadius="12" Padding="10,4" Margin="0,8,0,0"
+                            Background="#1B5E20" HorizontalAlignment="Left">
+                        <TextBlock x:Name="lblDbStatus" FontSize="12" Foreground="#C8E6C9" />
+                    </Border>
+                </StackPanel>
+                <Button x:Name="btnAddWaste" Grid.Column="1" Classes="light" VerticalAlignment="Center"
+                        Content="+ Catat Sampah" Click="btnAddWaste_Click" />
+            </Grid>
+        </Border>
+
+        <Grid Margin="28,22" RowDefinitions="Auto,*" ColumnDefinitions="*,330">
+            <!-- Ringkasan -->
+            <UniformGrid Grid.ColumnSpan="2" Columns="3" Margin="0,0,0,18">
+                <Border Classes="card" Margin="0,0,9,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="caption" Text="Emisi CO2e dicegah" />
+                        <TextBlock x:Name="lblTotalCo2e" FontSize="26" FontWeight="Bold" Foreground="#2E7D32" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Margin="9,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="caption" Text="Batch berjalan" />
+                        <TextBlock x:Name="lblActiveBatches" FontSize="26" FontWeight="Bold" Foreground="#1F2A1F" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Margin="9,0,0,0">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="caption" Text="Total sampah diolah" />
+                        <TextBlock x:Name="lblTotalWeight" FontSize="26" FontWeight="Bold" Foreground="#1F2A1F" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Daftar batch -->
+            <Border Grid.Row="1" Classes="card" Margin="0,0,18,0">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                        <StackPanel Spacing="2">
+                            <TextBlock Classes="section" Text="Batch Kompos" />
+                            <TextBlock Classes="caption" Text="Pilih batch untuk melihat rekomendasi perawatan" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button x:Name="btnNewBatch" Classes="small primary" Content="+ Batch Baru"
+                                    Click="btnNewBatch_Click" />
+                            <Button x:Name="btnHarvest" Classes="small secondary" Content="Panen"
+                                    Click="btnHarvest_Click" />
+                            <Button x:Name="btnDeleteBatch" Classes="small danger" Content="Hapus"
+                                    Click="btnDeleteBatch_Click" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock x:Name="lblEmpty" DockPanel.Dock="Top" Classes="caption" IsVisible="False"
+                               Margin="0,8" Text="Belum ada batch. Klik &quot;+ Batch Baru&quot; untuk memulai." />
+                    <ListBox x:Name="lstBatches" Background="Transparent"
+                             SelectionChanged="lstBatches_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" Margin="2,6">
+                                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Foreground="#1F2A1F" />
+                                    <Border Grid.Column="1" Grid.RowSpan="2" Background="{Binding StatusBackground}"
+                                            CornerRadius="10" Padding="10,3" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusForeground}"
+                                                   FontSize="12" FontWeight="SemiBold" />
+                                    </Border>
+                                    <TextBlock Grid.Row="1" Text="{Binding Detail}" Classes="caption" Margin="0,3,0,0" />
+                                    <ProgressBar Grid.Row="2" Grid.ColumnSpan="2" Value="{Binding Progress}"
+                                                 Maximum="100" Height="6" MinHeight="6" Margin="0,8,0,0"
+                                                 Foreground="#43A047" Background="#E3EBE1" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Cuaca + Rekomendasi -->
+            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="18">
+                <Border Classes="card">
+                    <StackPanel Spacing="4">
+                        <TextBlock x:Name="lblWeatherLocation" Classes="caption" />
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="⛅" FontSize="30" VerticalAlignment="Center" />
+                            <TextBlock x:Name="lblWeatherTemp" FontSize="30" FontWeight="Bold" Foreground="#1F2A1F" />
+                        </StackPanel>
+                        <TextBlock x:Name="lblWeatherCondition" FontSize="14" FontWeight="Medium" Foreground="#2F3A2F" />
+                        <TextBlock x:Name="lblWeatherDetail" Classes="caption" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock x:Name="lblRecommendationTitle" Classes="section" VerticalAlignment="Center" />
+                            <Border x:Name="brdPriority" Grid.Column="1" CornerRadius="10" Padding="10,3">
+                                <TextBlock x:Name="lblPriority" FontSize="12" FontWeight="SemiBold" />
+                            </Border>
+                        </Grid>
+                        <TextBlock x:Name="lblRecommendation" TextWrapping="Wrap" FontSize="13"
+                                   LineHeight="20" Foreground="#2F3A2F" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -17,3 +17,9 @@ Anggota 2: Gilbert S. H. Nainggolan - 24/54341/TK/60447
 
 Penjelasan relasi antar entitas serta tipe data dan besaran tiap atribut ada di [docs/erd.md](docs/erd.md).
 File sumber diagram: [docs/erd-composta.drawio](docs/erd-composta.drawio), skema SQL: [docs/schema.sql](docs/schema.sql).
+
+## Prototipe UI + Database PostgreSQL
+
+Prototipe tampilan Composta (Avalonia) yang terhubung ke PostgreSQL ada di [src/CompostaUI](src/CompostaUI).
+Script database (tabel, fungsi CRUD `st_*`, dan data awal): [src/CompostaUI/Database/composta_postgres.sql](src/CompostaUI/Database/composta_postgres.sql).
+Cara menyiapkan database dan connection string ada di [src/CompostaUI/README.md](src/CompostaUI/README.md).

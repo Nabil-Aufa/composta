@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Composta.AddWasteWindow"
+        Title="Composta - Catat Sampah"
+        Width="520" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3F6F1">
+    <StackPanel>
+        <!-- Header -->
+        <Border Background="#2E7D32" Padding="24,16">
+            <StackPanel Spacing="2">
+                <TextBlock Text="Catat Sampah" FontSize="20" FontWeight="Bold" Foreground="White" />
+                <TextBlock Text="Tambahkan sampah ke batch kompos dan lihat dampaknya"
+                           FontSize="12" Foreground="#C8E6C9" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Margin="24,20" Spacing="14">
+            <StackPanel>
+                <TextBlock Classes="field" Text="Batch tujuan" />
+                <ComboBox x:Name="cbBatch" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock Classes="field" Text="Nama sampah" />
+                <TextBox x:Name="tbWasteName" Watermark="contoh: kulit pisang"
+                         TextChanged="Input_Changed" />
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,16,*">
+                <StackPanel>
+                    <TextBlock Classes="field" Text="Kategori" />
+                    <ComboBox x:Name="cbCategory" HorizontalAlignment="Stretch"
+                              SelectionChanged="cbCategory_SelectionChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Classes="field" Text="Berat (kg)" />
+                    <NumericUpDown x:Name="nudWeight" Value="1" Minimum="0.1" Maximum="100"
+                                   Increment="0.5" FormatString="0.##"
+                                   ValueChanged="nudWeight_ValueChanged" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Hanya untuk sampah yang bisa dikomposkan -->
+            <StackPanel x:Name="pnlCompostable" Spacing="14">
+                <StackPanel>
+                    <TextBlock Classes="field" Text="Jenis bahan" />
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <RadioButton x:Name="rbGreen" GroupName="BrownGreen" IsChecked="True"
+                                     Content="Green (basah, kaya nitrogen)" />
+                        <RadioButton x:Name="rbBrown" GroupName="BrownGreen"
+                                     Content="Brown (kering, kaya karbon)" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="field" Text="Kelembapan bahan" />
+                        <TextBlock x:Name="lblMoistureValue" Grid.Column="1" Classes="field" />
+                    </Grid>
+                    <Slider x:Name="sldMoisture" Minimum="0" Maximum="100" Value="60"
+                            Foreground="#43A047" ValueChanged="sldMoisture_ValueChanged" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Hanya untuk sampah yang tidak bisa dikomposkan -->
+            <StackPanel x:Name="pnlNonCompostable" IsVisible="False">
+                <TextBlock Classes="field" Text="Alasan tidak dapat dikomposkan" />
+                <TextBox x:Name="tbReason" Watermark="contoh: tidak dapat terurai secara alami"
+                         TextChanged="Input_Changed" />
+            </StackPanel>
+
+            <!-- Pratinjau dampak -->
+            <Border x:Name="brdPreview" Background="#E8F5E9" CornerRadius="10" Padding="14,12">
+                <StackPanel Spacing="2">
+                    <TextBlock x:Name="lblPreviewTitle" FontSize="13" FontWeight="SemiBold" Foreground="#1B5E20" />
+                    <TextBlock x:Name="lblPreview" FontSize="12" TextWrapping="Wrap" Foreground="#2F3A2F" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="lblError" Foreground="#C62828" FontSize="12" IsVisible="False" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,4,0,0">
+                <Button x:Name="btnCancel" Classes="secondary" Content="Batal" Click="btnCancel_Click" />
+                <Button x:Name="btnSave" Classes="primary" Content="Simpan" IsDefault="True" Click="btnSave_Click" />
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</Window>

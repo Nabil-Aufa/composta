@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Composta</RootNamespace>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+  </ItemGroup>
+
+  <!-- Model, enum, interface, dan service dipakai bersama dengan project WPF src/Composta -->
+  <ItemGroup>
+    <Compile Include="../Composta/Models/**/*.cs" Link="Models/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Composta/Enums/**/*.cs" Link="Enums/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Composta/Interfaces/**/*.cs" Link="Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Composta/Services/CarbonCalculatorService.cs" Link="Services/CarbonCalculatorService.cs" />
+    <Compile Include="../Composta/Services/CompostAdvisorService.cs" Link="Services/CompostAdvisorService.cs" />
+  </ItemGroup>
+
+</Project>
