@@ -3,7 +3,7 @@
 ![ERD Composta](erd-composta.png)
 
 File sumber diagram: [`erd-composta.drawio`](erd-composta.drawio) (buka di https://app.diagrams.net).
-Skema SQL: [`schema.sql`](schema.sql).
+Skema SQL: [`src/CompostaUI/Database/composta_postgres.sql`](../src/CompostaUI/Database/composta_postgres.sql). File ini adalah satu-satunya sumber skema database.
 
 ERD ini diturunkan dari class diagram Composta. Setiap domain class yang perlu disimpan menjadi satu tabel, sedangkan
 `WeatherData` tidak dijadikan tabel karena datanya selalu diambil real-time dari API cuaca (OpenWeatherMap / Azure Maps)

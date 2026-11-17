@@ -16,7 +16,7 @@ Anggota 2: Gilbert S. H. Nainggolan - 24/54341/TK/60447
 ![ERD Composta](docs/erd-composta.png)
 
 Penjelasan relasi antar entitas serta tipe data dan besaran tiap atribut ada di [docs/erd.md](docs/erd.md).
-File sumber diagram: [docs/erd-composta.drawio](docs/erd-composta.drawio), skema SQL: [docs/schema.sql](docs/schema.sql).
+File sumber diagram: [docs/erd-composta.drawio](docs/erd-composta.drawio), skema SQL: [src/CompostaUI/Database/composta_postgres.sql](src/CompostaUI/Database/composta_postgres.sql).
 
 ## Prototipe UI + Database PostgreSQL
 
