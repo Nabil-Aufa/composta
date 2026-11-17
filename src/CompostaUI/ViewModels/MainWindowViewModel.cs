@@ -19,6 +19,7 @@ namespace Composta.ViewModels
         [NotifyCanExecuteChangedFor(nameof(NewBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
         [NotifyCanExecuteChangedFor(nameof(DeleteBatchCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ShowProfileCommand))]
         private bool _isDatabaseConnected;
 
         [ObservableProperty]
@@ -69,6 +70,30 @@ namespace Composta.ViewModels
         public ObservableCollection<BatchItemViewModel> Batches { get; }
 
         public WeatherViewModel Weather { get; }
+
+        public event Action? LogoutRequested;
+
+        [RelayCommand(CanExecute = nameof(CanModifyData))]
+        private Task ShowProfileAsync()
+        {
+            return _dialogs.ShowProfileAsync(new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator));
+        }
+
+        [RelayCommand]
+        private void Logout()
+        {
+            AppData.Logout();
+            IsDatabaseConnected = false;
+            Greeting = string.Empty;
+            TotalCo2eText = "-";
+            TotalWeightText = "-";
+            ActiveBatchCountText = "-";
+            SelectedBatch = null;
+            Batches.Clear();
+            HasNoBatches = true;
+            ShowEmptyRecommendation();
+            LogoutRequested?.Invoke();
+        }
 
         public string PriorityText
         {

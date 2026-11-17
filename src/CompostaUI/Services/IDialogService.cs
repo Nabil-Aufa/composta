@@ -9,5 +9,7 @@ namespace Composta.Services
         Task<bool> ConfirmAsync(string title, string message);
 
         Task<bool> ShowAddWasteAsync(AddWasteViewModel viewModel);
+
+        Task ShowProfileAsync(ProfileViewModel viewModel);
     }
 }

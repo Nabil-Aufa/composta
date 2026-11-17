@@ -9,6 +9,14 @@ namespace Composta.UITests
 
         public bool ConfirmResult { get; set; } = true;
 
+        public ProfileViewModel? LastProfile { get; private set; }
+
+        public Task ShowProfileAsync(ProfileViewModel viewModel)
+        {
+            LastProfile = viewModel;
+            return Task.CompletedTask;
+        }
+
         public Func<AddWasteViewModel, bool>? OnAddWaste { get; set; }
 
         public Task ShowMessageAsync(string title, string message)
