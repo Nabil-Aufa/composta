@@ -84,16 +84,32 @@
                 </DockPanel>
             </Border>
 
-            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="18">
+            <ScrollViewer Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="18">
                 <Border Classes="card">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding WeatherLocationText}" Classes="caption" />
+                        <TextBlock Text="{Binding Weather.LocationText}" Classes="caption" TextWrapping="Wrap" />
+                        <TextBlock Text="Lokasi" Classes="field" Margin="0,8,0,0" />
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                            <TextBox Text="{Binding Weather.Location, Mode=TwoWay}" Watermark="Contoh: Yogyakarta"
+                                     IsEnabled="{Binding !Weather.IsLoading}" MaxLength="100"
+                                     AutomationProperties.Name="Lokasi cuaca" />
+                            <Button Grid.Column="1" Content="Refresh" Classes="small secondary" Margin="8,0,0,0"
+                                    Command="{Binding Weather.RefreshCommand}" VerticalAlignment="Center" />
+                        </Grid>
+                        <ProgressBar IsIndeterminate="True" IsVisible="{Binding Weather.IsLoading}"
+                                     Height="4" MinHeight="4" Margin="0,0,0,6" />
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <TextBlock Text="⛅" FontSize="30" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding WeatherTemperatureText}" FontSize="30" FontWeight="Bold" Foreground="#1F2A1F" />
+                            <TextBlock Text="{Binding Weather.Icon}" FontSize="30" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Weather.TemperatureText}" FontSize="30" FontWeight="Bold" Foreground="#1F2A1F" />
                         </StackPanel>
-                        <TextBlock Text="{Binding WeatherConditionText}" FontSize="14" FontWeight="Medium" Foreground="#2F3A2F" />
-                        <TextBlock Text="{Binding WeatherDetailText}" Classes="caption" />
+                        <TextBlock Text="{Binding Weather.ConditionText}" FontSize="14" FontWeight="Medium" Foreground="#2F3A2F" />
+                        <TextBlock Text="{Binding Weather.DetailText}" Classes="caption" TextWrapping="Wrap" />
+                        <Border Classes="preview" Classes.warning="{Binding Weather.IsOffline}" Padding="10,8" Margin="0,6,0,0">
+                            <TextBlock Text="{Binding Weather.StatusText}" Classes="previewTitle" TextWrapping="Wrap" />
+                        </Border>
+                        <TextBlock Text="{Binding Weather.UpdatedAtText}" Classes="caption" TextWrapping="Wrap" />
                     </StackPanel>
                 </Border>
 
@@ -112,6 +128,7 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+            </ScrollViewer>
         </Grid>
     </DockPanel>
 </Window>

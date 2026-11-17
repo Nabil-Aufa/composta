@@ -10,7 +10,6 @@ namespace Composta.ViewModels
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly IDialogService _dialogs;
-        private WeatherData? _currentWeather;
 
         [ObservableProperty]
         private string _greeting = string.Empty;
@@ -35,18 +34,6 @@ namespace Composta.ViewModels
         private string _totalWeightText = "-";
 
         [ObservableProperty]
-        private string _weatherLocationText = "Cuaca hari ini • " + AppData.Location;
-
-        [ObservableProperty]
-        private string _weatherTemperatureText = "-";
-
-        [ObservableProperty]
-        private string _weatherConditionText = string.Empty;
-
-        [ObservableProperty]
-        private string _weatherDetailText = string.Empty;
-
-        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
         [NotifyCanExecuteChangedFor(nameof(DeleteBatchCommand))]
         private BatchItemViewModel? _selectedBatch;
@@ -67,14 +54,21 @@ namespace Composta.ViewModels
         [NotifyPropertyChangedFor(nameof(IsLowPriority))]
         private string _priority = "Low";
 
-        public MainWindowViewModel(IDialogService dialogs)
+        public MainWindowViewModel(IDialogService dialogs, WeatherViewModel? weather = null)
         {
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+            Weather = weather ?? new WeatherViewModel(AppData.WeatherService);
+            Weather.WeatherUpdated += () =>
+            {
+                if (SelectedBatch != null) ShowRecommendation(SelectedBatch.Batch);
+            };
             Batches = new ObservableCollection<BatchItemViewModel>();
             ShowEmptyRecommendation();
         }
 
         public ObservableCollection<BatchItemViewModel> Batches { get; }
+
+        public WeatherViewModel Weather { get; }
 
         public string PriorityText
         {
@@ -109,7 +103,7 @@ namespace Composta.ViewModels
 
         public Task LoadAsync()
         {
-            return LoadDashboardAsync(null);
+            return Task.WhenAll(LoadDashboardAsync(null), Weather.RefreshCommand.ExecuteAsync(null));
         }
 
         private async Task LoadDashboardAsync(string? selectedBatchId)
@@ -136,13 +130,6 @@ namespace Composta.ViewModels
             TotalCo2eText = totalCo2e.ToString("0.##") + " kg";
             ActiveBatchCountText = user.GetActiveBatches().Count.ToString();
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";
-
-            _currentWeather = AppData.WeatherService.GetCurrentWeather(AppData.Location);
-            WeatherLocationText = "Cuaca hari ini • " + AppData.Location;
-            WeatherTemperatureText = _currentWeather.Temperature.ToString("0.#") + "°C";
-            WeatherConditionText = _currentWeather.Condition;
-            WeatherDetailText = "Kelembapan " + _currentWeather.Humidity.ToString("0") + "%  •  Curah hujan "
-                + _currentWeather.RainfallMm.ToString("0.#") + " mm";
 
             Batches.Clear();
             foreach (CompostBatch batch in user.Batches)
@@ -183,7 +170,13 @@ namespace Composta.ViewModels
                 return;
             }
 
-            WeatherData weather = _currentWeather ?? AppData.WeatherService.GetCurrentWeather(AppData.Location);
+            WeatherData? weather = Weather.CurrentWeather;
+            if (weather == null)
+            {
+                RecommendationText = "Muat cuaca untuk melihat rekomendasi perawatan.";
+                Priority = "Low";
+                return;
+            }
             CompostRecommendation recommendation = AppData.Advisor.GenerateRecommendation(batch, weather);
             RecommendationText = recommendation.Message;
             Priority = recommendation.Priority;
