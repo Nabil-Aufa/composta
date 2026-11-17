@@ -31,9 +31,9 @@ namespace Composta.UITests
             Assert.Equal("30,5 kg", vm.TotalWeightText);
             Assert.Equal("3", vm.ActiveBatchCountText);
             Assert.False(vm.HasNoBatches);
-            Assert.Same(vm.Batches[0], vm.SelectedBatch);
-            Assert.True(vm.SelectedBatch?.IsArchived);
-            Assert.Equal("Kompos dari batch ini sudah dipanen.", vm.RecommendationText);
+            Assert.True(vm.Batches[0].IsArchived);
+            Assert.Same(vm.Batches[1], vm.SelectedBatch);
+            Assert.Equal("Rekomendasi Batch 2", vm.RecommendationTitle);
             Assert.Empty(_dialogs.Messages);
         }
 
@@ -55,6 +55,11 @@ namespace Composta.UITests
             Assert.Contains("terlalu rendah", vm.RecommendationText);
             Assert.False(vm.HarvestCommand.CanExecute(null));
             Assert.True(vm.DeleteBatchCommand.CanExecute(null));
+
+            vm.SelectedBatch = vm.Batches.Single(b => b.IsArchived);
+            Assert.Equal("Kompos dari batch ini sudah dipanen.", vm.RecommendationText);
+            Assert.True(vm.IsLowPriority);
+            Assert.False(vm.HarvestCommand.CanExecute(null));
 
             vm.SelectedBatch = null;
             Assert.Equal("Belum ada batch yang dipilih.", vm.RecommendationText);

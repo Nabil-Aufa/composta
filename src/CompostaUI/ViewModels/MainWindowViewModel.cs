@@ -152,7 +152,9 @@ namespace Composta.ViewModels
 
             HasNoBatches = Batches.Count == 0;
 
-            SelectedBatch = Batches.FirstOrDefault(b => b.Batch.Id == selectedBatchId) ?? Batches.FirstOrDefault();
+            SelectedBatch = Batches.FirstOrDefault(b => b.Batch.Id == selectedBatchId)
+                ?? Batches.FirstOrDefault(b => !b.IsArchived)
+                ?? Batches.FirstOrDefault();
             if (SelectedBatch == null)
             {
                 ShowEmptyRecommendation();
