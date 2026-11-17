@@ -130,4 +130,4 @@ File sumber diagram: [docs/erd-composta.drawio](docs/erd-composta.drawio), skema
 
 ## Video Demo
 
-Menyusul ([#19](https://github.com/Nabil-Aufa/composta/issues/19)).
+Menyusul ([#19](https://github.com/Nabil-Aufa/composta/issues/19)). Checklist uji sebelum demo: [docs/checklist-uji.md](docs/checklist-uji.md).
