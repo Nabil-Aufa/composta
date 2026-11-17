@@ -1,0 +1,142 @@
+using Composta.Data;
+using Composta.Enums;
+using Composta.Interfaces;
+using Composta.Models;
+using Composta.Services;
+using Npgsql;
+
+namespace Composta
+{
+    public static class AppData
+    {
+        public const string Location = "Yogyakarta";
+
+        private const string DefaultConnstring =
+            "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=composta";
+
+        static AppData()
+        {
+            Connstring = Environment.GetEnvironmentVariable("COMPOSTA_DB") ?? DefaultConnstring;
+
+            UserRepository = new UserRepository(Connstring);
+            CategoryRepository = new WasteCategoryRepository(Connstring);
+            BatchRepository = new CompostBatchRepository(Connstring);
+
+            WeatherService = new OfflineWeatherService();
+            CarbonCalculator = new CarbonCalculatorService();
+            Advisor = new CompostAdvisorService(WeatherService);
+
+            CurrentUser = new User();
+            IsLoggedIn = false;
+            Categories = new List<WasteCategory>();
+        }
+
+        public static string Connstring { get; }
+
+        public static UserRepository UserRepository { get; }
+        public static WasteCategoryRepository CategoryRepository { get; }
+        public static CompostBatchRepository BatchRepository { get; }
+
+        public static IWeatherService WeatherService { get; }
+        public static ICarbonCalculator CarbonCalculator { get; }
+        public static CompostAdvisorService Advisor { get; }
+
+        public static User CurrentUser { get; private set; }
+        public static bool IsLoggedIn { get; private set; }
+        public static List<WasteCategory> Categories { get; private set; }
+
+        public static string DatabaseInfo
+        {
+            get
+            {
+                NpgsqlConnectionStringBuilder builder = new NpgsqlConnectionStringBuilder(Connstring);
+                return builder.Database + "@" + builder.Host + ":" + builder.Port;
+            }
+        }
+
+        public static void Load()
+        {
+            if (IsLoggedIn)
+            {
+                Login(CurrentUser.Id);
+                return;
+            }
+
+            User user = UserRepository.GetAll().FirstOrDefault()
+                ?? throw new InvalidOperationException("Tabel users masih kosong.");
+            Login(user.Id);
+        }
+
+        public static List<User> GetUsers()
+        {
+            return UserRepository.GetAll();
+        }
+
+        public static User RegisterUser(string name, string email)
+        {
+            string? error = UserValidator.Validate(name, email);
+            if (error != null)
+            {
+                throw new ArgumentException(error);
+            }
+
+            string normalizedEmail = UserValidator.NormalizeEmail(email);
+            if (UserRepository.GetByEmail(normalizedEmail) != null)
+            {
+                throw new InvalidOperationException("Email " + normalizedEmail + " sudah terdaftar.");
+            }
+
+            User user = new User(name.Trim(), normalizedEmail);
+            UserRepository.Add(user);
+            return user;
+        }
+
+        public static void Login(string userId)
+        {
+            User user = UserRepository.GetById(userId)
+                ?? throw new InvalidOperationException("User tidak ditemukan.");
+
+            foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
+            {
+                BatchStatus oldStatus = batch.Status;
+                batch.UpdateProgress();
+                if (batch.Status != oldStatus)
+                {
+                    BatchRepository.Update(batch);
+                }
+
+                user.AddBatch(batch);
+            }
+
+            Categories = CategoryRepository.GetAll();
+            CurrentUser = user;
+            IsLoggedIn = true;
+        }
+
+        public static void Logout()
+        {
+            CurrentUser = new User();
+            IsLoggedIn = false;
+        }
+
+        public static string GetBatchName(CompostBatch batch)
+        {
+            return "Batch " + (CurrentUser.Batches.IndexOf(batch) + 1);
+        }
+
+        public static string GetStatusText(BatchStatus status)
+        {
+            switch (status)
+            {
+                case BatchStatus.Active:
+                    return "Aktif";
+                case BatchStatus.Curing:
+                    return "Pematangan";
+                case BatchStatus.Ready:
+                    return "Siap Panen";
+                default:
+                    return "Sudah Dipanen";
+            }
+        }
+    }
+}

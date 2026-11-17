@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/Composta/Composta.csproj" />
+  <Project Path="src/CompostaUI/CompostaUI.csproj" />
+  <Project Path="tests/Composta.Tests/Composta.Tests.csproj" />
+  <Project Path="tests/CompostaUI.Tests/CompostaUI.Tests.csproj" />
+</Solution>

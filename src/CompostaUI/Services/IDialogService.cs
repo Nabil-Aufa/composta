@@ -1,0 +1,13 @@
+using Composta.ViewModels;
+
+namespace Composta.Services
+{
+    public interface IDialogService
+    {
+        Task ShowMessageAsync(string title, string message);
+
+        Task<bool> ConfirmAsync(string title, string message);
+
+        Task<bool> ShowAddWasteAsync(AddWasteViewModel viewModel);
+    }
+}
