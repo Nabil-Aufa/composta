@@ -122,8 +122,7 @@ namespace Composta.ViewModels
             {
                 IsDatabaseConnected = false;
                 DatabaseStatusText = "● Tidak terhubung ke PostgreSQL";
-                await _dialogs.ShowMessageAsync("Database Gagal",
-                    "Gagal terhubung ke database PostgreSQL (" + AppData.DatabaseInfo + ").\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Database Gagal", DatabaseErrorMessage.From(ex, AppData.DatabaseInfo));
                 return;
             }
 
