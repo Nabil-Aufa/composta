@@ -61,7 +61,7 @@ namespace Composta.UITests
             form.SaveCommand.Execute(null);
 
             Assert.StartsWith("Berat harus lebih dari 0 kg", form.ErrorMessage);
-            Assert.Equal(9, Db.Count("SELECT COUNT(*) FROM waste_items"));
+            Assert.Equal(11, Db.Count("SELECT COUNT(*) FROM waste_items"));
         }
 
         [SkippableFact]
@@ -75,7 +75,7 @@ namespace Composta.UITests
             form.SaveCommand.Execute(null);
 
             Assert.Equal("Nama sampah maksimal 100 karakter.", form.ErrorMessage);
-            Assert.Equal(9, Db.Count("SELECT COUNT(*) FROM waste_items"));
+            Assert.Equal(11, Db.Count("SELECT COUNT(*) FROM waste_items"));
         }
 
         [SkippableFact]
@@ -138,7 +138,7 @@ namespace Composta.UITests
             form.CancelCommand.Execute(null);
 
             Assert.False(result);
-            Assert.Equal(9, Db.Count("SELECT COUNT(*) FROM waste_items"));
+            Assert.Equal(11, Db.Count("SELECT COUNT(*) FROM waste_items"));
         }
 
         [SkippableFact]

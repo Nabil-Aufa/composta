@@ -19,7 +19,7 @@ namespace Composta.UITests
             AppData.Login(DatabaseFixture.DemoUserId);
             List<CompostBatch> demoBatches = AppData.CurrentUser.Batches;
 
-            Assert.Equal(3, nabilBatches.Count);
+            Assert.Equal(4, nabilBatches.Count);
             Assert.Single(demoBatches);
             Assert.All(nabilBatches, b => Assert.Equal(DatabaseFixture.NabilId, b.UserId));
             Assert.All(demoBatches, b => Assert.Equal(DatabaseFixture.DemoUserId, b.UserId));

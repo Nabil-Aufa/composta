@@ -265,6 +265,8 @@ INSERT INTO waste_categories (id, name, co2e_factor_per_kg, is_compostable) VALU
     ('7a2e4b10-1c3d-4e5f-8a9b-000000000006', 'Kaca & Logam',           0.000, FALSE);
 
 INSERT INTO compost_batches (id, user_id, start_date, status, brown_green_ratio, estimated_maturity_date) VALUES
+    ('b8d0e6f2-4a1b-4c2d-9e3f-000000000005', '3f1c2a9e-5b7d-4c1e-9a2f-000000000001',
+     NOW() - INTERVAL '85 days', 'Archived', 2.00, NOW() - INTERVAL '25 days'),
     ('b8d0e6f2-4a1b-4c2d-9e3f-000000000001', '3f1c2a9e-5b7d-4c1e-9a2f-000000000001',
      NOW() - INTERVAL '65 days', 'Ready',  2.00, NOW() - INTERVAL '5 days'),
     ('b8d0e6f2-4a1b-4c2d-9e3f-000000000002', '3f1c2a9e-5b7d-4c1e-9a2f-000000000001',
@@ -276,6 +278,12 @@ INSERT INTO compost_batches (id, user_id, start_date, status, brown_green_ratio,
 
 INSERT INTO waste_items (id, batch_id, category_id, item_type, name, weight, date_added,
                          brown_green_type, moisture_content, reason) VALUES
+    ('c4e6a8b0-2d3f-4a5b-8c7d-000000000010', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000005',
+     '7a2e4b10-1c3d-4e5f-8a9b-000000000002', 'compostable', 'Daun kering taman', 4.00,
+     NOW() - INTERVAL '85 days', 'Brown', 30, NULL),
+    ('c4e6a8b0-2d3f-4a5b-8c7d-000000000011', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000005',
+     '7a2e4b10-1c3d-4e5f-8a9b-000000000001', 'compostable', 'Sisa sayur pasar', 2.00,
+     NOW() - INTERVAL '84 days', 'Green', 70, NULL),
     ('c4e6a8b0-2d3f-4a5b-8c7d-000000000001', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000001',
      '7a2e4b10-1c3d-4e5f-8a9b-000000000002', 'compostable', 'Daun kering', 5.00,
      NOW() - INTERVAL '65 days', 'Brown', 35, NULL),
