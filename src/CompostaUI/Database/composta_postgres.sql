@@ -80,6 +80,44 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION st_select_user_by_id(_id VARCHAR)
+    RETURNS TABLE (id VARCHAR, name VARCHAR, email VARCHAR, joined_at TIMESTAMP)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT u.id, u.name, u.email, u.joined_at
+    FROM users u
+    WHERE u.id = _id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_select_user_by_email(_email VARCHAR)
+    RETURNS TABLE (id VARCHAR, name VARCHAR, email VARCHAR, joined_at TIMESTAMP)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT u.id, u.name, u.email, u.joined_at
+    FROM users u
+    WHERE LOWER(u.email) = LOWER(TRIM(_email));
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_insert_user(_id VARCHAR, _name VARCHAR, _email VARCHAR, _joined_at TIMESTAMP)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO users (id, name, email, joined_at)
+    VALUES (_id, _name, LOWER(TRIM(_email)), _joined_at);
+    RETURN 1;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 0;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION st_select_categories()
     RETURNS TABLE (id VARCHAR, name VARCHAR, co2e_factor_per_kg NUMERIC, is_compostable BOOLEAN)
     LANGUAGE plpgsql
@@ -215,7 +253,8 @@ END;
 $$;
 
 INSERT INTO users (id, name, email, joined_at) VALUES
-    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', 'Nabil Aufa Danaputra', 'nabil@composta.id', NOW() - INTERVAL '90 days');
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', 'Nabil Aufa Danaputra', 'nabil@composta.id', NOW() - INTERVAL '90 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000002', 'Pengguna Demo', 'demo@composta.id', NOW() - INTERVAL '30 days');
 
 INSERT INTO waste_categories (id, name, co2e_factor_per_kg, is_compostable) VALUES
     ('7a2e4b10-1c3d-4e5f-8a9b-000000000001', 'Sisa Sayur & Buah',      0.500, TRUE),
@@ -231,7 +270,9 @@ INSERT INTO compost_batches (id, user_id, start_date, status, brown_green_ratio,
     ('b8d0e6f2-4a1b-4c2d-9e3f-000000000002', '3f1c2a9e-5b7d-4c1e-9a2f-000000000001',
      NOW() - INTERVAL '40 days', 'Curing', 2.00, NOW() + INTERVAL '20 days'),
     ('b8d0e6f2-4a1b-4c2d-9e3f-000000000003', '3f1c2a9e-5b7d-4c1e-9a2f-000000000001',
-     NOW() - INTERVAL '10 days', 'Active', 0.60, NOW() + INTERVAL '50 days');
+     NOW() - INTERVAL '10 days', 'Active', 0.60, NOW() + INTERVAL '50 days'),
+    ('b8d0e6f2-4a1b-4c2d-9e3f-000000000004', '3f1c2a9e-5b7d-4c1e-9a2f-000000000002',
+     NOW() - INTERVAL '5 days', 'Active', 1.00, NOW() + INTERVAL '55 days');
 
 INSERT INTO waste_items (id, batch_id, category_id, item_type, name, weight, date_added,
                          brown_green_type, moisture_content, reason) VALUES
@@ -255,7 +296,13 @@ INSERT INTO waste_items (id, batch_id, category_id, item_type, name, weight, dat
      NOW() - INTERVAL '9 days', 'Brown', 20, NULL),
     ('c4e6a8b0-2d3f-4a5b-8c7d-000000000007', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000003',
      '7a2e4b10-1c3d-4e5f-8a9b-000000000004', 'compostable', 'Ampas kopi', 1.00,
-     NOW() - INTERVAL '8 days', 'Green', 60, NULL);
+     NOW() - INTERVAL '8 days', 'Green', 60, NULL),
+    ('c4e6a8b0-2d3f-4a5b-8c7d-000000000008', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000004',
+     '7a2e4b10-1c3d-4e5f-8a9b-000000000001', 'compostable', 'Sisa sayur', 2.00,
+     NOW() - INTERVAL '5 days', 'Green', 70, NULL),
+    ('c4e6a8b0-2d3f-4a5b-8c7d-000000000009', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000004',
+     '7a2e4b10-1c3d-4e5f-8a9b-000000000002', 'compostable', 'Daun kering', 2.00,
+     NOW() - INTERVAL '4 days', 'Brown', 30, NULL);
 
 INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) VALUES
     ('d2f4b6c8-3e5a-4b7c-9d1e-000000000001', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000002',
