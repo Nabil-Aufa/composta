@@ -8,6 +8,7 @@ Model, enum, interface, `CarbonCalculatorService`, dan `CompostAdvisorService` d
 2. Jalankan `Database/composta_postgres.sql` pada database tersebut (Query Tool pgAdmin4, atau
    `psql -U postgres -d composta -f Database/composta_postgres.sql`).
    Script ini membuat tabel, fungsi `st_select_*`, `st_insert_*`, `st_update_batch`, `st_delete_batch`, dan data awal.
+3. Jalankan ulang script setiap kali isinya berubah setelah `git pull`. Data lama akan diganti dengan data awal.
 
 ## Connection string
 Default: `Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=composta` (di `AppData.cs`).
