@@ -7,6 +7,9 @@ namespace Composta.ViewModels
 {
     public partial class AddWasteViewModel : ObservableObject
     {
+        public const int MaxNameLength = 100;
+        public const decimal MaxWeight = 100;
+
         private const string NoBatchMessage =
             "Belum ada batch yang sedang berjalan. Buat batch baru di dashboard terlebih dahulu.";
 
@@ -138,6 +141,7 @@ namespace Composta.ViewModels
 
         partial void OnWeightChanged(decimal? value)
         {
+            ClearInputError();
             UpdatePreview();
         }
 
@@ -169,6 +173,18 @@ namespace Composta.ViewModels
             if (string.IsNullOrWhiteSpace(WasteName))
             {
                 ErrorMessage = "Nama sampah wajib diisi.";
+                return;
+            }
+
+            if (WasteName.Trim().Length > MaxNameLength)
+            {
+                ErrorMessage = "Nama sampah maksimal " + MaxNameLength + " karakter.";
+                return;
+            }
+
+            if (Weight == null || Weight <= 0 || Weight > MaxWeight)
+            {
+                ErrorMessage = "Berat harus lebih dari 0 kg dan paling banyak " + MaxWeight + " kg.";
                 return;
             }
 

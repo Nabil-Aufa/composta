@@ -45,6 +45,39 @@ namespace Composta.UITests
             Assert.False(form.HasError);
         }
 
+        [SkippableTheory]
+        [InlineData(null)]
+        [InlineData(0.0)]
+        [InlineData(-1.0)]
+        [InlineData(100.5)]
+        public void InvalidWeight_IsRejected(double? weight)
+        {
+            RequireDatabase();
+
+            AddWasteViewModel form = NewForm();
+            form.WasteName = "Kulit pisang";
+            form.Weight = (decimal?)weight;
+
+            form.SaveCommand.Execute(null);
+
+            Assert.StartsWith("Berat harus lebih dari 0 kg", form.ErrorMessage);
+            Assert.Equal(9, Db.Count("SELECT COUNT(*) FROM waste_items"));
+        }
+
+        [SkippableFact]
+        public void TooLongName_IsRejected()
+        {
+            RequireDatabase();
+
+            AddWasteViewModel form = NewForm();
+            form.WasteName = new string('a', 101);
+
+            form.SaveCommand.Execute(null);
+
+            Assert.Equal("Nama sampah maksimal 100 karakter.", form.ErrorMessage);
+            Assert.Equal(9, Db.Count("SELECT COUNT(*) FROM waste_items"));
+        }
+
         [SkippableFact]
         public void NonCompostableCategory_SwitchesFormAndIsRejected()
         {

@@ -34,7 +34,7 @@
 
             <StackPanel>
                 <TextBlock Classes="field" Text="Nama sampah" />
-                <TextBox Text="{Binding WasteName}" Watermark="contoh: kulit pisang" />
+                <TextBox Text="{Binding WasteName}" Watermark="contoh: kulit pisang" MaxLength="100" />
             </StackPanel>
 
             <Grid ColumnDefinitions="*,16,*">
@@ -77,7 +77,7 @@
 
             <StackPanel IsVisible="{Binding IsNonCompostable}">
                 <TextBlock Classes="field" Text="Alasan tidak dapat dikomposkan" />
-                <TextBox Text="{Binding Reason}" Watermark="contoh: tidak dapat terurai secara alami" />
+                <TextBox Text="{Binding Reason}" Watermark="contoh: tidak dapat terurai secara alami" MaxLength="255" />
             </StackPanel>
 
             <Border Classes="preview" Classes.warning="{Binding IsPreviewWarning}">
