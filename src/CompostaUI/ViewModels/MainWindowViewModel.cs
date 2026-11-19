@@ -68,6 +68,9 @@ namespace Composta.ViewModels
         }
 
         public ObservableCollection<BatchItemViewModel> Batches { get; }
+        public ObservableCollection<MaintenanceScheduleItemViewModel> MaintenanceSchedules { get; } = new();
+        [ObservableProperty]
+        private bool _hasNoMaintenanceSchedules = true;
 
         public WeatherViewModel Weather { get; }
 
@@ -175,11 +178,20 @@ namespace Composta.ViewModels
 
         partial void OnSelectedBatchChanged(BatchItemViewModel? value)
         {
+            MaintenanceSchedules.Clear();
+            HasNoMaintenanceSchedules = true;
+
             if (value == null)
             {
                 ShowEmptyRecommendation();
                 return;
             }
+
+            foreach (MaintenanceSchedule schedule in value.Batch.Schedules.OrderBy(s => s.DueDate))
+            {
+                MaintenanceSchedules.Add(new MaintenanceScheduleItemViewModel(schedule));
+            }
+            HasNoMaintenanceSchedules = MaintenanceSchedules.Count == 0;
 
             ShowRecommendation(value.Batch);
         }

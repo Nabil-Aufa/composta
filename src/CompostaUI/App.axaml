@@ -4,6 +4,18 @@
              RequestedThemeVariant="Light">
     <Application.Styles>
         <FluentTheme />
+        
+        <Style Selector="TextBlock.completed">
+            <Setter Property="Foreground" Value="#2E7D32" />
+        </Style>
+
+        <Style Selector="TextBlock.overdue">
+            <Setter Property="Foreground" Value="#C62828" />
+        </Style>
+
+        <Style Selector="TextBlock.pending">
+            <Setter Property="Foreground" Value="#6B7280" />
+        </Style>
 
         <Style Selector="Border.card">
             <Setter Property="Background" Value="White" />

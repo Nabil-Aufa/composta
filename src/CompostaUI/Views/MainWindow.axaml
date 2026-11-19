@@ -134,6 +134,54 @@
                                    LineHeight="20" Foreground="#2F3A2F" />
                     </StackPanel>
                 </Border>
+<!-- Jadwal Perawatan -->
+<Border Classes="card">
+    <StackPanel Spacing="10">
+        <TextBlock Text="Jadwal Perawatan"
+                   Classes="section" />
+
+        <TextBlock Text="Jadwal untuk batch yang dipilih"
+                   Classes="caption" />
+
+        <TextBlock Text="Belum ada jadwal perawatan untuk batch ini."
+                    Classes="caption"
+                    TextWrapping="Wrap"
+                    IsVisible="{Binding HasNoMaintenanceSchedules}" />
+           
+        <ItemsControl ItemsSource="{Binding MaintenanceSchedules}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:MaintenanceScheduleItemViewModel">
+                    <Border BorderBrush="#E3EBE1"
+                            BorderThickness="0,0,0,1"
+                            Padding="0,10">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding TaskName}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13" />
+
+                            <TextBlock Text="{Binding DueDateText}"
+                                       Classes="caption" />
+
+                            <TextBlock Text="{Binding StatusText}"
+                                        FontSize="12"
+                                        FontWeight="SemiBold"
+                                        Classes.completed="{Binding IsCompleted}"
+                                        Classes.overdue="{Binding IsOverdue}"
+                                        Classes.pending="{Binding IsPending}" />
+
+                            <Button Content="Selesai"
+                                        Classes="small secondary"
+                                        IsEnabled="False"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,6,0,0"
+                                        ToolTip.Tip="Menunggu integrasi penyimpanan jadwal ke database" />
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</Border>
             </StackPanel>
             </ScrollViewer>
         </Grid>
