@@ -1,6 +1,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Composta.Models;
+using Composta.Enums;
 
 namespace Composta.ViewModels
 {
@@ -13,7 +14,14 @@ namespace Composta.ViewModels
             Schedule = schedule ?? throw new ArgumentNullException(nameof(schedule));
         }
 
-        public string TaskName => Schedule.TaskType.ToString();
+        public string TaskName => Schedule.TaskType switch
+        {
+            TaskType.Turn => "Aduk kompos",
+            TaskType.Water => "Siram kompos",
+            TaskType.CheckMoisture => "Periksa kelembapan",
+            TaskType.Harvest => "Panen kompos",
+            _ => "Perawatan lainnya"
+        };
 
         public string DueDateText => Schedule.DueDate.ToString("dd MMM yyyy");
 

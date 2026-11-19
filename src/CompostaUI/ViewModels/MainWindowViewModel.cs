@@ -129,10 +129,48 @@ namespace Composta.ViewModels
             get { return !IsHighPriority && !IsMediumPriority; }
         }
 
-        public Task LoadAsync()
+        public async Task LoadAsync()
         {
-            return Task.WhenAll(LoadDashboardAsync(null), Weather.RefreshCommand.ExecuteAsync(null));
+            await Task.WhenAll(
+                LoadDashboardAsync(null),
+                Weather.RefreshCommand.ExecuteAsync(null)
+            );
+
+            if (IsDatabaseConnected)
+            {
+                await ShowMaintenanceReminderAsync();
+            }
         }
+
+        private async Task ShowMaintenanceReminderAsync()
+        {
+            var schedules = AppData.CurrentUser.Batches
+                .SelectMany(batch => batch.Schedules)
+                .Where(schedule =>
+                    !schedule.IsCompleted &&
+                    schedule.DueDate.Date <= DateTime.Today)
+                .ToList();
+
+            if (schedules.Count == 0)
+            {
+                return;
+            }
+
+            int overdueCount = schedules.Count(
+                schedule => schedule.DueDate.Date < DateTime.Today);
+
+            int todayCount = schedules.Count(
+                schedule => schedule.DueDate.Date == DateTime.Today);
+
+            string message =
+                $"Ada {schedules.Count} jadwal perawatan yang perlu diperhatikan.\n\n" +
+                $"Terlambat: {overdueCount}\n" +
+                $"Jatuh tempo hari ini: {todayCount}\n\n" +
+                "Pilih batch untuk melihat detail jadwal perawatan.";
+
+            await _dialogs.ShowMessageAsync("Pengingat Perawatan", message);
+        }
+
 
         private async Task LoadDashboardAsync(string? selectedBatchId)
         {
@@ -170,6 +208,7 @@ namespace Composta.ViewModels
             SelectedBatch = Batches.FirstOrDefault(b => b.Batch.Id == selectedBatchId)
                 ?? Batches.FirstOrDefault(b => !b.IsArchived)
                 ?? Batches.FirstOrDefault();
+            RefreshMaintenanceSchedules();
             if (SelectedBatch == null)
             {
                 ShowEmptyRecommendation();
@@ -178,22 +217,29 @@ namespace Composta.ViewModels
 
         partial void OnSelectedBatchChanged(BatchItemViewModel? value)
         {
-            MaintenanceSchedules.Clear();
-            HasNoMaintenanceSchedules = true;
-
+            RefreshMaintenanceSchedules();
             if (value == null)
             {
                 ShowEmptyRecommendation();
                 return;
             }
 
-            foreach (MaintenanceSchedule schedule in value.Batch.Schedules.OrderBy(s => s.DueDate))
-            {
-                MaintenanceSchedules.Add(new MaintenanceScheduleItemViewModel(schedule));
-            }
-            HasNoMaintenanceSchedules = MaintenanceSchedules.Count == 0;
-
             ShowRecommendation(value.Batch);
+        }
+
+        private void RefreshMaintenanceSchedules()
+        {
+            MaintenanceSchedules.Clear();
+
+            if (SelectedBatch != null)
+            {
+                foreach (MaintenanceSchedule schedule in SelectedBatch.Batch.Schedules.OrderBy(s => s.DueDate))
+                {
+                    MaintenanceSchedules.Add(new MaintenanceScheduleItemViewModel(schedule));
+                }
+            }
+
+            HasNoMaintenanceSchedules = MaintenanceSchedules.Count == 0;
         }
 
         private void ShowRecommendation(CompostBatch batch)
