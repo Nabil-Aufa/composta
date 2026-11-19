@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Composta.ViewModels"
+        xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
         x:Class="Composta.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
@@ -182,6 +183,30 @@
         </ItemsControl>
     </StackPanel>
 </Border>
+        <!-- Grafik Dampak CO2e -->
+        <Border Classes="card">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Dampak CO2e Akumulatif"
+                        Classes="section" />
+
+                <TextBlock Text="Estimasi emisi yang berhasil dicegah dari waktu ke waktu"
+                        Classes="caption"
+                        TextWrapping="Wrap" />
+
+                <TextBlock Text="Belum ada data dampak CO2e untuk ditampilkan."
+                        Classes="caption"
+                        TextWrapping="Wrap"
+                        IsVisible="{Binding Co2eChart.HasNoData}" />
+
+                <lvc:CartesianChart
+                    Series="{Binding Co2eChart.Series}"
+                    XAxes="{Binding Co2eChart.XAxes}"
+                    YAxes="{Binding Co2eChart.YAxes}"
+                    Height="220"
+                    MinHeight="220"
+                    IsVisible="{Binding !Co2eChart.HasNoData}" />
+            </StackPanel>
+        </Border>
             </StackPanel>
             </ScrollViewer>
         </Grid>

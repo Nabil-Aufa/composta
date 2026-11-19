@@ -73,6 +73,7 @@ namespace Composta.ViewModels
         private bool _hasNoMaintenanceSchedules = true;
 
         public WeatherViewModel Weather { get; }
+        public Co2eChartViewModel Co2eChart { get; } = new();
 
         public event Action? LogoutRequested;
 
@@ -93,6 +94,7 @@ namespace Composta.ViewModels
             ActiveBatchCountText = "-";
             SelectedBatch = null;
             Batches.Clear();
+            Co2eChart.UpdateChart(Array.Empty<double>());
             HasNoBatches = true;
             ShowEmptyRecommendation();
             LogoutRequested?.Invoke();
@@ -193,6 +195,10 @@ namespace Composta.ViewModels
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
             double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));
+            Co2eChart.UpdateFromBatches(
+                user.Batches,
+                AppData.CarbonCalculator
+            );
             TotalCo2eText = totalCo2e.ToString("0.##") + " kg";
             ActiveBatchCountText = user.GetActiveBatches().Count.ToString();
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";
