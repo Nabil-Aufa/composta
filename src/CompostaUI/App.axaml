@@ -72,6 +72,73 @@
             <Setter Property="Foreground" Value="#B71C1C" />
         </Style>
 
+        <Style Selector="Border.dbstatus">
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="Background" Value="#1B5E20" />
+        </Style>
+        <Style Selector="Border.dbstatus TextBlock">
+            <Setter Property="Foreground" Value="#C8E6C9" />
+        </Style>
+        <Style Selector="Border.dbstatus.disconnected">
+            <Setter Property="Background" Value="#8E1B1B" />
+        </Style>
+        <Style Selector="Border.dbstatus.disconnected TextBlock">
+            <Setter Property="Foreground" Value="#FFCDD2" />
+        </Style>
+
+        <Style Selector="Border.pill">
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="10,3" />
+        </Style>
+        <Style Selector="Border.pill.active">
+            <Setter Property="Background" Value="#E3F2FD" />
+        </Style>
+        <Style Selector="Border.pill.active TextBlock">
+            <Setter Property="Foreground" Value="#0D47A1" />
+        </Style>
+        <Style Selector="Border.pill.curing, Border.pill.medium">
+            <Setter Property="Background" Value="#FFF4D6" />
+        </Style>
+        <Style Selector="Border.pill.curing TextBlock, Border.pill.medium TextBlock">
+            <Setter Property="Foreground" Value="#8D5A00" />
+        </Style>
+        <Style Selector="Border.pill.ready, Border.pill.low">
+            <Setter Property="Background" Value="#E8F5E9" />
+        </Style>
+        <Style Selector="Border.pill.ready TextBlock, Border.pill.low TextBlock">
+            <Setter Property="Foreground" Value="#1B5E20" />
+        </Style>
+        <Style Selector="Border.pill.archived">
+            <Setter Property="Background" Value="#ECEFF1" />
+        </Style>
+        <Style Selector="Border.pill.archived TextBlock">
+            <Setter Property="Foreground" Value="#455A64" />
+        </Style>
+        <Style Selector="Border.pill.high">
+            <Setter Property="Background" Value="#FFEBEE" />
+        </Style>
+        <Style Selector="Border.pill.high TextBlock">
+            <Setter Property="Foreground" Value="#B71C1C" />
+        </Style>
+
+        <Style Selector="Border.preview">
+            <Setter Property="Background" Value="#E8F5E9" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="14,12" />
+        </Style>
+        <Style Selector="Border.preview.warning">
+            <Setter Property="Background" Value="#FFF4D6" />
+        </Style>
+        <Style Selector="TextBlock.previewTitle">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#1B5E20" />
+        </Style>
+        <Style Selector="Border.preview.warning TextBlock.previewTitle">
+            <Setter Property="Foreground" Value="#8D5A00" />
+        </Style>
+
         <Style Selector="TextBlock.caption">
             <Setter Property="Foreground" Value="#6B776B" />
             <Setter Property="FontSize" Value="12" />

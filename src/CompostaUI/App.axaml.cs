@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Composta.Services;
+using Composta.ViewModels;
+using Composta.Views;
 
 namespace Composta
 {
@@ -15,7 +18,11 @@ namespace Composta
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                MainWindow window = new MainWindow();
+                MainWindowViewModel viewModel = new MainWindowViewModel(new DialogService(window));
+                window.DataContext = viewModel;
+                window.Opened += async (sender, e) => await viewModel.LoadAsync();
+                desktop.MainWindow = window;
             }
 
             base.OnFrameworkInitializationCompleted();

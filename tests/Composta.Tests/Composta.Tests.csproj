@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Composta.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../src/Composta/Models/**/*.cs" Link="Linked/Models/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Composta/Enums/**/*.cs" Link="Linked/Enums/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Composta/Interfaces/**/*.cs" Link="Linked/Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../src/Composta/Services/CarbonCalculatorService.cs" Link="Linked/Services/CarbonCalculatorService.cs" />
+    <Compile Include="../../src/Composta/Services/CompostAdvisorService.cs" Link="Linked/Services/CompostAdvisorService.cs" />
+  </ItemGroup>
+
+</Project>

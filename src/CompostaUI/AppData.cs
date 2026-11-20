@@ -27,6 +27,7 @@ namespace Composta
             Advisor = new CompostAdvisorService(WeatherService);
 
             CurrentUser = new User();
+            IsLoggedIn = false;
             Categories = new List<WasteCategory>();
         }
 
@@ -41,6 +42,7 @@ namespace Composta
         public static CompostAdvisorService Advisor { get; }
 
         public static User CurrentUser { get; private set; }
+        public static bool IsLoggedIn { get; private set; }
         public static List<WasteCategory> Categories { get; private set; }
 
         public static string DatabaseInfo
@@ -54,8 +56,45 @@ namespace Composta
 
         public static void Load()
         {
+            if (IsLoggedIn)
+            {
+                Login(CurrentUser.Id);
+                return;
+            }
+
             User user = UserRepository.GetAll().FirstOrDefault()
                 ?? throw new InvalidOperationException("Tabel users masih kosong.");
+            Login(user.Id);
+        }
+
+        public static List<User> GetUsers()
+        {
+            return UserRepository.GetAll();
+        }
+
+        public static User RegisterUser(string name, string email)
+        {
+            string? error = UserValidator.Validate(name, email);
+            if (error != null)
+            {
+                throw new ArgumentException(error);
+            }
+
+            string normalizedEmail = UserValidator.NormalizeEmail(email);
+            if (UserRepository.GetByEmail(normalizedEmail) != null)
+            {
+                throw new InvalidOperationException("Email " + normalizedEmail + " sudah terdaftar.");
+            }
+
+            User user = new User(name.Trim(), normalizedEmail);
+            UserRepository.Add(user);
+            return user;
+        }
+
+        public static void Login(string userId)
+        {
+            User user = UserRepository.GetById(userId)
+                ?? throw new InvalidOperationException("User tidak ditemukan.");
 
             foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
             {
@@ -71,6 +110,13 @@ namespace Composta
 
             Categories = CategoryRepository.GetAll();
             CurrentUser = user;
+            IsLoggedIn = true;
+        }
+
+        public static void Logout()
+        {
+            CurrentUser = new User();
+            IsLoggedIn = false;
         }
 
         public static string GetBatchName(CompostBatch batch)
