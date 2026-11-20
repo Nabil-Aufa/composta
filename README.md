@@ -70,7 +70,7 @@ dotnet test tests/CompostaUI.Tests
 - `Composta.Tests`: unit test model dan service inti (`CompostAdvisorService`, `CarbonCalculatorService`, `CompostBatch`).
 - `CompostaUI.Tests`: test validasi, login per user, dan ViewModel yang terhubung ke PostgreSQL. Test ini memakai
   database terpisah dari `COMPOSTA_TEST_DB` (default `composta_test`) dan **mengosongkan isinya** setiap kali test
-  dijalankan, sehingga tidak boleh diarahkan ke database `composta`. Jika database test tidak tersedia, test database
+  dijalankan. Karena itu nama databasenya wajib diakhiri `_test`; selain itu test database ditolak. Jika database test tidak tersedia, test database
   dilewati (skipped).
 
 ```bash
