@@ -176,6 +176,82 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION st_insert_schedule(_id VARCHAR, _batch_id VARCHAR, _task_type VARCHAR,
+                                              _due_date TIMESTAMP, _is_completed BOOLEAN DEFAULT FALSE)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed)
+    VALUES (_id, _batch_id, _task_type, _due_date, _is_completed);
+    RETURN 1;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 0;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_complete_schedule(_id VARCHAR)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE maintenance_schedules
+    SET is_completed = TRUE
+    WHERE id = _id;
+
+    IF FOUND THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 0;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_select_schedules_by_batch(_batch_id VARCHAR)
+    RETURNS TABLE (id VARCHAR, batch_id VARCHAR, task_type VARCHAR, due_date TIMESTAMP, is_completed BOOLEAN)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT s.id, s.batch_id, s.task_type, s.due_date, s.is_completed
+    FROM maintenance_schedules s
+    WHERE s.batch_id = _batch_id
+    ORDER BY s.due_date;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_insert_recommendation(_id VARCHAR, _batch_id VARCHAR, _message VARCHAR,
+                                                    _priority VARCHAR, _created_at TIMESTAMP)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO compost_recommendations (id, batch_id, message, priority, created_at)
+    VALUES (_id, _batch_id, _message, _priority, _created_at);
+    RETURN 1;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 0;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_select_recommendations_by_batch(_batch_id VARCHAR)
+    RETURNS TABLE (id VARCHAR, batch_id VARCHAR, message VARCHAR, priority VARCHAR, created_at TIMESTAMP)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT r.id, r.batch_id, r.message, r.priority, r.created_at
+    FROM compost_recommendations r
+    WHERE r.batch_id = _batch_id
+    ORDER BY r.created_at DESC;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION st_insert_batch(_id VARCHAR, _user_id VARCHAR, _start_date TIMESTAMP,
                                            _status VARCHAR, _brown_green_ratio NUMERIC,
                                            _estimated_maturity_date TIMESTAMP)

@@ -21,6 +21,7 @@ namespace Composta
             UserRepository = new UserRepository(Connstring);
             CategoryRepository = new WasteCategoryRepository(Connstring);
             BatchRepository = new CompostBatchRepository(Connstring);
+            ScheduleRepository = new MaintenanceScheduleRepository(Connstring);
 
             WeatherService = new OfflineWeatherService();
             CarbonCalculator = new CarbonCalculatorService();
@@ -36,6 +37,7 @@ namespace Composta
         public static UserRepository UserRepository { get; }
         public static WasteCategoryRepository CategoryRepository { get; }
         public static CompostBatchRepository BatchRepository { get; }
+        public static MaintenanceScheduleRepository ScheduleRepository { get; }
 
         public static IWeatherService WeatherService { get; }
         public static ICarbonCalculator CarbonCalculator { get; }
@@ -105,6 +107,8 @@ namespace Composta
                     BatchRepository.Update(batch);
                 }
 
+                batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
+
                 user.AddBatch(batch);
             }
 
@@ -117,6 +121,44 @@ namespace Composta
         {
             CurrentUser = new User();
             IsLoggedIn = false;
+        }
+
+        public static void CreateBatchWithDefaultSchedules(CompostBatch batch)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+            BatchRepository.Add(batch);
+
+            if (batch.Schedules.Count == 0)
+            {
+                batch.GenerateDefaultSchedules();
+            }
+
+            foreach (MaintenanceSchedule schedule in batch.Schedules)
+            {
+                ScheduleRepository.Add(schedule);
+            }
+        }
+
+        public static void CompleteSchedule(MaintenanceSchedule schedule)
+        {
+            ScheduleRepository.CompleteSchedule(schedule);
+        }
+
+        public static List<MaintenanceSchedule> GetDueOrOverdueSchedules()
+        {
+            return ScheduleRepository.GetDueOrOverdueByUser(CurrentUser.Batches);
+        }
+
+        public static CompostRecommendation GenerateAndSaveRecommendation(CompostBatch batch)
+        {
+            CompostRecommendation recommendation = Advisor.GenerateRecommendation(batch, Location);
+            ScheduleRepository.AddRecommendation(recommendation);
+            return recommendation;
+        }
+
+        public static List<CompostRecommendation> GetBatchRecommendations(string batchId)
+        {
+            return ScheduleRepository.GetRecommendationsByBatch(batchId);
         }
 
         public static string GetBatchName(CompostBatch batch)
