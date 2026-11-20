@@ -21,9 +21,9 @@ namespace Composta.UITests
             Connstring = Environment.GetEnvironmentVariable("COMPOSTA_TEST_DB") ?? DefaultTestConnstring;
 
             string databaseName = new NpgsqlConnectionStringBuilder(Connstring).Database ?? string.Empty;
-            if (string.Equals(databaseName, "composta", StringComparison.OrdinalIgnoreCase))
+            if (!databaseName.EndsWith("_test", StringComparison.OrdinalIgnoreCase))
             {
-                UnavailableReason = "COMPOSTA_TEST_DB tidak boleh memakai database utama 'composta' karena isinya akan dihapus.";
+                UnavailableReason = "COMPOSTA_TEST_DB harus memakai database khusus test yang namanya diakhiri '_test' (misalnya 'composta_test') karena isinya akan dihapus. Database saat ini: '" + databaseName + "'.";
                 return;
             }
 
