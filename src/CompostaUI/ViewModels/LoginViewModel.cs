@@ -55,7 +55,6 @@ namespace Composta.ViewModels
         public bool HasNotice => !string.IsNullOrEmpty(NoticeMessage);
         public event Action? LoginSucceeded;
 
-        // A closed login window must not reopen the dashboard when a request finishes late.
         public void Deactivate() => _isClosed = true;
 
         private bool CanLoadUsers() => !IsBusy && !_isClosed;
@@ -120,8 +119,6 @@ namespace Composta.ViewModels
                 User user = await _session.RegisterUserAsync(name, email);
                 if (_isClosed) return;
 
-                // Keep the saved profile selected if the subsequent login fails.
-                // A retry then logs in instead of inserting the same email again.
                 Users.Add(user);
                 OnPropertyChanged(nameof(HasNoUsers));
                 SelectedUser = user;

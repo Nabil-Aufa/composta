@@ -48,7 +48,6 @@ namespace Composta
         private static void ReplaceWindow(IClassicDesktopStyleApplicationLifetime desktop, Avalonia.Controls.Window next)
         {
             Avalonia.Controls.Window? previous = desktop.MainWindow;
-            // Set/show the new main window before closing the previous one to keep the app alive.
             desktop.MainWindow = next;
             next.Show();
             previous?.Close();

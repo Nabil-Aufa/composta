@@ -56,7 +56,6 @@ namespace Composta.UITests
 
             var batch = new CompostBatch();
 
-            // Sengaja memasukkan tanggal yang lebih baru terlebih dahulu
             var waste2 = new CompostableWaste(
                 "Daun", 1.0, category, BrownGreenType.Brown, 50);
             waste2.DateAdded = new DateTime(2026, 11, 16);

@@ -10,6 +10,7 @@ namespace Composta.ViewModels
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly IDialogService _dialogs;
+        private readonly IUserSessionService _session;
 
         [ObservableProperty]
         private string _greeting = string.Empty;
@@ -55,14 +56,23 @@ namespace Composta.ViewModels
         [NotifyPropertyChangedFor(nameof(IsLowPriority))]
         private string _priority = "Low";
 
-        public MainWindowViewModel(IDialogService dialogs, WeatherViewModel? weather = null)
+        public MainWindowViewModel(
+            IDialogService dialogs,
+            WeatherViewModel? weather = null,
+            IUserSessionService? session = null)
         {
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+            _session = session ?? new UserSessionService();
+
             Weather = weather ?? new WeatherViewModel(AppData.WeatherService);
             Weather.WeatherUpdated += () =>
             {
-                if (SelectedBatch != null) ShowRecommendation(SelectedBatch.Batch);
+                if (SelectedBatch != null)
+                {
+                    ShowRecommendation(SelectedBatch.Batch);
+                }
             };
+
             Batches = new ObservableCollection<BatchItemViewModel>();
             ShowEmptyRecommendation();
         }
@@ -86,7 +96,7 @@ namespace Composta.ViewModels
         [RelayCommand]
         private void Logout()
         {
-            AppData.Logout();
+            _session.Logout();
             IsDatabaseConnected = false;
             Greeting = string.Empty;
             TotalCo2eText = "-";

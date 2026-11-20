@@ -62,7 +62,6 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanRefresh))]
         private async Task RefreshAsync()
         {
-            // Guard direct command calls too; only one request may update this card at a time.
             if (IsLoading)
             {
                 return;
@@ -90,14 +89,12 @@ namespace Composta.ViewModels
                 {
                     try
                     {
-                        // IWeatherService is synchronous. Keep network work off the UI thread.
                         weather = await Task.Run(() => _service.GetCurrentWeather(location)).WaitAsync(_timeout);
                         IsOffline = false;
                         StatusText = "Data cuaca berhasil diperbarui.";
                     }
                     catch (Exception)
                     {
-                        // Do not show provider exceptions: they may contain a request URL/API key.
                         weather = _offline.GetCurrentWeather(location);
                         IsOffline = true;
                         StatusText = "Gagal memuat cuaca • memakai data simulasi offline. Coba Refresh lagi.";
