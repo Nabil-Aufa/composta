@@ -85,5 +85,34 @@ namespace Composta.UITests
             Assert.Equal(1.20, timeline[1].DailyCO2e);
             Assert.Equal(2.50, timeline[1].CumulativeCO2e);
         }
+
+        [SkippableFact]
+        public void GetCO2eTimeline_QuarterKgWithoutCategory_UsesBankersRoundingConsistentWithCalculator()
+        {
+            RequireDatabase();
+
+            UserRepository userRepo = new UserRepository(Db.Connstring);
+            User user = new User("Rounding Tester", "rounding@composta.id");
+            userRepo.Add(user);
+
+            CompostBatchRepository repo = new CompostBatchRepository(Db.Connstring);
+            CarbonCalculatorService calculator = new CarbonCalculatorService();
+
+            CompostBatch batch = new CompostBatch(user.Id, new DateTime(2026, 11, 5), 30);
+            repo.Add(batch);
+
+            // 0.25 kg * 0.5 = 0.125 -> Math.Round(0.125, 2) = 0.12 (banker's rounding)
+            CompostableWaste item = new CompostableWaste("Sisa Buah", 0.25, null, BrownGreenType.Green, 60);
+            item.DateAdded = new DateTime(2026, 11, 5, 10, 0, 0);
+            repo.AddWasteItem(batch, item);
+
+            List<CO2eTimelinePoint> timeline = repo.GetCO2eTimeline(user.Id);
+            double expected = calculator.CalculateCO2eSaved(new List<WasteItem> { item });
+
+            Assert.Single(timeline);
+            Assert.Equal(0.12, expected);
+            Assert.Equal(expected, timeline[0].DailyCO2e);
+            Assert.Equal(expected, timeline[0].CumulativeCO2e);
+        }
     }
 }

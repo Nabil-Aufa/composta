@@ -163,6 +163,7 @@ BEGIN
 END;
 $$;
 
+-- Catatan: Nilai default faktor emisi 0.5 harus selaras dengan CarbonCalculatorService.DefaultFactor
 CREATE OR REPLACE FUNCTION st_select_co2e_timeline(_user_id VARCHAR)
     RETURNS TABLE (tanggal DATE, co2e_harian NUMERIC, co2e_akumulatif NUMERIC)
     LANGUAGE plpgsql
@@ -172,12 +173,12 @@ BEGIN
     WITH daily AS (
         SELECT
             DATE(w.date_added) AS dt,
-            ROUND(SUM(
+            SUM(
                 w.weight * CASE
                     WHEN COALESCE(c.co2e_factor_per_kg, 0) <= 0 THEN 0.5
                     ELSE c.co2e_factor_per_kg
                 END
-            ), 2) AS daily_co2e
+            ) AS daily_co2e
         FROM waste_items w
         INNER JOIN compost_batches b ON b.id = w.batch_id
         LEFT JOIN waste_categories c ON c.id = w.category_id
@@ -188,7 +189,7 @@ BEGIN
     SELECT
         d.dt AS tanggal,
         d.daily_co2e AS co2e_harian,
-        ROUND(SUM(d.daily_co2e) OVER (ORDER BY d.dt), 2) AS co2e_akumulatif
+        SUM(d.daily_co2e) OVER (ORDER BY d.dt) AS co2e_akumulatif
     FROM daily d
     ORDER BY d.dt;
 END;
