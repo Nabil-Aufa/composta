@@ -79,7 +79,7 @@
                     </Grid>
 
                     <StackPanel Spacing="10">
-                        <Grid ColumnDefinitions="*,90,150,140,140" Margin="16,0">
+                        <Grid ColumnDefinitions="*,90,150,140,140" Margin="19,0,16,0">
                             <TextBlock Grid.Column="1" Text="BERAT" Classes="label" />
                             <TextBlock Grid.Column="2" Text="RASIO BROWN/GREEN" Classes="label" />
                             <TextBlock Grid.Column="3" Text="ESTIMASI MATANG" Classes="label" />
@@ -104,11 +104,19 @@
                                     <Border Classes="row">
                                         <Grid ColumnDefinitions="*,90,150,140,140" Margin="16,10"
                                               VerticalAlignment="Center">
-                                            <StackPanel VerticalAlignment="Center" Spacing="1">
+                                            <!-- Nama di atas, progres + hari di satu baris: tinggi semua baris sama -->
+                                            <StackPanel VerticalAlignment="Center" Spacing="7">
                                                 <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
                                                            Foreground="{StaticResource InkBrush}"
                                                            TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Classes="caption selectedHint" Text="Terpilih" FontSize="11" />
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <ProgressBar Classes="thin" Value="{Binding Progress}"
+                                                                 Minimum="0" Maximum="100" Width="110"
+                                                                 VerticalAlignment="Center"
+                                                                 AutomationProperties.Name="Progres batch" />
+                                                    <TextBlock Classes="caption" Text="{Binding DayText}"
+                                                               VerticalAlignment="Center" />
+                                                </StackPanel>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding WeightText}" FontSize="13"
                                                        VerticalAlignment="Center" />
@@ -117,6 +125,7 @@
                                             <TextBlock Grid.Column="3" Text="{Binding MaturityText}" FontSize="13"
                                                        VerticalAlignment="Center" />
                                             <Border Grid.Column="4" Classes="pill" VerticalAlignment="Center"
+                                                    Width="124"
                                                     Classes.active="{Binding IsActive}" Classes.curing="{Binding IsCuring}"
                                                     Classes.ready="{Binding IsReady}" Classes.archived="{Binding IsArchived}">
                                                 <TextBlock Text="{Binding StatusText}" />
@@ -137,6 +146,61 @@
                                 <TextBlock Text="{Binding SelectedBatch.StatusText, FallbackValue=''}" FontSize="12"
                                            FontWeight="SemiBold" Foreground="{StaticResource ForestBrush}" />
                             </StackPanel>
+
+                            <!-- Timeline tahap batch terpilih -->
+                            <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,6"
+                                  IsVisible="{Binding SelectedBatch, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                  AutomationProperties.Name="Timeline tahap batch">
+                                <!-- Aktif -->
+                                <Grid Grid.Column="0" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="1" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot reached"
+                                            Classes.current="{Binding SelectedBatch.IsActive, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Aktif" Classes="stepLabel reached"
+                                           Classes.current="{Binding SelectedBatch.IsActive, FallbackValue=False}" />
+
+                                <!-- Pematangan -->
+                                <Grid Grid.Column="1" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="0" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}" />
+                                    <Border Grid.Column="1" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot"
+                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}"
+                                            Classes.current="{Binding SelectedBatch.IsCuring, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Pematangan" Classes="stepLabel"
+                                           Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}"
+                                           Classes.current="{Binding SelectedBatch.IsCuring, FallbackValue=False}" />
+
+                                <!-- Siap Panen -->
+                                <Grid Grid.Column="2" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="0" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}" />
+                                    <Border Grid.Column="1" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot"
+                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}"
+                                            Classes.current="{Binding SelectedBatch.IsReady, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Siap Panen" Classes="stepLabel"
+                                           Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}"
+                                           Classes.current="{Binding SelectedBatch.IsReady, FallbackValue=False}" />
+
+                                <!-- Dipanen -->
+                                <Grid Grid.Column="3" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="0" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot"
+                                            Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}"
+                                            Classes.current="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="3" Text="Dipanen" Classes="stepLabel"
+                                           Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}"
+                                           Classes.current="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                            </Grid>
 
                             <StackPanel Spacing="4" IsVisible="{Binding HasNoMaintenanceSchedules}">
                                 <TextBlock Text="Belum ada jadwal perawatan" FontSize="14" FontWeight="SemiBold" />

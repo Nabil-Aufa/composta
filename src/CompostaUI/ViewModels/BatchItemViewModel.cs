@@ -5,7 +5,11 @@ namespace Composta.ViewModels
 {
     public class BatchItemViewModel
     {
-        public BatchItemViewModel(CompostBatch batch)
+        public BatchItemViewModel(CompostBatch batch) : this(batch, DateTime.Today)
+        {
+        }
+
+        public BatchItemViewModel(CompostBatch batch, DateTime today)
         {
             Batch = batch ?? throw new ArgumentNullException(nameof(batch));
             Name = AppData.GetBatchName(batch);
@@ -20,7 +24,13 @@ namespace Composta.ViewModels
             double totalDays = (batch.EstimatedMaturityDate - batch.StartDate).TotalDays;
             double elapsedDays = (DateTime.Now - batch.StartDate).TotalDays;
             Progress = totalDays > 0 ? Math.Clamp(elapsedDays / totalDays * 100, 0, 100) : 100;
+
+            int totalDayCount = Math.Max(1, (batch.EstimatedMaturityDate.Date - batch.StartDate.Date).Days);
+            int currentDay = Math.Clamp((today.Date - batch.StartDate.Date).Days + 1, 1, totalDayCount);
+            DayText = "Hari ke-" + currentDay + " dari " + totalDayCount;
         }
+
+        public string DayText { get; }
 
         public CompostBatch Batch { get; }
 
@@ -61,6 +71,17 @@ namespace Composta.ViewModels
         public bool IsArchived
         {
             get { return Batch.Status == BatchStatus.Archived; }
+        }
+
+        // Tahap timeline yang sudah dilewati atau sedang berjalan (Aktif -> Pematangan -> Siap Panen -> Dipanen)
+        public bool IsCuringOrLater
+        {
+            get { return Batch.Status >= BatchStatus.Curing; }
+        }
+
+        public bool IsReadyOrLater
+        {
+            get { return Batch.Status >= BatchStatus.Ready; }
         }
     }
 }

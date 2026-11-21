@@ -358,6 +358,55 @@
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
         </Style>
 
+        <!-- Progres batch di baris tabel -->
+        <Style Selector="ProgressBar.thin">
+            <Setter Property="Height" Value="4" />
+            <Setter Property="MinHeight" Value="4" />
+            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
+            <Setter Property="Background" Value="{StaticResource LineBrush}" />
+        </Style>
+
+        <!-- Timeline tahap batch (Aktif → Pematangan → Siap Panen → Dipanen) -->
+        <Style Selector="Border.stepDot">
+            <Setter Property="Width" Value="14" />
+            <Setter Property="Height" Value="14" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="{StaticResource LineBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.stepDot.reached">
+            <Setter Property="Background" Value="{StaticResource ForestBrush}" />
+        </Style>
+        <Style Selector="Border.stepDot.current">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="CornerRadius" Value="9" />
+        </Style>
+        <Style Selector="Border.stepLine">
+            <Setter Property="Height" Value="2" />
+            <Setter Property="Background" Value="{StaticResource LineBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.stepLine.reached">
+            <Setter Property="Background" Value="{StaticResource ForestBrush}" />
+        </Style>
+        <Style Selector="TextBlock.stepLabel">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
+        <Style Selector="TextBlock.stepLabel.reached">
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+        </Style>
+        <Style Selector="TextBlock.stepLabel.current">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
+        </Style>
+
         <!-- Panel pratinjau (Catat Sampah) -->
         <Style Selector="Border.preview">
             <Setter Property="Background" Value="{StaticResource LeafBrush}" />
@@ -395,8 +444,9 @@
         <Style Selector="ListBox.rows ListBoxItem Border.row">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="BorderBrush" Value="{StaticResource ForestBrush}" />
-            <Setter Property="BorderThickness" Value="0" />
+            <!-- Garis kiri selalu 3 px (transparan) agar isi baris tidak bergeser saat dipilih -->
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="3,0,0,0" />
             <Setter Property="MinHeight" Value="60" />
         </Style>
         <Style Selector="ListBox.rows ListBoxItem:pointerover Border.row">
@@ -404,7 +454,7 @@
         </Style>
         <Style Selector="ListBox.rows ListBoxItem:selected Border.row">
             <Setter Property="Background" Value="{StaticResource LeafBrush}" />
-            <Setter Property="BorderThickness" Value="3,0,0,0" />
+            <Setter Property="BorderBrush" Value="{StaticResource ForestBrush}" />
         </Style>
         <Style Selector="ListBox.rows ListBoxItem TextBlock.selectedHint">
             <Setter Property="IsVisible" Value="False" />
