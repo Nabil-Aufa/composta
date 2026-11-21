@@ -12,7 +12,8 @@
         WindowStartupLocation="CenterScreen">
     <!-- Mengikuti frame "Dashboard desktop · Revisi" di halaman UI GUIDE Figma -->
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,24,32,28" Spacing="24" MaxWidth="1280">
+        <!-- Konten dibatasi lebar maksimum dan diletakkan di tengah agar tetap rapi saat jendela dimaksimalkan -->
+        <StackPanel Margin="32,24,32,28" Spacing="24" MaxWidth="1280" HorizontalAlignment="Stretch">
 
             <!-- Top bar -->
             <Border Classes="topbar">

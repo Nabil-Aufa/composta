@@ -10,22 +10,22 @@
         Width="1040" Height="660" MinWidth="820" MinHeight="560"
         WindowStartupLocation="CenterScreen">
     <!-- Mengikuti frame "Pilih pengguna" dan "Buat profil" di halaman UI GUIDE Figma -->
-    <DockPanel Margin="32,24,32,28">
+    <!-- Konten dibatasi lebar maksimum dan diletakkan di tengah agar tetap rapi saat jendela dimaksimalkan -->
+    <DockPanel Margin="32,24,32,28" MaxWidth="1120">
         <Border DockPanel.Dock="Top" Classes="topbar">
             <ctl:BrandLogo HorizontalAlignment="Left" />
         </Border>
 
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
                       Margin="0,24,0,0">
-            <Grid ColumnDefinitions="*,32,460" Margin="24,32,0,0">
+            <Grid ColumnDefinitions="*,40,460" Margin="24,32,0,0">
 
                 <!-- Kolom kiri -->
                 <StackPanel Spacing="10">
                     <StackPanel Spacing="10" IsVisible="{Binding IsSelectProfileView}">
                         <TextBlock Text="Pilih pengguna" Classes="display" />
                         <TextBlock Text="Pilih profil untuk membuka batch komposmu." Classes="caption" FontSize="14" />
-                        <Border Classes="leaf" Margin="0,24,0,0" Padding="24" MaxWidth="420"
-                                HorizontalAlignment="Left" MinWidth="360">
+                        <Border Classes="leaf" Margin="0,24,0,0" Padding="24">
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Pengguna terpilih" Classes="caption" />
                                 <TextBlock Text="{Binding SelectedUser.Name, FallbackValue='Belum dipilih', TargetNullValue='Belum dipilih'}"
@@ -43,8 +43,8 @@
                     </StackPanel>
 
                     <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="3" MinHeight="3"
-                                 MaxWidth="420" HorizontalAlignment="Stretch" Margin="0,16,0,0" />
-                    <Border Classes="preview" IsVisible="{Binding HasNotice}" MaxWidth="420" HorizontalAlignment="Left">
+                                 HorizontalAlignment="Stretch" Margin="0,16,0,0" />
+                    <Border Classes="preview" IsVisible="{Binding HasNotice}">
                         <TextBlock Text="{Binding NoticeMessage}" Classes="previewTitle" TextWrapping="Wrap" />
                     </Border>
                 </StackPanel>

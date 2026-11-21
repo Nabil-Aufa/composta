@@ -12,7 +12,7 @@
         WindowStartupLocation="CenterOwner"
         Background="White">
     <!-- Mengikuti frame "Catat Sampah" di halaman UI GUIDE Figma -->
-    <StackPanel Margin="32,24,32,24" Spacing="20">
+    <StackPanel Margin="32,24,32,24" Spacing="20" MaxWidth="880">
         <StackPanel Spacing="14">
             <ctl:BrandLogo HorizontalAlignment="Left" />
             <TextBlock Text="Catat Sampah" Classes="title" FontSize="28" />
