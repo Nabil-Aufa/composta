@@ -10,6 +10,9 @@ namespace Composta.ViewModels
             Batch = batch ?? throw new ArgumentNullException(nameof(batch));
             Name = AppData.GetBatchName(batch);
             StatusText = AppData.GetStatusText(batch.Status);
+            WeightText = batch.GetTotalWeight().ToString("0.##") + " kg";
+            RatioText = batch.CalculateRatio().ToString("0.##");
+            MaturityText = batch.EstimatedMaturityDate.ToString("dd MMM yyyy");
             Detail = batch.GetTotalWeight().ToString("0.##") + " kg  •  rasio brown/green "
                 + batch.CalculateRatio().ToString("0.##") + "  •  matang "
                 + batch.EstimatedMaturityDate.ToString("dd MMM yyyy");
@@ -26,6 +29,12 @@ namespace Composta.ViewModels
         public string StatusText { get; }
 
         public string Detail { get; }
+
+        public string WeightText { get; }
+
+        public string RatioText { get; }
+
+        public string MaturityText { get; }
 
         public double Progress { get; }
 

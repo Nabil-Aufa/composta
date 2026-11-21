@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Assets/**" Exclude="Assets/**/*.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="../Composta/Models/**/*.cs" Link="Models/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../Composta/Enums/**/*.cs" Link="Enums/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../Composta/Interfaces/**/*.cs" Link="Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />

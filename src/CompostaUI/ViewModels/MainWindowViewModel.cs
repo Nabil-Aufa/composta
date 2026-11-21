@@ -16,6 +16,9 @@ namespace Composta.ViewModels
         private string _greeting = string.Empty;
 
         [ObservableProperty]
+        private string _userName = string.Empty;
+
+        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AddWasteCommand))]
         [NotifyCanExecuteChangedFor(nameof(NewBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
@@ -24,7 +27,7 @@ namespace Composta.ViewModels
         private bool _isDatabaseConnected;
 
         [ObservableProperty]
-        private string _databaseStatusText = "● Menghubungkan ke PostgreSQL...";
+        private string _databaseStatusText = "Menghubungkan ke PostgreSQL...";
 
         [ObservableProperty]
         private string _totalCo2eText = "-";
@@ -99,6 +102,7 @@ namespace Composta.ViewModels
             _session.Logout();
             IsDatabaseConnected = false;
             Greeting = string.Empty;
+            UserName = string.Empty;
             TotalCo2eText = "-";
             TotalWeightText = "-";
             ActiveBatchCountText = "-";
@@ -193,15 +197,16 @@ namespace Composta.ViewModels
             catch (Exception ex)
             {
                 IsDatabaseConnected = false;
-                DatabaseStatusText = "● Tidak terhubung ke PostgreSQL";
+                DatabaseStatusText = "Tidak terhubung ke PostgreSQL";
                 await _dialogs.ShowMessageAsync("Database Gagal", DatabaseErrorMessage.From(ex, AppData.DatabaseInfo));
                 return;
             }
 
             IsDatabaseConnected = true;
-            DatabaseStatusText = "● Terhubung ke PostgreSQL  •  " + AppData.DatabaseInfo;
+            DatabaseStatusText = "Terhubung ke PostgreSQL  •  " + AppData.DatabaseInfo;
 
             User user = AppData.CurrentUser;
+            UserName = user.Name;
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
             double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));

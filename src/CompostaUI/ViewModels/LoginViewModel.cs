@@ -22,6 +22,8 @@ namespace Composta.ViewModels
         private string _email = string.Empty;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsSelectProfileView))]
+        [NotifyPropertyChangedFor(nameof(IsCreateProfileView))]
         private int _selectedTabIndex;
 
         [ObservableProperty]
@@ -53,6 +55,8 @@ namespace Composta.ViewModels
         public bool HasNoUsers => HasLoadedUsers && Users.Count == 0;
         public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
         public bool HasNotice => !string.IsNullOrEmpty(NoticeMessage);
+        public bool IsSelectProfileView => SelectedTabIndex == 0;
+        public bool IsCreateProfileView => SelectedTabIndex == 1;
         public event Action? LoginSucceeded;
 
         public void Deactivate() => _isClosed = true;
@@ -129,6 +133,21 @@ namespace Composta.ViewModels
                 await _session.LoginAsync(user.Id);
                 if (!_isClosed) LoginSucceeded?.Invoke();
             });
+        }
+
+        [RelayCommand]
+        private void ShowCreateProfile()
+        {
+            ErrorMessage = string.Empty;
+            NoticeMessage = string.Empty;
+            SelectedTabIndex = 1;
+        }
+
+        [RelayCommand]
+        private void ShowSelectProfile()
+        {
+            ErrorMessage = string.Empty;
+            SelectedTabIndex = 0;
         }
 
         private async Task RunBusyAsync(Func<Task> operation)
