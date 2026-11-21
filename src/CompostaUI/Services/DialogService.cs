@@ -29,6 +29,13 @@ namespace Composta.Services
             return answer == ButtonResult.Yes;
         }
 
+        public Task ShowProfileAsync(ProfileViewModel viewModel)
+        {
+            ArgumentNullException.ThrowIfNull(viewModel);
+            ProfileWindow window = new ProfileWindow { DataContext = viewModel };
+            return window.ShowDialog(_owner);
+        }
+
         public async Task<bool> ShowAddWasteAsync(AddWasteViewModel viewModel)
         {
             ArgumentNullException.ThrowIfNull(viewModel);

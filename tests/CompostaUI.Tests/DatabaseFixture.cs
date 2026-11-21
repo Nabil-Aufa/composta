@@ -10,18 +10,15 @@ namespace Composta.UITests
         public const string NabilId = "3f1c2a9e-5b7d-4c1e-9a2f-000000000001";
         public const string DemoUserId = "3f1c2a9e-5b7d-4c1e-9a2f-000000000002";
 
-        private const string DefaultTestConnstring =
-            "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=composta_test";
-
         private static readonly string ScriptPath =
             Path.Combine(AppContext.BaseDirectory, "Database", "composta_postgres.sql");
 
         public DatabaseFixture()
         {
-            Connstring = Environment.GetEnvironmentVariable("COMPOSTA_TEST_DB") ?? DefaultTestConnstring;
+            Connstring = TestDatabaseEnvironment.Connstring;
 
-            string databaseName = new NpgsqlConnectionStringBuilder(Connstring).Database ?? string.Empty;
-            if (!databaseName.EndsWith("_test", StringComparison.OrdinalIgnoreCase))
+            string databaseName = TestDatabaseEnvironment.DatabaseName;
+            if (!TestDatabaseEnvironment.IsTestDatabase)
             {
                 UnavailableReason = "COMPOSTA_TEST_DB harus memakai database khusus test yang namanya diakhiri '_test' (misalnya 'composta_test') karena isinya akan dihapus. Database saat ini: '" + databaseName + "'.";
                 return;
@@ -37,7 +34,6 @@ namespace Composta.UITests
                 return;
             }
 
-            Environment.SetEnvironmentVariable("COMPOSTA_DB", Connstring);
             IsAvailable = true;
         }
 

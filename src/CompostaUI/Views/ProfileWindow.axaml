@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Composta.ViewModels"
+        x:Class="Composta.Views.ProfileWindow"
+        x:DataType="vm:ProfileViewModel" x:CompileBindings="True"
+        Title="Composta - Profil Saya"
+        Width="460" Height="540" MinWidth="380" MinHeight="440"
+        WindowStartupLocation="CenterOwner" Background="#F3F6F1">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28" Spacing="18">
+            <TextBlock Text="Profil Saya" FontSize="24" FontWeight="Bold" Foreground="#2E7D32" />
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding Name}" Classes="section" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Email}" TextWrapping="Wrap" Foreground="#2F3A2F" />
+                    <TextBlock Text="{Binding JoinedAtText}" Classes="caption" />
+                </StackPanel>
+            </Border>
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Dampak dari seluruh batch milikmu" Classes="section" TextWrapping="Wrap" />
+                    <TextBlock Text="Total sampah diolah" Classes="caption" />
+                    <TextBlock Text="{Binding TotalWeightText}" FontSize="22" FontWeight="Bold" />
+                    <TextBlock Text="Estimasi emisi dicegah" Classes="caption" />
+                    <TextBlock Text="{Binding TotalCo2eText}" FontSize="22" FontWeight="Bold" Foreground="#2E7D32" />
+                    <TextBlock Text="Jumlah batch (termasuk yang sudah dipanen)" Classes="caption" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding BatchCountText}" FontSize="22" FontWeight="Bold" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

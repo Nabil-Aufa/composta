@@ -34,7 +34,10 @@ namespace Composta.UITests
             Assert.True(vm.Batches[0].IsArchived);
             Assert.Same(vm.Batches[1], vm.SelectedBatch);
             Assert.Equal("Rekomendasi Batch 2", vm.RecommendationTitle);
-            Assert.Empty(_dialogs.Messages);
+            Assert.Contains(
+            _dialogs.Messages,
+            message => message.StartsWith("Pengingat Perawatan:")
+                && message.Contains("Terlambat:"));
         }
 
         [SkippableFact]
@@ -163,6 +166,40 @@ namespace Composta.UITests
 
             Assert.Equal(BatchStatus.Curing, vm.Batches.Single(b => b.Batch.Id == "b8d0e6f2-4a1b-4c2d-9e3f-000000000002").Batch.Status);
             Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = 'b8d0e6f2-4a1b-4c2d-9e3f-000000000002' AND status = 'Curing'"));
+        }
+        [SkippableFact]
+        public async Task Load_ShowsMaintenanceReminderWhenSchedulesAreOverdue()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+
+            Assert.True(vm.IsDatabaseConnected);
+            Assert.Contains(
+                _dialogs.Messages,
+                message => message.StartsWith("Pengingat Perawatan:")
+                    && message.Contains("Terlambat:"));
+        }
+
+        [SkippableFact]
+        public async Task Load_DoesNotShowReminderWhenAllSchedulesAreCompleted()
+        {
+            RequireDatabase();
+
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand(
+                    "UPDATE maintenance_schedules SET is_completed = TRUE", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+
+            Assert.True(vm.IsDatabaseConnected);
+            Assert.DoesNotContain(
+                _dialogs.Messages,
+                message => message.StartsWith("Pengingat Perawatan:"));
         }
     }
 }

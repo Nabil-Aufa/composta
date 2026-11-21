@@ -82,3 +82,82 @@ Gunakan properti `bool` di ViewModel dan style class di `App.axaml`, bukan warna
 - Pesan, konfirmasi, dan membuka jendela lain dilakukan lewat `IDialogService`, bukan langsung dari ViewModel.
 - Jendela baru dibuat dari pasangan `Views/NamaWindow.axaml` dan `ViewModels/NamaViewModel.cs`, lalu dibuka lewat
   method baru di `IDialogService`.
+
+## Kartu cuaca (#9)
+- Isi nama lokasi (default Yogyakarta), lalu tekan **Refresh**. Lokasi pada judul menunjukkan lokasi
+  permintaan terakhir yang selesai; mengedit kotak lokasi saja belum mengambil data baru.
+- Saat mengambil cuaca, indikator **Memuat cuaca...** tampil dan input/refresh dinonaktifkan.
+- Ikon mengikuti kondisi cerah, berawan, hujan, petir, salju, atau kabut. Kondisi tidak dikenal memakai `?`.
+- Waktu pembaruan berasal dari `WeatherData.RetrievedAt`. Data offline diberi label **simulasi**,
+  sehingga tidak dianggap sebagai cuaca aktual lokasi yang dimasukkan.
+- Setelah refresh selesai, rekomendasi batch terpilih menggunakan objek cuaca yang sama dengan kartu.
+- Panel kanan bisa digulir agar rekomendasi tetap dapat dibaca pada jendela kecil.
+
+### Integrasi backend cuaca (#6)
+Kartu memakai `WeatherViewModel`, yang menerima `IWeatherService` melalui constructor.
+`MainWindowViewModel` memasok `AppData.WeatherService`. Pada branch ini layanan tersebut masih
+`OfflineWeatherService`, sesuai izin memakai data contoh di #9. Tidak ada API key yang dibutuhkan
+untuk menjalankan UI ini.
+
+Setelah #6 tersedia, pasok implementasi API melalui `AppData.WeatherService`. Pemanggilan sinkron
+`GetCurrentWeather` dijalankan di background; error/timeout (10 detik) ditangani oleh kartu dengan
+fallback simulasi dan pesan kegagalan. Hasil permintaan yang terlambat tidak menimpa kartu.
+Timeout membatasi waktu tunggu UI; interface sinkron saat ini belum dapat membatalkan request provider.
+Jika backend #6 menangani fallback sendiri, backend perlu meneruskan informasi sumber/fallback
+agar kartu tetap bisa menandai data offline dengan benar. Verifikasi cuaca API aktual masih menunggu #6.
+
+### Pengujian kartu cuaca
+```bash
+dotnet test tests/CompostaUI.Tests/CompostaUI.Tests.csproj --filter FullyQualifiedName~WeatherViewModelTests
+```
+Jalankan dari root repo. Test ini tidak memerlukan database maupun API key: layanan cuaca pengganti
+menguji lokasi, timestamp, ikon, loading, timeout, fallback/retry, dan pembaruan rekomendasi.
+
+Cek manual: jalankan aplikasi, ubah lokasi lalu refresh; pastikan label simulasi tampil. Coba lokasi
+kosong untuk melihat validasi. Pilih batch berbeda lalu refresh, dan kecilkan jendela untuk mengecek
+scroll panel kanan. Setelah #6 tersedia, ulangi dengan API aktif serta koneksi internet terputus.
+
+
+## Pilih user, buat profil, dan logout (#11)
+Saat aplikasi dibuka, `LoginWindow` muncul lebih dulu. Pilih profil tersimpan lalu tekan **Masuk**,
+atau buka tab **Buat profil** untuk memasukkan nama dan email. Tidak ada profil yang dipilih atau
+login otomatis oleh layar ini. Jika tabel user kosong, tab Buat profil dibuka otomatis.
+
+Form memakai `UserValidator` dari backend #5 untuk memeriksa nama/email kosong, batas panjang,
+dan format email. Email dinormalisasi dengan aturan backend. Email yang sudah terdaftar ditolak.
+Saat database gagal dihubungi, pesan kesalahan ditampilkan di layar; tombol **Muat ulang daftar profil**
+bisa digunakan setelah koneksi diperbaiki. Form dinonaktifkan selama permintaan berlangsung.
+
+Setelah berhasil masuk, dashboard memakai user aktif melalui `AppData.Login`/`AppData.Load`.
+Header menampilkan namanya. **Profil Saya** membuka ringkasan nama, email, tanggal bergabung,
+total sampah, estimasi CO2e, serta jumlah seluruh batch (termasuk yang sudah dipanen).
+Perhitungan memakai `CarbonCalculatorService` yang sama dengan dashboard.
+**Ganti user / Keluar** mengosongkan sesi dan dashboard lama, lalu kembali ke layar pilih profil.
+Menutup layar pilih profil menutup aplikasi; tidak ada fallback login ke user pertama pada alur startup UI.
+
+### Struktur dan integrasi
+- `LoginViewModel` berisi pilihan user, form profil, validasi, status proses/error, dan command.
+- `IUserSessionService`/`UserSessionService` memanggil backend `AppData` di background agar UI tetap responsif.
+- `ProfileViewModel` menyiapkan ringkasan khusus user aktif; `DialogService.ShowProfileAsync` membuka jendelanya.
+- `App.axaml.cs` mengatur perpindahan jendela setelah `LoginSucceeded` atau `LogoutRequested`.
+  Code-behind setiap View tetap hanya `InitializeComponent()`.
+- Jika profil sudah tersimpan tetapi login gagal, profil tersebut tetap tersedia/dipilih untuk mencoba
+  Masuk kembali tanpa membuat duplikat. Jendela login yang sudah ditutup tidak membuka dashboard dari hasil terlambat.
+- Alur ini merupakan pemilihan profil lokal sesuai #11; tidak menambahkan autentikasi dengan kata sandi.
+- Tidak ada perubahan skema SQL pada issue ini. Backend user/skema dari PR #20 harus sudah tersedia.
+
+### Pengujian login dan profil
+Dari root repo:
+```bash
+dotnet test tests/CompostaUI.Tests/CompostaUI.Tests.csproj --filter "FullyQualifiedName~LoginViewModelTests|FullyQualifiedName~ProfileViewModelTests"
+```
+Tes tersebut tidak memerlukan database. Dua tes pada `LoginIntegrationTests` memerlukan database
+`COMPOSTA_TEST_DB`, mengikuti pengamanan fixture test yang sudah ada. Tes integrasi memeriksa
+registrasi dengan PostgreSQL serta pergantian user sampai dashboard dan profil; jalankan dengan:
+```bash
+dotnet test tests/CompostaUI.Tests/CompostaUI.Tests.csproj --filter FullyQualifiedName~LoginIntegrationTests
+```
+
+Cek manual setelah database siap: buka aplikasi, pilih Nabil, buka Profil Saya, lalu Ganti user / Keluar
+untuk memilih user kedua dan pastikan batch/ringkasan berubah. Buat profil baru dan pastikan dashboard
+berisi nol batch. Uji nama/email kosong, format email salah, email duplikat, serta muat ulang saat database mati.

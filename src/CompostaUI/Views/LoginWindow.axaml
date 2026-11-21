@@ -1,0 +1,75 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Composta.ViewModels"
+        xmlns:models="using:Composta.Models"
+        x:Class="Composta.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel" x:CompileBindings="True"
+        Title="Composta - Pilih Profil"
+        Width="520" Height="700" MinWidth="420" MinHeight="520"
+        WindowStartupLocation="CenterScreen" Background="#F3F6F1">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#2E7D32" Padding="28,22">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Composta" FontSize="28" FontWeight="Bold" Foreground="White" />
+                <TextBlock Text="Kelola kompos, mulai dari profilmu." FontSize="14" Foreground="#C8E6C9"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="28,22" Spacing="16">
+                <TextBlock Classes="section" Text="Masuk ke Composta" />
+                <TextBlock Classes="caption" Text="Pilih profil tersimpan atau buat profil baru untuk mulai mencatat sampah."
+                           TextWrapping="Wrap" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4" MinHeight="4" />
+                <TextBlock Text="Memproses..." Classes="caption" IsVisible="{Binding IsBusy}" />
+
+                <Border Classes="card">
+                    <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                                IsEnabled="{Binding !IsBusy}">
+                        <TabItem Header="Pilih profil">
+                            <StackPanel Spacing="12" Margin="0,14,0,0">
+                                <TextBlock Text="Profil tersimpan" Classes="field" />
+                                <ComboBox ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                                          PlaceholderText="Pilih profilmu" HorizontalAlignment="Stretch"
+                                          MaxDropDownHeight="240" AutomationProperties.Name="Profil tersimpan">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="models:User">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Email}" Classes="caption" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock Text="Belum ada profil. Buka tab Buat profil untuk menambahkan profil pertamamu."
+                                           Classes="caption" TextWrapping="Wrap" IsVisible="{Binding HasNoUsers}" />
+                                <Button Content="Masuk" Classes="primary" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center" Command="{Binding LoginCommand}" />
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Buat profil">
+                            <StackPanel Spacing="10" Margin="0,14,0,0">
+                                <TextBlock Text="Nama" Classes="field" />
+                                <TextBox Text="{Binding Name, Mode=TwoWay}" Watermark="Nama lengkap"
+                                         MaxLength="100" AutomationProperties.Name="Nama profil baru" />
+                                <TextBlock Text="Email" Classes="field" />
+                                <TextBox Text="{Binding Email, Mode=TwoWay}" Watermark="nama@email.com"
+                                         MaxLength="255" AutomationProperties.Name="Email profil baru" />
+                                <Button Content="Buat profil dan masuk" Classes="primary" HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center" Command="{Binding RegisterCommand}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+                </Border>
+                <Border Classes="preview" IsVisible="{Binding HasNotice}">
+                    <TextBlock Text="{Binding NoticeMessage}" Classes="previewTitle" TextWrapping="Wrap" />
+                </Border>
+                <Border Classes="preview warning" IsVisible="{Binding HasError}">
+                    <TextBlock Text="{Binding ErrorMessage}" Classes="previewTitle" TextWrapping="Wrap" />
+                </Border>
+                <Button Content="Muat ulang daftar profil" Classes="secondary" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" Command="{Binding LoadUsersCommand}" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
