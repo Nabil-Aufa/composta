@@ -139,7 +139,7 @@
 
                             <StackPanel Spacing="4" IsVisible="{Binding HasNoMaintenanceSchedules}">
                                 <TextBlock Text="Belum ada jadwal perawatan" FontSize="14" FontWeight="SemiBold" />
-                                <TextBlock Text="Jadwal akan muncul setelah ada batch kompos yang dipilih."
+                                <TextBlock Text="{Binding MaintenanceEmptyText}"
                                            Classes="caption" TextWrapping="Wrap" />
                             </StackPanel>
 
@@ -166,8 +166,16 @@
                                                                Classes.overdue="{Binding IsOverdue}"
                                                                Classes.pending="{Binding IsPending}" />
                                                     <Button Grid.Column="3" Content="Selesai" Classes="small secondary"
-                                                            IsEnabled="False" HorizontalAlignment="Right"
-                                                            ToolTip.Tip="Menunggu integrasi penyimpanan jadwal ke database" />
+                                                            HorizontalAlignment="Right"
+                                                            IsVisible="{Binding CanComplete}"
+                                                            Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CompleteScheduleCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip.Tip="Tandai jadwal ini sudah dikerjakan" />
+                                                    <TextBlock Grid.Column="3" Text="✓" FontSize="16" FontWeight="Bold"
+                                                               HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                               Margin="0,0,12,0"
+                                                               Foreground="{StaticResource ForestBrush}"
+                                                               IsVisible="{Binding IsCompleted}" />
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

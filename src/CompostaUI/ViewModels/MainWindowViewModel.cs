@@ -24,6 +24,7 @@ namespace Composta.ViewModels
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
         [NotifyCanExecuteChangedFor(nameof(DeleteBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(ShowProfileCommand))]
+        [NotifyCanExecuteChangedFor(nameof(CompleteScheduleCommand))]
         private bool _isDatabaseConnected;
 
         [ObservableProperty]
@@ -84,6 +85,9 @@ namespace Composta.ViewModels
         public ObservableCollection<MaintenanceScheduleItemViewModel> MaintenanceSchedules { get; } = new();
         [ObservableProperty]
         private bool _hasNoMaintenanceSchedules = true;
+
+        [ObservableProperty]
+        private string _maintenanceEmptyText = "Jadwal akan muncul setelah ada batch kompos yang dipilih.";
 
         public WeatherViewModel Weather { get; }
         public Co2eChartViewModel Co2eChart { get; } = new();
@@ -261,6 +265,9 @@ namespace Composta.ViewModels
             }
 
             HasNoMaintenanceSchedules = MaintenanceSchedules.Count == 0;
+            MaintenanceEmptyText = SelectedBatch == null
+                ? "Jadwal akan muncul setelah ada batch kompos yang dipilih."
+                : "Batch ini belum punya jadwal perawatan.";
         }
 
         private void ShowRecommendation(CompostBatch batch)
@@ -306,6 +313,37 @@ namespace Composta.ViewModels
         private bool CanDeleteBatch()
         {
             return IsDatabaseConnected && SelectedBatch != null;
+        }
+
+        private bool CanCompleteSchedule(MaintenanceScheduleItemViewModel? item)
+        {
+            return IsDatabaseConnected && item != null && item.CanComplete;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanCompleteSchedule))]
+        private async Task CompleteScheduleAsync(MaintenanceScheduleItemViewModel? item)
+        {
+            if (item == null || item.IsCompleted)
+            {
+                return;
+            }
+
+            try
+            {
+                AppData.CompleteSchedule(item.Schedule);
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowMessageAsync("Update Gagal",
+                    item.TaskName + " gagal ditandai selesai.\n\n" + ex.Message);
+                return;
+            }
+
+            RefreshMaintenanceSchedules();
+            if (SelectedBatch != null)
+            {
+                ShowRecommendation(SelectedBatch.Batch);
+            }
         }
 
         [RelayCommand(CanExecute = nameof(CanModifyData))]
