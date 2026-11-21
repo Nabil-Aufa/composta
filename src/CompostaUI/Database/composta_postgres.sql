@@ -132,7 +132,7 @@ $$;
 
 CREATE OR REPLACE FUNCTION st_select_batches(_user_id VARCHAR DEFAULT NULL)
     RETURNS TABLE (id VARCHAR, user_id VARCHAR, start_date TIMESTAMP, status VARCHAR,
-                   brown_green_ratio NUMERIC, estimated_maturity_date TIMESTAMP)
+                    brown_green_ratio NUMERIC, estimated_maturity_date TIMESTAMP)
     LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -146,9 +146,9 @@ $$;
 
 CREATE OR REPLACE FUNCTION st_select_waste_items(_batch_id VARCHAR)
     RETURNS TABLE (id VARCHAR, item_type VARCHAR, name VARCHAR, weight NUMERIC, date_added TIMESTAMP,
-                   brown_green_type VARCHAR, moisture_content NUMERIC, reason VARCHAR,
-                   category_id VARCHAR, category_name VARCHAR, co2e_factor_per_kg NUMERIC,
-                   is_compostable BOOLEAN)
+                    brown_green_type VARCHAR, moisture_content NUMERIC, reason VARCHAR,
+                    category_id VARCHAR, category_name VARCHAR, co2e_factor_per_kg NUMERIC,
+                    is_compostable BOOLEAN)
     LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -199,6 +199,24 @@ BEGIN
     UPDATE maintenance_schedules
     SET is_completed = TRUE
     WHERE id = _id;
+
+    IF FOUND THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RETURN 0;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_delete_schedule(_id VARCHAR)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM maintenance_schedules WHERE id = _id;
 
     IF FOUND THEN
         RETURN 1;

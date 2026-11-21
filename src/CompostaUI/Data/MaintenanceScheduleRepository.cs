@@ -84,7 +84,7 @@ namespace Composta.Data
         public void Delete(string id)
         {
             EnsureSuccess(ExecuteFunction(
-                "DELETE FROM maintenance_schedules WHERE id = :_id",
+                "SELECT st_delete_schedule(:_id)",
                 p => p.AddWithValue("_id", id)),
                 "Gagal menghapus jadwal perawatan dari database.");
         }

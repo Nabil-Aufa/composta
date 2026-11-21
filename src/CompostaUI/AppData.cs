@@ -126,17 +126,8 @@ namespace Composta
         public static void CreateBatchWithDefaultSchedules(CompostBatch batch)
         {
             ArgumentNullException.ThrowIfNull(batch);
+            batch.GenerateDefaultSchedules();
             BatchRepository.Add(batch);
-
-            if (batch.Schedules.Count == 0)
-            {
-                batch.GenerateDefaultSchedules();
-            }
-
-            foreach (MaintenanceSchedule schedule in batch.Schedules)
-            {
-                ScheduleRepository.Add(schedule);
-            }
         }
 
         public static void CompleteSchedule(MaintenanceSchedule schedule)
