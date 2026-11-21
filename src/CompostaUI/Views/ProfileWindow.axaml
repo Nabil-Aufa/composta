@@ -1,32 +1,52 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Composta.ViewModels"
+        xmlns:conv="using:Composta.Converters"
         x:Class="Composta.Views.ProfileWindow"
         x:DataType="vm:ProfileViewModel" x:CompileBindings="True"
-        Title="Composta - Profil Saya"
-        Width="460" Height="540" MinWidth="380" MinHeight="440"
-        WindowStartupLocation="CenterOwner" Background="#F3F6F1">
+        Title="Composta - Profil Pengguna"
+        Width="760" Height="480" MinWidth="560" MinHeight="420"
+        WindowStartupLocation="CenterOwner">
+    <!-- Mengikuti frame "Profil pengguna" di halaman UI GUIDE Figma -->
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="28" Spacing="18">
-            <TextBlock Text="Profil Saya" FontSize="24" FontWeight="Bold" Foreground="#2E7D32" />
+        <StackPanel Margin="32,32,32,28" Spacing="20" MaxWidth="960">
+            <TextBlock Text="Profil pengguna" Classes="display" FontSize="30" />
+
             <Border Classes="card">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding Name}" Classes="section" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding Email}" TextWrapping="Wrap" Foreground="#2F3A2F" />
-                    <TextBlock Text="{Binding JoinedAtText}" Classes="caption" />
-                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Classes="avatar" Width="52" Height="52" CornerRadius="26" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding Name, Converter={x:Static conv:InitialsConverter.Instance}}"
+                                   FontSize="16" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="18,0,0,0" Spacing="4">
+                        <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold"
+                                   Foreground="{StaticResource ForestBrush}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Email}" FontSize="13" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding JoinedAtText}" Classes="caption" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Grid>
             </Border>
-            <Border Classes="card">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="Dampak dari seluruh batch milikmu" Classes="section" TextWrapping="Wrap" />
-                    <TextBlock Text="Total sampah diolah" Classes="caption" />
-                    <TextBlock Text="{Binding TotalWeightText}" FontSize="22" FontWeight="Bold" />
-                    <TextBlock Text="Estimasi emisi dicegah" Classes="caption" />
-                    <TextBlock Text="{Binding TotalCo2eText}" FontSize="22" FontWeight="Bold" Foreground="#2E7D32" />
-                    <TextBlock Text="Jumlah batch (termasuk yang sudah dipanen)" Classes="caption" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding BatchCountText}" FontSize="22" FontWeight="Bold" />
-                </StackPanel>
-            </Border>
+
+            <StackPanel Spacing="10">
+                <TextBlock Text="Dampak pengomposan" FontSize="14" FontWeight="SemiBold" />
+                <Border Classes="leaf" Padding="24,20">
+                    <Grid ColumnDefinitions="*,*,*">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding TotalWeightText}" Classes="stat" FontSize="22" />
+                            <TextBlock Text="Total sampah diolah" Classes="caption" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="{Binding TotalCo2eText}" Classes="stat" FontSize="22" TextWrapping="Wrap" />
+                            <TextBlock Text="Emisi CO₂e dicegah" Classes="caption" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="2">
+                            <TextBlock Text="{Binding BatchCountText}" Classes="stat" FontSize="22" />
+                            <TextBlock Text="Jumlah batch (termasuk yang sudah dipanen)" Classes="caption"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Window>

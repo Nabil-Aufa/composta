@@ -2,98 +2,122 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Composta.ViewModels"
         xmlns:models="using:Composta.Models"
+        xmlns:ctl="using:Composta.Views.Controls"
         x:Class="Composta.Views.AddWasteWindow"
         x:DataType="vm:AddWasteViewModel"
         x:CompileBindings="True"
         Title="Composta - Catat Sampah"
-        Width="520" SizeToContent="Height"
+        Width="880" SizeToContent="Height"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
-        Background="#F3F6F1">
-    <StackPanel>
-        <Border Background="#2E7D32" Padding="24,16">
-            <StackPanel Spacing="2">
-                <TextBlock Text="Catat Sampah" FontSize="20" FontWeight="Bold" Foreground="White" />
-                <TextBlock Text="Tambahkan sampah ke batch kompos dan lihat dampaknya"
-                           FontSize="12" Foreground="#C8E6C9" />
-            </StackPanel>
-        </Border>
+        Background="White">
+    <!-- Mengikuti frame "Catat Sampah" di halaman UI GUIDE Figma -->
+    <StackPanel Margin="32,24,32,24" Spacing="20" MaxWidth="880">
+        <StackPanel Spacing="14">
+            <ctl:BrandLogo HorizontalAlignment="Left" />
+            <TextBlock Text="Catat Sampah" Classes="title" FontSize="28" />
+            <Border Classes="divider" />
+        </StackPanel>
 
-        <StackPanel Margin="24,20" Spacing="14">
-            <StackPanel>
-                <TextBlock Classes="field" Text="Batch tujuan" />
-                <ComboBox HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding Batches}" SelectedItem="{Binding SelectedBatch}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:BatchItemViewModel">
-                            <TextBlock Text="{Binding SelectionLabel}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
-
-            <StackPanel>
-                <TextBlock Classes="field" Text="Nama sampah" />
-                <TextBox Text="{Binding WasteName}" Watermark="contoh: kulit pisang" MaxLength="100" />
-            </StackPanel>
-
-            <Grid ColumnDefinitions="*,16,*">
+        <Grid ColumnDefinitions="*,32,300">
+            <!-- Form -->
+            <StackPanel Spacing="16">
                 <StackPanel>
-                    <TextBlock Classes="field" Text="Kategori" />
-                    <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}">
+                    <TextBlock Classes="field" Text="Batch tujuan" />
+                    <ComboBox HorizontalAlignment="Stretch" PlaceholderText="Pilih batch"
+                              ItemsSource="{Binding Batches}" SelectedItem="{Binding SelectedBatch}"
+                              AutomationProperties.Name="Batch tujuan">
                         <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:WasteCategory">
-                                <TextBlock Text="{Binding Name}" />
+                            <DataTemplate x:DataType="vm:BatchItemViewModel">
+                                <TextBlock Text="{Binding SelectionLabel}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </StackPanel>
-                <StackPanel Grid.Column="2">
-                    <TextBlock Classes="field" Text="Berat (kg)" />
-                    <NumericUpDown Value="{Binding Weight}" Minimum="0.1" Maximum="100"
-                                   Increment="0.5" FormatString="0.##" />
-                </StackPanel>
-            </Grid>
 
-            <StackPanel IsVisible="{Binding IsCompostable}" Spacing="14">
                 <StackPanel>
-                    <TextBlock Classes="field" Text="Jenis bahan" />
-                    <StackPanel Orientation="Horizontal" Spacing="20">
-                        <RadioButton GroupName="BrownGreen" IsChecked="{Binding IsGreen}"
-                                     Content="Green (basah, kaya nitrogen)" />
-                        <RadioButton GroupName="BrownGreen" IsChecked="{Binding IsBrown}"
-                                     Content="Brown (kering, kaya karbon)" />
+                    <TextBlock Classes="field" Text="Nama sampah" />
+                    <TextBox Text="{Binding WasteName}" Watermark="Contoh: kulit pisang" MaxLength="100"
+                             AutomationProperties.Name="Nama sampah" />
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*,16,140">
+                    <StackPanel>
+                        <TextBlock Classes="field" Text="Kategori" />
+                        <ComboBox HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                                  AutomationProperties.Name="Kategori sampah">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:WasteCategory">
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Classes="field" Text="Berat (kg)" />
+                        <NumericUpDown Value="{Binding Weight}" Minimum="0.1" Maximum="100"
+                                       Increment="0.5" FormatString="0.##"
+                                       AutomationProperties.Name="Berat dalam kilogram" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel IsVisible="{Binding IsCompostable}" Spacing="16">
+                    <StackPanel>
+                        <TextBlock Classes="field" Text="Jenis bahan" />
+                        <Border Background="{StaticResource SageBrush}" CornerRadius="20" Padding="2"
+                                HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Classes="segment" GroupName="BrownGreen" MinWidth="128"
+                                             IsChecked="{Binding IsGreen}" Content="Hijau"
+                                             ToolTip.Tip="Bahan basah, kaya nitrogen" />
+                                <RadioButton Classes="segment" GroupName="BrownGreen" MinWidth="128"
+                                             IsChecked="{Binding IsBrown}" Content="Cokelat"
+                                             ToolTip.Tip="Bahan kering, kaya karbon" />
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Classes="caption" Margin="0,6,0,0"
+                                   Text="Hijau: basah, kaya nitrogen. Cokelat: kering, kaya karbon." />
+                    </StackPanel>
+                    <StackPanel>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Classes="field" Text="Kelembapan bahan" />
+                            <TextBlock Grid.Column="1" Classes="field" Text="{Binding MoistureText}" />
+                        </Grid>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Moisture}"
+                                AutomationProperties.Name="Kelembapan bahan" />
                     </StackPanel>
                 </StackPanel>
-                <StackPanel>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Classes="field" Text="Kelembapan bahan" />
-                        <TextBlock Grid.Column="1" Classes="field" Text="{Binding MoistureText}" />
-                    </Grid>
-                    <Slider Minimum="0" Maximum="100" Value="{Binding Moisture}" Foreground="#43A047" />
+
+                <StackPanel IsVisible="{Binding IsNonCompostable}">
+                    <TextBlock Classes="field" Text="Alasan tidak dapat dikomposkan" />
+                    <TextBox Text="{Binding Reason}" Watermark="Contoh: tidak dapat terurai secara alami"
+                             MaxLength="255" AutomationProperties.Name="Alasan tidak dapat dikomposkan" />
                 </StackPanel>
+
+                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="error" />
             </StackPanel>
 
-            <StackPanel IsVisible="{Binding IsNonCompostable}">
-                <TextBlock Classes="field" Text="Alasan tidak dapat dikomposkan" />
-                <TextBox Text="{Binding Reason}" Watermark="contoh: tidak dapat terurai secara alami" MaxLength="255" />
-            </StackPanel>
-
-            <Border Classes="preview" Classes.warning="{Binding IsPreviewWarning}">
-                <StackPanel Spacing="2">
-                    <TextBlock Classes="previewTitle" Text="{Binding PreviewTitle}" />
-                    <TextBlock Text="{Binding PreviewText}" FontSize="12" TextWrapping="Wrap" Foreground="#2F3A2F" />
+            <!-- Pratinjau -->
+            <Border Grid.Column="2" Classes="preview" Classes.warning="{Binding IsPreviewWarning}"
+                    VerticalAlignment="Top" MinHeight="220">
+                <StackPanel Spacing="12">
+                    <TextBlock Classes="previewTitle"
+                               Text="{Binding SelectedBatch.Name, StringFormat='Pratinjau {0}', FallbackValue='Pratinjau', TargetNullValue='Pratinjau'}" />
+                    <TextBlock Text="{Binding PreviewTitle}" FontSize="18" FontWeight="Bold"
+                               Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
+                    <Border Classes="divider" Background="#C9D5BE" />
+                    <TextBlock Text="{Binding PreviewText}" FontSize="13" LineHeight="19" TextWrapping="Wrap"
+                               Foreground="{StaticResource InkBrush}" />
                 </StackPanel>
             </Border>
+        </Grid>
 
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
-                       Foreground="#C62828" FontSize="12" TextWrapping="Wrap" />
-
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,4,0,0">
-                <Button Classes="secondary" Content="Batal" Command="{Binding CancelCommand}" />
-                <Button Classes="primary" Content="Simpan" IsDefault="True" Command="{Binding SaveCommand}" />
-            </StackPanel>
+        <Border Classes="divider" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Classes="secondary small round" Content="Batal" Command="{Binding CancelCommand}" />
+            <Button Classes="primary small round" Content="Simpan catatan" IsDefault="True"
+                    Command="{Binding SaveCommand}" />
         </StackPanel>
     </StackPanel>
 </Window>

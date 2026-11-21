@@ -1,214 +1,359 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Composta.ViewModels"
+        xmlns:ctl="using:Composta.Views.Controls"
         xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
         x:Class="Composta.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
         Title="Composta - Dashboard"
-        Width="980" Height="640"
-        MinWidth="860" MinHeight="560"
-        WindowStartupLocation="CenterScreen"
-        Background="#F3F6F1">
-    <DockPanel>
-        <Border DockPanel.Dock="Top" Background="#2E7D32" Padding="28,18">
-            <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Spacing="2">
-                    <TextBlock Text="🌱 Composta" FontSize="24" FontWeight="Bold" Foreground="White" />
-                    <TextBlock Text="{Binding Greeting}" FontSize="13" Foreground="#C8E6C9"
-                               TextWrapping="Wrap" Margin="0,0,12,0" />
-                    <Border Classes="dbstatus" Classes.disconnected="{Binding !IsDatabaseConnected}"
-                            Margin="0,8,0,0" HorizontalAlignment="Left">
-                        <TextBlock Text="{Binding DatabaseStatusText}" FontSize="12" />
-                    </Border>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
-                    <Button Classes="light" Content="+ Catat Sampah" Command="{Binding AddWasteCommand}"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Classes="small light" Content="Profil Saya" Command="{Binding ShowProfileCommand}" />
-                        <Button Classes="small light" Content="Ganti user / Keluar" Command="{Binding LogoutCommand}" />
-                    </StackPanel>
-                </StackPanel>
-            </Grid>
-        </Border>
+        Width="1280" Height="820"
+        MinWidth="1060" MinHeight="620"
+        WindowStartupLocation="CenterScreen">
+    <!-- Mengikuti frame "Dashboard desktop · Revisi" di halaman UI GUIDE Figma -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <!-- Konten dibatasi lebar maksimum dan diletakkan di tengah agar tetap rapi saat jendela dimaksimalkan -->
+        <StackPanel Margin="32,24,32,28" Spacing="24" MaxWidth="1280" HorizontalAlignment="Stretch">
 
-        <Grid Margin="28,22" RowDefinitions="Auto,*" ColumnDefinitions="*,330">
-            <UniformGrid Grid.ColumnSpan="2" Columns="3" Margin="0,0,0,18">
-                <Border Classes="card" Margin="0,0,9,0">
-                    <StackPanel Spacing="4">
-                        <TextBlock Classes="caption" Text="Emisi CO2e dicegah" />
-                        <TextBlock Text="{Binding TotalCo2eText}" FontSize="26" FontWeight="Bold" Foreground="#2E7D32" />
-                    </StackPanel>
-                </Border>
-                <Border Classes="card" Margin="9,0">
-                    <StackPanel Spacing="4">
-                        <TextBlock Classes="caption" Text="Batch berjalan" />
-                        <TextBlock Text="{Binding ActiveBatchCountText}" FontSize="26" FontWeight="Bold" Foreground="#1F2A1F" />
-                    </StackPanel>
-                </Border>
-                <Border Classes="card" Margin="9,0,0,0">
-                    <StackPanel Spacing="4">
-                        <TextBlock Classes="caption" Text="Total sampah diolah" />
-                        <TextBlock Text="{Binding TotalWeightText}" FontSize="26" FontWeight="Bold" Foreground="#1F2A1F" />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
-
-            <Border Grid.Row="1" Classes="card" Margin="0,0,18,0">
-                <DockPanel>
-                    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-                        <StackPanel Spacing="2">
-                            <TextBlock Classes="section" Text="Batch Kompos" />
-                            <TextBlock Classes="caption" Text="Pilih batch untuk melihat rekomendasi perawatan" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Button Classes="small primary" Content="+ Batch Baru" Command="{Binding NewBatchCommand}" />
-                            <Button Classes="small secondary" Content="Panen" Command="{Binding HarvestCommand}" />
-                            <Button Classes="small danger" Content="Hapus" Command="{Binding DeleteBatchCommand}" />
-                        </StackPanel>
-                    </Grid>
-                    <TextBlock DockPanel.Dock="Top" Classes="caption" IsVisible="{Binding HasNoBatches}"
-                               Margin="0,8" Text="Belum ada batch. Klik &quot;+ Batch Baru&quot; untuk memulai." />
-                    <ListBox x:Name="lstBatches" Background="Transparent"
-                             ItemsSource="{Binding Batches}" SelectedItem="{Binding SelectedBatch}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="vm:BatchItemViewModel">
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" Margin="2,6">
-                                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Foreground="#1F2A1F" />
-                                    <Border Grid.Column="1" Grid.RowSpan="2" Classes="pill" VerticalAlignment="Top"
-                                            Classes.active="{Binding IsActive}" Classes.curing="{Binding IsCuring}"
-                                            Classes.ready="{Binding IsReady}" Classes.archived="{Binding IsArchived}">
-                                        <TextBlock Text="{Binding StatusText}" FontSize="12" FontWeight="SemiBold" />
-                                    </Border>
-                                    <TextBlock Grid.Row="1" Text="{Binding Detail}" Classes="caption" Margin="0,3,0,0" />
-                                    <ProgressBar Grid.Row="2" Grid.ColumnSpan="2" Value="{Binding Progress}"
-                                                 Maximum="100" Height="6" MinHeight="6" Margin="0,8,0,0"
-                                                 Foreground="#43A047" Background="#E3EBE1" />
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
+            <!-- Top bar -->
+            <Border Classes="topbar">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                    <ctl:BrandLogo />
+                    <TextBlock Grid.Column="1" Text="Ringkasan" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource ForestBrush}" VerticalAlignment="Center"
+                               Margin="40,0,0,0" />
+                    <Button Grid.Column="3" Classes="secondary small round" Margin="0,0,10,0"
+                            Content="{Binding UserName}" MinWidth="120"
+                            ToolTip.Tip="Menu akun"
+                            AutomationProperties.Name="Menu akun">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuItem Header="Lihat profil" Command="{Binding ShowProfileCommand}" />
+                                <MenuItem Header="Ganti pengguna" Command="{Binding LogoutCommand}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                    <Button Grid.Column="4" Classes="primary small round" Content="+ Catat Sampah"
+                            Command="{Binding AddWasteCommand}" />
+                </Grid>
             </Border>
 
-            <ScrollViewer Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="18">
-                <Border Classes="card">
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding Weather.LocationText}" Classes="caption" TextWrapping="Wrap" />
-                        <TextBlock Text="Lokasi" Classes="field" Margin="0,8,0,0" />
-                        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
-                            <TextBox Text="{Binding Weather.Location, Mode=TwoWay}" Watermark="Contoh: Yogyakarta"
-                                     IsEnabled="{Binding !Weather.IsLoading}" MaxLength="100"
-                                     AutomationProperties.Name="Lokasi cuaca" />
-                            <Button Grid.Column="1" Content="Refresh" Classes="small secondary" Margin="8,0,0,0"
-                                    Command="{Binding Weather.RefreshCommand}" VerticalAlignment="Center" />
-                        </Grid>
-                        <ProgressBar IsIndeterminate="True" IsVisible="{Binding Weather.IsLoading}"
-                                     Height="4" MinHeight="4" Margin="0,0,0,6" />
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <TextBlock Text="{Binding Weather.Icon}" FontSize="30" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding Weather.TemperatureText}" FontSize="30" FontWeight="Bold" Foreground="#1F2A1F" />
+            <!-- Banner ringkasan -->
+            <Border Classes="banner" MinHeight="196">
+                <Grid ColumnDefinitions="*,480">
+                    <StackPanel Margin="32,28" Spacing="18" VerticalAlignment="Center">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding Greeting}" Classes="caption" FontSize="13"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="Pengolahan kompos" Classes="display" />
                         </StackPanel>
-                        <TextBlock Text="{Binding Weather.ConditionText}" FontSize="14" FontWeight="Medium" Foreground="#2F3A2F" />
-                        <TextBlock Text="{Binding Weather.DetailText}" Classes="caption" TextWrapping="Wrap" />
-                        <Border Classes="preview" Classes.warning="{Binding Weather.IsOffline}" Padding="10,8" Margin="0,6,0,0">
-                            <TextBlock Text="{Binding Weather.StatusText}" Classes="previewTitle" TextWrapping="Wrap" />
-                        </Border>
-                        <TextBlock Text="{Binding Weather.UpdatedAtText}" Classes="caption" TextWrapping="Wrap" />
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="card">
-                    <StackPanel Spacing="10">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="{Binding RecommendationTitle}" Classes="section" VerticalAlignment="Center" />
-                            <Border Grid.Column="1" Classes="pill"
-                                    Classes.high="{Binding IsHighPriority}" Classes.medium="{Binding IsMediumPriority}"
-                                    Classes.low="{Binding IsLowPriority}">
-                                <TextBlock Text="{Binding PriorityText}" FontSize="12" FontWeight="SemiBold" />
-                            </Border>
+                        <Grid ColumnDefinitions="*,*,*" MaxWidth="560" HorizontalAlignment="Left">
+                            <StackPanel Spacing="2" MinWidth="150">
+                                <TextBlock Text="{Binding TotalWeightText}" Classes="stat" />
+                                <TextBlock Text="Sampah diolah" Classes="caption" FontSize="13" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="2" MinWidth="170">
+                                <TextBlock Text="{Binding TotalCo2eText}" Classes="stat" />
+                                <TextBlock Text="Emisi CO₂e dicegah" Classes="caption" FontSize="13" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Spacing="2" MinWidth="130">
+                                <TextBlock Text="{Binding ActiveBatchCountText}" Classes="stat" />
+                                <TextBlock Text="Batch berjalan" Classes="caption" FontSize="13" />
+                            </StackPanel>
                         </Grid>
-                        <TextBlock Text="{Binding RecommendationText}" TextWrapping="Wrap" FontSize="13"
-                                   LineHeight="20" Foreground="#2F3A2F" />
                     </StackPanel>
-                </Border>
 
-                <Border Classes="card">
+                    <!-- Foto banner dari Figma -->
+                    <Image Grid.Column="1" Source="avares://CompostaUI/Assets/Images/banner.jpg"
+                           Stretch="UniformToFill" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="*,24,380">
+                <!-- Kolom kiri: batch dan jadwal -->
+                <StackPanel Spacing="20">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="Batch kompos" Classes="title" VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="primary small round" Content="+ Batch Baru"
+                                Command="{Binding NewBatchCommand}" />
+                    </Grid>
+
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Jadwal Perawatan"
-                                   Classes="section" />
+                        <Grid ColumnDefinitions="*,90,150,140,140" Margin="19,0,16,0">
+                            <TextBlock Grid.Column="1" Text="BERAT" Classes="label" />
+                            <TextBlock Grid.Column="2" Text="RASIO BROWN/GREEN" Classes="label" />
+                            <TextBlock Grid.Column="3" Text="ESTIMASI MATANG" Classes="label" />
+                            <TextBlock Grid.Column="4" Text="TAHAP PENGOMPOSAN" Classes="label" />
+                        </Grid>
 
-                        <TextBlock Text="Jadwal untuk batch yang dipilih"
-                                   Classes="caption" />
+                        <Border Classes="card" IsVisible="{Binding HasNoBatches}" Padding="20">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Belum ada batch kompos" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource InkBrush}" />
+                                <TextBlock Text="Buat batch pertama untuk mulai mencatat sampah organik."
+                                           Classes="caption" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
 
-                        <TextBlock Text="Belum ada jadwal perawatan untuk batch ini."
-                                   Classes="caption"
-                                   TextWrapping="Wrap"
-                                   IsVisible="{Binding HasNoMaintenanceSchedules}" />
-
-                        <ItemsControl ItemsSource="{Binding MaintenanceSchedules}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:MaintenanceScheduleItemViewModel">
-                                    <Border BorderBrush="#E3EBE1"
-                                            BorderThickness="0,0,0,1"
-                                            Padding="0,10">
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="{Binding TaskName}"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="13" />
-
-                                            <TextBlock Text="{Binding DueDateText}"
-                                                       Classes="caption" />
-
-                                            <TextBlock Text="{Binding StatusText}"
-                                                       FontSize="12"
-                                                       FontWeight="SemiBold"
-                                                       Classes.completed="{Binding IsCompleted}"
-                                                       Classes.overdue="{Binding IsOverdue}"
-                                                       Classes.pending="{Binding IsPending}" />
-
-                                            <Button Content="Selesai"
-                                                    Classes="small secondary"
-                                                    IsEnabled="False"
-                                                    HorizontalAlignment="Left"
-                                                    Margin="0,6,0,0"
-                                                    ToolTip.Tip="Menunggu integrasi penyimpanan jadwal ke database" />
-                                        </StackPanel>
+                        <ListBox x:Name="lstBatches" Classes="rows"
+                                 ItemsSource="{Binding Batches}" SelectedItem="{Binding SelectedBatch}"
+                                 IsVisible="{Binding !HasNoBatches}"
+                                 AutomationProperties.Name="Daftar batch kompos">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:BatchItemViewModel">
+                                    <Border Classes="row">
+                                        <Grid ColumnDefinitions="*,90,150,140,140" Margin="16,10"
+                                              VerticalAlignment="Center">
+                                            <!-- Nama di atas, progres + hari di satu baris: tinggi semua baris sama -->
+                                            <StackPanel VerticalAlignment="Center" Spacing="7">
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource InkBrush}"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <ProgressBar Classes="thin" Value="{Binding Progress}"
+                                                                 Minimum="0" Maximum="100" Width="110"
+                                                                 VerticalAlignment="Center"
+                                                                 AutomationProperties.Name="Progres batch" />
+                                                    <TextBlock Classes="caption" Text="{Binding DayText}"
+                                                               VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding WeightText}" FontSize="13"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Text="{Binding RatioText}" FontSize="13"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="3" Text="{Binding MaturityText}" FontSize="13"
+                                                       VerticalAlignment="Center" />
+                                            <Border Grid.Column="4" Classes="pill" VerticalAlignment="Center"
+                                                    Width="124"
+                                                    Classes.active="{Binding IsActive}" Classes.curing="{Binding IsCuring}"
+                                                    Classes.ready="{Binding IsReady}" Classes.archived="{Binding IsArchived}">
+                                                <TextBlock Text="{Binding StatusText}" />
+                                            </Border>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
                     </StackPanel>
-                </Border>
 
-                <Border Classes="card">
-                    <StackPanel Spacing="10">
-                        <TextBlock Text="Dampak CO2e Akumulatif"
-                                   Classes="section" />
+                    <!-- Jadwal perawatan -->
+                    <Border Classes="card">
+                        <StackPanel Spacing="14">
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="section" FontSize="19"
+                                           Text="{Binding SelectedBatch.Name, StringFormat='Jadwal perawatan · {0}', FallbackValue='Jadwal perawatan', TargetNullValue='Jadwal perawatan'}" />
+                                <TextBlock Text="{Binding SelectedBatch.StatusText, FallbackValue=''}" FontSize="12"
+                                           FontWeight="SemiBold" Foreground="{StaticResource ForestBrush}" />
+                            </StackPanel>
 
-                        <TextBlock Text="Estimasi emisi yang berhasil dicegah dari waktu ke waktu"
-                                   Classes="caption"
-                                   TextWrapping="Wrap" />
+                            <!-- Timeline tahap batch terpilih -->
+                            <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,6"
+                                  IsVisible="{Binding SelectedBatch, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                  AutomationProperties.Name="Timeline tahap batch">
+                                <!-- Aktif -->
+                                <Grid Grid.Column="0" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="1" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot reached"
+                                            Classes.current="{Binding SelectedBatch.IsActive, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Aktif" Classes="stepLabel reached"
+                                           Classes.current="{Binding SelectedBatch.IsActive, FallbackValue=False}" />
 
-                        <TextBlock Text="Belum ada data dampak CO2e untuk ditampilkan."
-                                   Classes="caption"
-                                   TextWrapping="Wrap"
-                                   IsVisible="{Binding Co2eChart.HasNoData}" />
+                                <!-- Pematangan -->
+                                <Grid Grid.Column="1" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="0" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}" />
+                                    <Border Grid.Column="1" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot"
+                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}"
+                                            Classes.current="{Binding SelectedBatch.IsCuring, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Pematangan" Classes="stepLabel"
+                                           Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}"
+                                           Classes.current="{Binding SelectedBatch.IsCuring, FallbackValue=False}" />
 
-                        <lvc:CartesianChart
-                            Series="{Binding Co2eChart.Series}"
-                            XAxes="{Binding Co2eChart.XAxes}"
-                            YAxes="{Binding Co2eChart.YAxes}"
-                            Height="220"
-                            MinHeight="220"
-                            IsVisible="{Binding !Co2eChart.HasNoData}" />
-                    </StackPanel>
-                </Border>
+                                <!-- Siap Panen -->
+                                <Grid Grid.Column="2" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="0" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}" />
+                                    <Border Grid.Column="1" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot"
+                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}"
+                                            Classes.current="{Binding SelectedBatch.IsReady, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Siap Panen" Classes="stepLabel"
+                                           Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}"
+                                           Classes.current="{Binding SelectedBatch.IsReady, FallbackValue=False}" />
+
+                                <!-- Dipanen -->
+                                <Grid Grid.Column="3" ColumnDefinitions="*,*">
+                                    <Border Grid.Column="0" Classes="stepLine"
+                                            Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                                    <Border Grid.ColumnSpan="2" Classes="stepDot"
+                                            Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}"
+                                            Classes.current="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                                </Grid>
+                                <TextBlock Grid.Row="1" Grid.Column="3" Text="Dipanen" Classes="stepLabel"
+                                           Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}"
+                                           Classes.current="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
+                            </Grid>
+
+                            <StackPanel Spacing="4" IsVisible="{Binding HasNoMaintenanceSchedules}">
+                                <TextBlock Text="Belum ada jadwal perawatan" FontSize="14" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding MaintenanceEmptyText}"
+                                           Classes="caption" TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <StackPanel IsVisible="{Binding !HasNoMaintenanceSchedules}">
+                                <Grid ColumnDefinitions="*,130,130,96" Margin="0,0,0,8">
+                                    <TextBlock Text="Tugas" Classes="caption" />
+                                    <TextBlock Grid.Column="1" Text="Jatuh tempo" Classes="caption" />
+                                    <TextBlock Grid.Column="2" Text="Status" Classes="caption" />
+                                </Grid>
+                                <Border Classes="divider" />
+                                <ItemsControl ItemsSource="{Binding MaintenanceSchedules}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:MaintenanceScheduleItemViewModel">
+                                            <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1"
+                                                    Padding="0,10">
+                                                <Grid ColumnDefinitions="*,130,130,96">
+                                                    <TextBlock Text="{Binding TaskName}" FontSize="13" FontWeight="SemiBold"
+                                                               VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding DueDateText}" FontSize="13"
+                                                               VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding StatusText}" FontSize="13"
+                                                               FontWeight="SemiBold" VerticalAlignment="Center"
+                                                               Classes.completed="{Binding IsCompleted}"
+                                                               Classes.overdue="{Binding IsOverdue}"
+                                                               Classes.pending="{Binding IsPending}" />
+                                                    <Button Grid.Column="3" Content="Selesai" Classes="small secondary"
+                                                            HorizontalAlignment="Right"
+                                                            IsVisible="{Binding CanComplete}"
+                                                            Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CompleteScheduleCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip.Tip="Tandai jadwal ini sudah dikerjakan" />
+                                                    <TextBlock Grid.Column="3" Text="✓" FontSize="16" FontWeight="Bold"
+                                                               HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                               Margin="0,0,12,0"
+                                                               Foreground="{StaticResource ForestBrush}"
+                                                               IsVisible="{Binding IsCompleted}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Kolom kanan: rekomendasi, cuaca, grafik -->
+                <StackPanel Grid.Column="2" Spacing="16">
+                    <Border Background="{StaticResource ForestBrush}" CornerRadius="16" Padding="24">
+                        <StackPanel Spacing="10">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#CFDDC6" TextWrapping="Wrap">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} · {1}">
+                                        <Binding Path="RecommendationTitle" />
+                                        <Binding Path="PriorityText" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <TextBlock Text="{Binding SelectedBatch.StatusText, FallbackValue='Belum ada batch', TargetNullValue='Belum ada batch'}"
+                                       FontSize="26" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding RecommendationText}" FontSize="13" LineHeight="20"
+                                       Foreground="#E4EEDF" TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
+                                <Button Classes="light small round" Content="Panen batch"
+                                        Command="{Binding HarvestCommand}" />
+                                <Button Classes="ghost onDark small" Content="Hapus batch"
+                                        Command="{Binding DeleteBatchCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Cuaca -->
+                    <Border Classes="leaf">
+                        <StackPanel Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                <TextBlock Text="{Binding Weather.LocationText}" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource ForestBrush}" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                                <Button Grid.Column="1" Classes="ghost small" Content="Ubah lokasi"
+                                        MinHeight="32" Padding="8,0" FontSize="12">
+                                    <Button.Flyout>
+                                        <Flyout Placement="BottomEdgeAlignedRight">
+                                            <StackPanel Width="260" Spacing="8" Margin="4">
+                                                <TextBlock Text="Lokasi" Classes="field" />
+                                                <TextBox Text="{Binding Weather.Location, Mode=TwoWay}"
+                                                         Watermark="Contoh: Yogyakarta" MaxLength="100"
+                                                         IsEnabled="{Binding !Weather.IsLoading}"
+                                                         AutomationProperties.Name="Lokasi cuaca" />
+                                                <Button Classes="primary small" Content="Muat cuaca"
+                                                        HorizontalAlignment="Right"
+                                                        Command="{Binding Weather.RefreshCommand}" />
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                                <Button Grid.Column="2" Classes="ghost small" Content="↻ Muat ulang"
+                                        MinHeight="32" Padding="8,0" FontSize="12"
+                                        Command="{Binding Weather.RefreshCommand}" />
+                            </Grid>
+                            <ProgressBar IsIndeterminate="True" IsVisible="{Binding Weather.IsLoading}"
+                                         Height="3" MinHeight="3" />
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <TextBlock Text="{Binding Weather.TemperatureText}" FontSize="28" FontWeight="Bold"
+                                           Foreground="{StaticResource ForestBrush}" />
+                                <TextBlock Text="{Binding Weather.ConditionText}" FontSize="14"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding Weather.DetailText}" Classes="caption" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Weather.StatusText}" Classes="caption" FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ForestBrush}" IsVisible="{Binding !Weather.IsOffline}" />
+                            <TextBlock Text="{Binding Weather.StatusText}" Classes="caption" FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource TerraBrush}" IsVisible="{Binding Weather.IsOffline}" />
+                            <TextBlock Text="{Binding Weather.UpdatedAtText}" Classes="caption" FontSize="11"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Grafik CO2e -->
+                    <Border Classes="leaf">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Total emisi yang dicegah" Classes="section" />
+                            <TextBlock Text="Kumulatif · kg CO₂e" Classes="caption" />
+                            <StackPanel Spacing="4" Margin="0,12,0,4" IsVisible="{Binding Co2eChart.HasNoData}">
+                                <TextBlock Text="Belum ada data emisi" FontSize="14" FontWeight="SemiBold" />
+                                <TextBlock Text="Grafik akan muncul setelah ada catatan sampah organik."
+                                           Classes="caption" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <lvc:CartesianChart
+                                Series="{Binding Co2eChart.Series}"
+                                XAxes="{Binding Co2eChart.XAxes}"
+                                YAxes="{Binding Co2eChart.YAxes}"
+                                Height="190" MinHeight="190" Margin="0,8,0,0"
+                                IsVisible="{Binding !Co2eChart.HasNoData}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- Status koneksi database -->
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Ellipse Width="8" Height="8" Fill="{StaticResource ForestBrush}"
+                         IsVisible="{Binding IsDatabaseConnected}" VerticalAlignment="Center" />
+                <Ellipse Width="8" Height="8" Fill="{StaticResource TerraBrush}"
+                         IsVisible="{Binding !IsDatabaseConnected}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding DatabaseStatusText}" Classes="caption" FontSize="11"
+                           VerticalAlignment="Center" />
             </StackPanel>
-            </ScrollViewer>
-        </Grid>
-    </DockPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Window>
