@@ -1,26 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Composta.Views.Controls.BrandLogo">
-    <!-- Logo Composta: tunas di dalam lingkaran daur ulang (versi vektor sederhana dari logo di Figma) -->
-    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <Viewbox Width="34" Height="34">
-            <Canvas Width="32" Height="32">
-                <!-- Panah melingkar -->
-                <Path Stroke="#244B38" StrokeThickness="2.6" StrokeLineCap="Round"
-                      Data="M 6.2 9.5 A 12 12 0 0 1 25.5 8.4" />
-                <Path Fill="#244B38" Data="M 27.8 5.6 L 27.6 11.6 L 22.2 9.6 Z" />
-                <Path Stroke="#244B38" StrokeThickness="2.6" StrokeLineCap="Round"
-                      Data="M 25.8 22.5 A 12 12 0 0 1 6.5 23.6" />
-                <Path Fill="#244B38" Data="M 4.2 26.4 L 4.4 20.4 L 9.8 22.4 Z" />
-                <!-- Tunas -->
-                <Path Stroke="#244B38" StrokeThickness="1.8" StrokeLineCap="Round"
-                      Data="M 16 25 L 16 15" />
-                <Path Fill="#5E9B3E" Data="M 16 16 C 15.5 11.5 12 9.5 8.5 10 C 8.5 13.8 11.5 16.5 16 16 Z" />
-                <Path Fill="#7DB24F" Data="M 16 17 C 16.5 12.5 20 10.2 23.6 10.8 C 23.6 14.8 20.5 17.6 16 17 Z" />
-                <Path Fill="#244B38" Data="M 11 24.5 C 12.5 22.6 19.5 22.6 21 24.5 Z" />
-            </Canvas>
-        </Viewbox>
-        <TextBlock Text="Composta" FontSize="20" FontWeight="ExtraBold" Foreground="#244B38"
-                   VerticalAlignment="Center" />
-    </StackPanel>
+    <!-- Logo Composta dari Figma (tunas di dalam panah daur ulang + tulisan Composta) -->
+    <Image Source="avares://CompostaUI/Assets/Images/logo.png" Height="34" Stretch="Uniform"
+           HorizontalAlignment="Left" VerticalAlignment="Center"
+           RenderOptions.BitmapInterpolationMode="HighQuality"
+           AutomationProperties.Name="Composta" />
 </UserControl>
