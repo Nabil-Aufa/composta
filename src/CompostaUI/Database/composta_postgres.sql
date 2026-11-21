@@ -163,6 +163,37 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION st_select_co2e_timeline(_user_id VARCHAR)
+    RETURNS TABLE (tanggal DATE, co2e_harian NUMERIC, co2e_akumulatif NUMERIC)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    WITH daily AS (
+        SELECT
+            DATE(w.date_added) AS dt,
+            ROUND(SUM(
+                w.weight * CASE
+                    WHEN COALESCE(c.co2e_factor_per_kg, 0) <= 0 THEN 0.5
+                    ELSE c.co2e_factor_per_kg
+                END
+            ), 2) AS daily_co2e
+        FROM waste_items w
+        INNER JOIN compost_batches b ON b.id = w.batch_id
+        LEFT JOIN waste_categories c ON c.id = w.category_id
+        WHERE b.user_id = _user_id
+            AND w.item_type = 'compostable'
+        GROUP BY DATE(w.date_added)
+    )
+    SELECT
+        d.dt AS tanggal,
+        d.daily_co2e AS co2e_harian,
+        ROUND(SUM(d.daily_co2e) OVER (ORDER BY d.dt), 2) AS co2e_akumulatif
+    FROM daily d
+    ORDER BY d.dt;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION st_select_schedules(_batch_id VARCHAR)
     RETURNS TABLE (id VARCHAR, task_type VARCHAR, due_date TIMESTAMP, is_completed BOOLEAN)
     LANGUAGE plpgsql

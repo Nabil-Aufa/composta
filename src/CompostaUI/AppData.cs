@@ -152,6 +152,11 @@ namespace Composta
             return ScheduleRepository.GetRecommendationsByBatch(batchId);
         }
 
+        public static List<CO2eTimelinePoint> GetCO2eTimeline()
+        {
+            return BatchRepository.GetCO2eTimeline(CurrentUser.Id);
+        }
+
         public static string GetBatchName(CompostBatch batch)
         {
             return "Batch " + (CurrentUser.Batches.IndexOf(batch) + 1);

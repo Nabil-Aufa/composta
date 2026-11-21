@@ -158,6 +158,19 @@ namespace Composta.Data
             schedule.MarkCompleted();
         }
 
+        public List<CO2eTimelinePoint> GetCO2eTimeline(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return new List<CO2eTimelinePoint>();
+            }
+
+            using NpgsqlConnection conn = OpenConnection();
+            return ExecuteSelect(conn, "SELECT * FROM st_select_co2e_timeline(:_user_id)",
+                MapCO2eTimelinePoint,
+                p => p.AddWithValue("_user_id", NpgsqlDbType.Varchar, userId));
+        }
+
         protected override CompostBatch MapRow(NpgsqlDataReader rd)
         {
             CompostBatch batch = new CompostBatch();
@@ -207,6 +220,16 @@ namespace Composta.Data
             schedule.Id = (string)rd["id"];
             schedule.IsCompleted = (bool)rd["is_completed"];
             return schedule;
+        }
+
+        private static CO2eTimelinePoint MapCO2eTimelinePoint(NpgsqlDataReader rd)
+        {
+            DateTime date = rd["tanggal"] is DateOnly dateOnly
+                ? dateOnly.ToDateTime(TimeOnly.MinValue)
+                : Convert.ToDateTime(rd["tanggal"]);
+            double daily = Convert.ToDouble(rd["co2e_harian"]);
+            double cumulative = Convert.ToDouble(rd["co2e_akumulatif"]);
+            return new CO2eTimelinePoint(date, daily, cumulative);
         }
 
         private static int InsertWasteItem(NpgsqlConnection conn, NpgsqlTransaction? tx, string batchId, WasteItem item)
