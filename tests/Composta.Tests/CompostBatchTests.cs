@@ -116,6 +116,25 @@ namespace Composta.Tests
         }
 
         [Fact]
+        public void GenerateDefaultSchedules_CreatesExpectedTasks_AndIsIdempotent()
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 0, maturityDays: 14);
+
+            batch.GenerateDefaultSchedules();
+            int initialCount = batch.Schedules.Count;
+
+            Assert.True(initialCount > 0);
+            Assert.All(batch.Schedules, s => Assert.Equal(batch.Id, s.BatchId));
+            Assert.Contains(batch.Schedules, s => s.TaskType == TaskType.Water);
+            Assert.Contains(batch.Schedules, s => s.TaskType == TaskType.Turn);
+            Assert.Contains(batch.Schedules, s => s.TaskType == TaskType.CheckMoisture);
+            Assert.Single(batch.Schedules, s => s.TaskType == TaskType.Harvest);
+
+            batch.GenerateDefaultSchedules();
+            Assert.Equal(initialCount, batch.Schedules.Count);
+        }
+
+        [Fact]
         public void NegativeWeight_IsRejected()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => TestData.Green(-1));

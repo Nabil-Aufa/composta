@@ -73,6 +73,16 @@ namespace Composta.Data
                 EnsureSuccess(InsertWasteItem(conn, tx, entity.Id, item), "Gagal menyimpan sampah ke database.");
             }
 
+            if (entity.Schedules.Count == 0)
+            {
+                entity.GenerateDefaultSchedules();
+            }
+
+            foreach (MaintenanceSchedule schedule in entity.Schedules)
+            {
+                EnsureSuccess(InsertSchedule(conn, tx, entity.Id, schedule), "Gagal menyimpan jadwal perawatan ke database.");
+            }
+
             tx.Commit();
         }
 
@@ -116,6 +126,36 @@ namespace Composta.Data
                 batch.BrownGreenRatio = batch.CalculateRatio();
                 throw;
             }
+        }
+
+        public void AddSchedule(CompostBatch batch, MaintenanceSchedule schedule)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+            ArgumentNullException.ThrowIfNull(schedule);
+
+            using NpgsqlConnection conn = OpenConnection();
+            using NpgsqlTransaction tx = conn.BeginTransaction();
+
+            batch.AddSchedule(schedule);
+            try
+            {
+                EnsureSuccess(InsertSchedule(conn, tx, batch.Id, schedule), "Gagal menyimpan jadwal perawatan ke database.");
+                tx.Commit();
+            }
+            catch
+            {
+                batch.Schedules.Remove(schedule);
+                throw;
+            }
+        }
+
+        public void CompleteSchedule(MaintenanceSchedule schedule)
+        {
+            ArgumentNullException.ThrowIfNull(schedule);
+
+            EnsureSuccess(ExecuteFunction("SELECT st_complete_schedule(:_id)", p => p.AddWithValue("_id", schedule.Id)),
+                "Gagal memperbarui status jadwal perawatan di database.");
+            schedule.MarkCompleted();
         }
 
         protected override CompostBatch MapRow(NpgsqlDataReader rd)
@@ -190,6 +230,20 @@ namespace Composta.Data
                     p.AddWithValue("_moisture_content", NpgsqlDbType.Numeric,
                         compostable != null ? (object)ToNumeric(compostable.MoistureContent) : DBNull.Value);
                     p.AddWithValue("_reason", NpgsqlDbType.Varchar, DbValue(nonCompostable?.Reason));
+                });
+        }
+
+        private static int InsertSchedule(NpgsqlConnection conn, NpgsqlTransaction? tx, string batchId, MaintenanceSchedule schedule)
+        {
+            return ExecuteFunction(conn, tx,
+                "SELECT st_insert_schedule(:_id, :_batch_id, :_task_type, :_due_date, :_is_completed)",
+                p =>
+                {
+                    p.AddWithValue("_id", schedule.Id);
+                    p.AddWithValue("_batch_id", batchId);
+                    p.AddWithValue("_task_type", schedule.TaskType.ToString());
+                    p.AddWithValue("_due_date", schedule.DueDate);
+                    p.AddWithValue("_is_completed", schedule.IsCompleted);
                 });
         }
 
