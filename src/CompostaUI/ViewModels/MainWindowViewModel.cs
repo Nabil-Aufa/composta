@@ -343,8 +343,14 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanCompleteSchedule))]
         private async Task CompleteScheduleAsync(MaintenanceScheduleItemViewModel? item)
         {
-            if (item == null || item.IsCompleted)
+            if (item == null || !item.CanComplete)
             {
+                return;
+            }
+
+            if (item.Schedule.TaskType == TaskType.Harvest)
+            {
+                await HarvestAsync();
                 return;
             }
 
@@ -405,19 +411,17 @@ namespace Composta.ViewModels
             CompostBatch? batch = SelectedBatch?.Batch;
             if (batch == null || batch.Status != BatchStatus.Ready)
             {
-                await _dialogs.ShowMessageAsync("Panen", "Pilih batch yang berstatus Siap Panen terlebih dahulu.", MessageTone.Info);
+                await _dialogs.ShowMessageAsync("Panen", "Batch ini belum berstatus Siap Panen. Panen hanya bisa dilakukan setelah kompos matang.", MessageTone.Info);
                 return;
             }
 
             string batchName = AppData.GetBatchName(batch);
-            batch.Status = BatchStatus.Archived;
             try
             {
-                AppData.BatchRepository.Update(batch);
+                AppData.BatchRepository.Harvest(batch);
             }
             catch (Exception ex)
             {
-                batch.Status = BatchStatus.Ready;
                 await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }

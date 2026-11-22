@@ -21,8 +21,8 @@ namespace Composta.UITests
 
             AddWasteViewModel form = NewForm();
 
-            Assert.Equal(2, form.Batches.Count);
-            Assert.All(form.Batches, b => Assert.False(b.IsReady || b.IsArchived));
+            Assert.Single(form.Batches);
+            Assert.All(form.Batches, b => Assert.True(b.IsActive));
             Assert.True(form.SaveCommand.CanExecute(null));
             Assert.False(form.HasError);
         }

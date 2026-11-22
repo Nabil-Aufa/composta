@@ -12,7 +12,7 @@ namespace Composta.ViewModels
         public const decimal MaxWeight = 100;
 
         private const string NoBatchMessage =
-            "Belum ada batch yang sedang berjalan. Buat batch baru di dashboard terlebih dahulu.";
+            "Belum ada batch berstatus Aktif. Batch yang sudah masuk Pematangan tidak bisa ditambah sampah, buat batch baru di dashboard terlebih dahulu.";
 
         [ObservableProperty]
         private BatchItemViewModel? _selectedBatch;
@@ -56,7 +56,7 @@ namespace Composta.ViewModels
         public AddWasteViewModel(CompostBatch? selectedBatch)
         {
             Batches = AppData.CurrentUser.Batches
-                .Where(b => b.Status == BatchStatus.Active || b.Status == BatchStatus.Curing)
+                .Where(b => b.Status == BatchStatus.Active)
                 .Select(b => new BatchItemViewModel(b))
                 .ToList();
             Categories = AppData.Categories;

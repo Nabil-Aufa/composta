@@ -11,6 +11,19 @@ namespace Composta.UITests
         {
         }
 
+        private const string ReadyBatchId = "b8d0e6f2-4a1b-4c2d-9e3f-000000000001";
+
+        private void AddPendingSchedulesToReadyBatch()
+        {
+            using var conn = new Npgsql.NpgsqlConnection(Db.Connstring);
+            conn.Open();
+            using var cmd = new Npgsql.NpgsqlCommand(
+                "INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) VALUES " +
+                "('d2f4b6c8-3e5a-4b7c-9d1e-000000000091', '" + ReadyBatchId + "', 'Water', NOW() - INTERVAL '6 days', FALSE), " +
+                "('d2f4b6c8-3e5a-4b7c-9d1e-000000000092', '" + ReadyBatchId + "', 'Harvest', NOW() - INTERVAL '5 days', FALSE)", conn);
+            cmd.ExecuteNonQuery();
+        }
+
         private async Task<MainWindowViewModel> LoadedViewModel()
         {
             MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
@@ -124,6 +137,7 @@ namespace Composta.UITests
         public async Task Harvest_ArchivesReadyBatch()
         {
             RequireDatabase();
+            AddPendingSchedulesToReadyBatch();
 
             MainWindowViewModel vm = await LoadedViewModel();
             BatchItemViewModel ready = vm.Batches.Single(b => b.IsReady);
@@ -134,6 +148,49 @@ namespace Composta.UITests
             Assert.True(vm.SelectedBatch?.IsArchived);
             Assert.Equal("2", vm.ActiveBatchCountText);
             Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE status = 'Archived'"));
+            Assert.Equal(2, vm.MaintenanceSchedules.Count);
+            Assert.All(vm.MaintenanceSchedules, s => Assert.True(s.IsCompleted));
+            Assert.Equal(0, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE batch_id = '"
+                + ready.Batch.Id + "' AND NOT is_completed"));
+        }
+
+        [SkippableFact]
+        public async Task CompletingHarvestSchedule_HarvestsReadyBatch()
+        {
+            RequireDatabase();
+            AddPendingSchedulesToReadyBatch();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            BatchItemViewModel ready = vm.Batches.Single(b => b.IsReady);
+            string batchId = ready.Batch.Id;
+            vm.SelectedBatch = ready;
+            MaintenanceScheduleItemViewModel harvest = vm.MaintenanceSchedules
+                .Single(s => s.Schedule.TaskType == TaskType.Harvest);
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(harvest);
+
+            Assert.True(vm.Batches.Single(b => b.Batch.Id == batchId).IsArchived);
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '"
+                + batchId + "' AND status = 'Archived'"));
+            Assert.Contains(_dialogs.Messages, m => m.EndsWith("berhasil dipanen."));
+        }
+
+        [SkippableFact]
+        public async Task CompletingHarvestSchedule_OfUnreadyBatch_DoesNotHarvest()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            BatchItemViewModel active = vm.Batches.Single(b => b.IsActive);
+            vm.SelectedBatch = active;
+            MaintenanceScheduleItemViewModel harvest = new MaintenanceScheduleItemViewModel(
+                new Composta.Models.MaintenanceSchedule(TaskType.Harvest, DateTime.Today));
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(harvest);
+
+            Assert.True(active.IsActive);
+            Assert.Contains(_dialogs.Messages, m => m.StartsWith("Panen:"));
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE status = 'Archived'"));
         }
 
         [SkippableFact]

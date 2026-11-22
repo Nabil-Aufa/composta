@@ -110,6 +110,11 @@ namespace Composta.Data
                 throw new InvalidOperationException("Sampah anorganik tidak dapat dimasukkan ke batch kompos.");
             }
 
+            if (batch.Status != BatchStatus.Active)
+            {
+                throw new InvalidOperationException("Sampah hanya dapat ditambahkan ke batch yang masih berstatus Aktif.");
+            }
+
             using NpgsqlConnection conn = OpenConnection();
             using NpgsqlTransaction tx = conn.BeginTransaction();
 
@@ -125,6 +130,45 @@ namespace Composta.Data
                 batch.WasteItems.Remove(item);
                 batch.BrownGreenRatio = batch.CalculateRatio();
                 throw;
+            }
+        }
+
+        public void Harvest(CompostBatch batch)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+
+            if (batch.Status != BatchStatus.Ready)
+            {
+                throw new InvalidOperationException("Hanya batch berstatus Siap Panen yang dapat dipanen.");
+            }
+
+            List<MaintenanceSchedule> pending = batch.Schedules.Where(s => !s.IsCompleted).ToList();
+
+            using NpgsqlConnection conn = OpenConnection();
+            using NpgsqlTransaction tx = conn.BeginTransaction();
+
+            batch.Status = BatchStatus.Archived;
+            try
+            {
+                EnsureSuccess(UpdateBatch(conn, tx, batch), "Gagal memperbarui batch di database.");
+                foreach (MaintenanceSchedule schedule in pending)
+                {
+                    EnsureSuccess(ExecuteFunction(conn, tx, "SELECT st_complete_schedule(:_id)",
+                        p => p.AddWithValue("_id", schedule.Id)),
+                        "Gagal memperbarui status jadwal perawatan di database.");
+                }
+
+                tx.Commit();
+            }
+            catch
+            {
+                batch.Status = BatchStatus.Ready;
+                throw;
+            }
+
+            foreach (MaintenanceSchedule schedule in pending)
+            {
+                schedule.MarkCompleted();
             }
         }
 
