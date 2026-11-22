@@ -234,10 +234,6 @@ namespace Composta.ViewModels
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
             double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));
-            Co2eChart.UpdateFromBatches(
-                user.Batches,
-                AppData.CarbonCalculator
-            );
             TotalCo2eText = totalCo2e.ToString("0.##") + " kg";
             ActiveBatchCountText = user.GetActiveBatches().Count.ToString();
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";
@@ -257,6 +253,22 @@ namespace Composta.ViewModels
             if (SelectedBatch == null)
             {
                 ShowEmptyRecommendation();
+            }
+
+            await LoadCo2eChartAsync();
+        }
+
+        private async Task LoadCo2eChartAsync()
+        {
+            try
+            {
+                Co2eChart.UpdateFromTimeline(AppData.GetCO2eTimeline());
+            }
+            catch (Exception ex)
+            {
+                Co2eChart.UpdateFromTimeline(Array.Empty<CO2eTimelinePoint>());
+                await _dialogs.ShowMessageAsync("Grafik CO2e Gagal Dimuat",
+                    DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
             }
         }
 
