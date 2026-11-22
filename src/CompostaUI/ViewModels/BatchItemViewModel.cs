@@ -15,10 +15,10 @@ namespace Composta.ViewModels
             Name = AppData.GetBatchName(batch);
             StatusText = AppData.GetStatusText(batch.Status);
             WeightText = batch.GetTotalWeight().ToString("0.##") + " kg";
-            RatioText = batch.CalculateRatio().ToString("0.##");
+            RatioText = FormatRatio(batch);
             MaturityText = batch.EstimatedMaturityDate.ToString("dd MMM yyyy");
             Detail = batch.GetTotalWeight().ToString("0.##") + " kg  •  rasio brown/green "
-                + batch.CalculateRatio().ToString("0.##") + "  •  matang "
+                + FormatRatio(batch) + "  •  matang "
                 + batch.EstimatedMaturityDate.ToString("dd MMM yyyy");
 
             double totalDays = (batch.EstimatedMaturityDate.Date - batch.StartDate.Date).TotalDays;
@@ -28,6 +28,11 @@ namespace Composta.ViewModels
             int totalDayCount = Math.Max(1, (batch.EstimatedMaturityDate.Date - batch.StartDate.Date).Days);
             int currentDay = Math.Clamp((today.Date - batch.StartDate.Date).Days + 1, 1, totalDayCount);
             DayText = "Hari ke-" + currentDay + " dari " + totalDayCount;
+        }
+
+        public static string FormatRatio(CompostBatch batch)
+        {
+            return batch.HasGreenMaterial() ? batch.CalculateRatio().ToString("0.##") : "–";
         }
 
         public string DayText { get; }

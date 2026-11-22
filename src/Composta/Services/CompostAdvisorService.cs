@@ -48,6 +48,11 @@ namespace Composta.Services
                 advice.Add("Batch masih kosong, tambahkan bahan brown dan green.");
                 score += 1;
             }
+            else if (!batch.HasGreenMaterial())
+            {
+                advice.Add("Belum ada bahan green, tambahkan sisa sayur atau buah agar kompos bisa terurai.");
+                score += 2;
+            }
             else if (ratio < MinimumRatio)
             {
                 advice.Add($"Rasio brown/green {ratio:0.##} terlalu rendah, tambahkan bahan brown seperti daun kering atau kardus.");

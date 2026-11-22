@@ -31,6 +31,19 @@ namespace Composta.Tests
             Assert.Equal("Medium", result.Priority);
         }
 
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2.5)]
+        public void BrownOnly_AsksForGreenMaterialInsteadOfRatioAdvice(double brownKg)
+        {
+            CompostRecommendation result = Recommend(TestData.BatchWithRatio(brownKg, 0), TestData.NeutralWeather());
+
+            Assert.Contains("Belum ada bahan green", result.Message);
+            Assert.DoesNotContain("Rasio brown/green", result.Message);
+            Assert.DoesNotContain("Kondisi kompos sudah baik", result.Message);
+            Assert.Equal("Medium", result.Priority);
+        }
+
         [Fact]
         public void HighRatio_AsksForMoreGreenMaterial()
         {

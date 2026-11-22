@@ -107,7 +107,7 @@ namespace Composta.Models
 
             if (green <= 0)
             {
-                return Math.Round(brown, 2);
+                return 0;
             }
 
             return Math.Round(brown / green, 2);
@@ -149,6 +149,13 @@ namespace Composta.Models
         public double GetTotalWeight()
         {
             return Math.Round(_wasteItems.Sum(w => w.Weight), 2);
+        }
+
+        public bool HasGreenMaterial()
+        {
+            return _wasteItems
+                .OfType<CompostableWaste>()
+                .Any(w => w.BrownGreenType == BrownGreenType.Green && w.Weight > 0);
         }
 
         public bool HasCompostableWaste()
