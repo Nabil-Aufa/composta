@@ -26,6 +26,7 @@ namespace Composta.UITests
 
         private async Task<MainWindowViewModel> LoadedViewModel()
         {
+            AppData.Login(DatabaseFixture.NabilId);
             MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
             await vm.LoadAsync();
             return vm;

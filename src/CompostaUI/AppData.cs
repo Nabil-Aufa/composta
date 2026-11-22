@@ -59,15 +59,12 @@ namespace Composta
 
         public static void Load()
         {
-            if (IsLoggedIn)
+            if (!IsLoggedIn)
             {
-                Login(CurrentUser.Id);
-                return;
+                throw new InvalidOperationException("Belum ada profil yang masuk. Pilih profil terlebih dahulu.");
             }
 
-            User user = UserRepository.GetAll().FirstOrDefault()
-                ?? throw new InvalidOperationException("Tabel users masih kosong.");
-            Login(user.Id);
+            Login(CurrentUser.Id);
         }
 
         public static List<User> GetUsers()

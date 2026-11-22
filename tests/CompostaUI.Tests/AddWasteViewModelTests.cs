@@ -10,7 +10,7 @@ namespace Composta.UITests
 
         private static AddWasteViewModel NewForm()
         {
-            AppData.Load();
+            AppData.Login(DatabaseFixture.NabilId);
             return new AddWasteViewModel(null);
         }
 
