@@ -56,7 +56,7 @@ namespace Composta.Services
             {
                 weather = _weatherService.GetCurrentWeather(loc);
             }
-            catch
+            catch (Exception ex) when (ex is HttpRequestException or TimeoutException or InvalidOperationException)
             {
                 weather = null;
             }
@@ -127,14 +127,10 @@ namespace Composta.Services
                     advice.Add("Suhu rendah memperlambat pengomposan, tutup kompos agar panas tertahan.");
                     score += 1;
                 }
-
-                if (!weather.IsRainy() && batch.WasteItems.OfType<CompostableWaste>().Any(w => w.NeedsWater()))
-                {
-                    advice.Add("Beberapa bahan terlalu kering, tambahkan air secukupnya.");
-                    score += 1;
-                }
             }
-            else if (batch.WasteItems.OfType<CompostableWaste>().Any(w => w.NeedsWater()))
+
+            bool rainy = weather?.IsRainy() ?? false;
+            if (!rainy && batch.WasteItems.OfType<CompostableWaste>().Any(w => w.NeedsWater()))
             {
                 advice.Add("Beberapa bahan terlalu kering, tambahkan air secukupnya.");
                 score += 1;

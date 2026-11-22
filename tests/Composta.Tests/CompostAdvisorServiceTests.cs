@@ -1,11 +1,19 @@
 using Composta.Enums;
 using Composta.Models;
 using Composta.Services;
+using System.Globalization;
 
 namespace Composta.Tests
 {
     public class CompostAdvisorServiceTests
     {
+        public CompostAdvisorServiceTests()
+        {
+            CultureInfo id = CultureInfo.GetCultureInfo("id-ID");
+            CultureInfo.CurrentCulture = id;
+            CultureInfo.DefaultThreadCurrentCulture = id;
+        }
+        
         private static CompostRecommendation Recommend(CompostBatch batch, WeatherData weather)
         {
             CompostAdvisorService advisor = new CompostAdvisorService(new FakeWeatherService(weather));
@@ -202,9 +210,9 @@ namespace Composta.Tests
             CompostRecommendation humidResult = Recommend(TestData.BatchWithRatio(2.2, 1), humid);
 
             Assert.Contains("terlalu rendah", rainResult.Message);
-            Assert.Contains("target 2.5-3.5", rainResult.Message);
+            Assert.Contains("target 2,5-3,5", rainResult.Message);
             Assert.Contains("terlalu rendah", humidResult.Message);
-            Assert.Contains("target 2.5-3.5", humidResult.Message);
+            Assert.Contains("target 2,5-3,5", humidResult.Message);
         }
 
         [Fact]
@@ -216,7 +224,7 @@ namespace Composta.Tests
             CompostRecommendation idealForHotDry = Recommend(TestData.BatchWithRatio(1.8, 1), hotDry);
 
             Assert.Contains("terlalu tinggi", highForHotDry.Message);
-            Assert.Contains("target 1.5-2.5", highForHotDry.Message);
+            Assert.Contains("target 1,5-2,5", highForHotDry.Message);
             Assert.DoesNotContain("terlalu rendah", idealForHotDry.Message);
             Assert.DoesNotContain("terlalu tinggi", idealForHotDry.Message);
             Assert.Contains("Cuaca panas dan kering", idealForHotDry.Message);
