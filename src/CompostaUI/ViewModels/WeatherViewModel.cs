@@ -1,3 +1,4 @@
+using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Composta.Interfaces;
@@ -35,7 +36,7 @@ namespace Composta.ViewModels
         private string _detailText = string.Empty;
 
         [ObservableProperty]
-        private string _icon = "?";
+        private string _icon = string.Empty;
 
         [ObservableProperty]
         private string _statusText = "Cuaca belum dimuat.";
@@ -93,18 +94,18 @@ namespace Composta.ViewModels
                         IsOffline = false;
                         StatusText = "Data cuaca berhasil diperbarui.";
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         weather = _offline.GetCurrentWeather(location);
                         IsOffline = true;
-                        StatusText = "Gagal memuat cuaca • memakai data simulasi offline. Coba Refresh lagi.";
+                        StatusText = GetFailureText(ex, location);
                     }
                 }
 
                 CurrentWeather = weather;
                 LocationText = "Cuaca · " + location;
                 TemperatureText = weather.Temperature.ToString("0.#") + "°C";
-                ConditionText = weather.Condition;
+                ConditionText = TranslateCondition(weather.Condition);
                 DetailText = "Kelembapan " + weather.Humidity.ToString("0") + "% • Curah hujan "
                     + weather.RainfallMm.ToString("0.#") + " mm";
                 Icon = GetIcon(weather);
@@ -118,16 +119,82 @@ namespace Composta.ViewModels
             }
         }
 
+        private static readonly Dictionary<string, string> ConditionNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Thunderstorm"] = "Badai petir",
+            ["Drizzle"] = "Gerimis",
+            ["Rain"] = "Hujan",
+            ["Snow"] = "Salju",
+            ["Clear"] = "Cerah",
+            ["Clouds"] = "Berawan",
+            ["Mist"] = "Berkabut",
+            ["Fog"] = "Kabut tebal",
+            ["Haze"] = "Berkabut tipis",
+            ["Smoke"] = "Berasap",
+            ["Dust"] = "Berdebu",
+            ["Sand"] = "Berpasir",
+            ["Ash"] = "Abu vulkanik",
+            ["Squall"] = "Angin kencang",
+            ["Tornado"] = "Tornado"
+        };
+
+        public static string TranslateCondition(string condition)
+        {
+            string trimmed = condition?.Trim() ?? string.Empty;
+            if (trimmed.Length == 0)
+            {
+                return "Kondisi tidak diketahui";
+            }
+
+            return ConditionNames.TryGetValue(trimmed, out string? name) ? name : trimmed;
+        }
+
+        private static string GetFailureText(Exception ex, string location)
+        {
+            const string Fallback = " Memakai data simulasi offline.";
+
+            HttpRequestException? http = FindException<HttpRequestException>(ex);
+            if (http?.StatusCode == HttpStatusCode.NotFound)
+            {
+                return "Gagal memuat cuaca: lokasi \"" + location + "\" tidak ditemukan. Periksa ejaan lokasi." + Fallback;
+            }
+
+            if (http?.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return "Gagal memuat cuaca: API key cuaca tidak valid." + Fallback;
+            }
+
+            if (http != null || FindException<TimeoutException>(ex) != null || FindException<TaskCanceledException>(ex) != null)
+            {
+                return "Gagal memuat cuaca: tidak dapat terhubung ke layanan cuaca." + Fallback + " Coba Refresh lagi.";
+            }
+
+            return "Gagal memuat cuaca." + Fallback + " Coba Refresh lagi.";
+        }
+
+        private static T? FindException<T>(Exception ex) where T : Exception
+        {
+            for (Exception? current = ex; current != null; current = current.InnerException)
+            {
+                if (current is T match)
+                {
+                    return match;
+                }
+            }
+
+            return null;
+        }
+
         private static string GetIcon(WeatherData weather)
         {
             string condition = weather.Condition.ToLowerInvariant();
             if (condition.Contains("thunder") || condition.Contains("petir")) return "⛈";
             if (weather.IsRainy() || condition.Contains("drizzle") || condition.Contains("gerimis")) return "🌧";
             if (condition.Contains("snow") || condition.Contains("salju")) return "❄";
-            if (condition.Contains("mist") || condition.Contains("fog") || condition.Contains("kabut")) return "🌫";
+            if (condition.Contains("mist") || condition.Contains("fog") || condition.Contains("haze") || condition.Contains("kabut")) return "🌫";
             if (condition.Contains("cloud") || condition.Contains("berawan")) return "☁";
             if (condition.Contains("clear") || condition.Contains("sun") || condition.Contains("cerah")) return "☀";
-            return "?";
+            return "🌡";
         }
     }
 }
