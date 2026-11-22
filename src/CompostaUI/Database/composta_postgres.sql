@@ -174,7 +174,7 @@ BEGIN
             DATE(w.date_added) AS dt,
             SUM(
                 w.weight * CASE
-                    WHEN COALESCE(c.co2e_factor_per_kg, 0) <= 0 THEN 0.5
+                    WHEN c.id IS NULL THEN 0.717
                     ELSE c.co2e_factor_per_kg
                 END
             ) AS daily_co2e
@@ -358,10 +358,10 @@ INSERT INTO users (id, name, email, joined_at) VALUES
     ('3f1c2a9e-5b7d-4c1e-9a2f-000000000002', 'Pengguna Demo', 'demo@composta.id', NOW() - INTERVAL '30 days');
 
 INSERT INTO waste_categories (id, name, co2e_factor_per_kg, is_compostable) VALUES
-    ('7a2e4b10-1c3d-4e5f-8a9b-000000000001', 'Sisa Sayur & Buah',      0.500, TRUE),
-    ('7a2e4b10-1c3d-4e5f-8a9b-000000000002', 'Daun Kering & Ranting',  0.300, TRUE),
-    ('7a2e4b10-1c3d-4e5f-8a9b-000000000003', 'Kardus & Kertas',        0.400, TRUE),
-    ('7a2e4b10-1c3d-4e5f-8a9b-000000000004', 'Ampas Kopi & Teh',       0.450, TRUE),
+    ('7a2e4b10-1c3d-4e5f-8a9b-000000000001', 'Sisa Sayur & Buah',      0.419, TRUE),
+    ('7a2e4b10-1c3d-4e5f-8a9b-000000000002', 'Daun Kering & Ranting',  0.000, TRUE),
+    ('7a2e4b10-1c3d-4e5f-8a9b-000000000003', 'Kardus & Kertas',        0.198, TRUE),
+    ('7a2e4b10-1c3d-4e5f-8a9b-000000000004', 'Ampas Kopi & Teh',       0.717, TRUE),
     ('7a2e4b10-1c3d-4e5f-8a9b-000000000005', 'Plastik',                0.000, FALSE),
     ('7a2e4b10-1c3d-4e5f-8a9b-000000000006', 'Kaca & Logam',           0.000, FALSE);
 
