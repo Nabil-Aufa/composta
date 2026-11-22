@@ -7,7 +7,8 @@ Model, enum, interface, `CarbonCalculatorService`, dan `CompostAdvisorService` d
 1. Buat database `composta` (lewat pgAdmin4 atau `createdb -U postgres composta`).
 2. Jalankan `Database/composta_postgres.sql` pada database tersebut (Query Tool pgAdmin4, atau
    `psql -U postgres -d composta -f Database/composta_postgres.sql`).
-   Script ini membuat tabel, fungsi `st_select_*`, `st_insert_*`, `st_update_batch`, `st_delete_batch`, dan data awal.
+   Script ini membuat tabel, fungsi `st_*`, dan data awal. `st_update_batch` dan `st_delete_batch` menerima `_user_id`
+   sehingga batch hanya bisa diubah atau dihapus oleh pemiliknya.
 3. Jalankan ulang script setiap kali isinya berubah setelah `git pull`. Data lama akan diganti dengan data awal.
 
 ## Connection string
@@ -22,9 +23,9 @@ Dari folder `src/CompostaUI`: `dotnet run`.
 | Folder | Isi |
 |---|---|
 | `Views/` | Tampilan `.axaml`. Code-behind (`.axaml.cs`) hanya berisi `InitializeComponent()`. |
-| `ViewModels/` | Data dan perintah yang ditampilkan View: `MainWindowViewModel`, `AddWasteViewModel`, `BatchItemViewModel`. |
+| `ViewModels/` | Data dan perintah yang ditampilkan View: `LoginViewModel`, `MainWindowViewModel`, `AddWasteViewModel`, `BatchItemViewModel`, `WeatherViewModel`, `Co2eChartViewModel`, `MaintenanceScheduleItemViewModel`, `ProfileViewModel`, `MessageViewModel`. |
 | `Data/` | Repository PostgreSQL. `PostgresRepository<T>` adalah kelas induk abstrak (encapsulation connection string, method abstrak `MapRow`). |
-| `Services/` | `DialogService` (pesan, konfirmasi, membuka jendela) dan `OfflineWeatherService`. |
+| `Services/` | `DialogService` (pesan, konfirmasi, membuka jendela), `UserSessionService`, `UserValidator`, `DatabaseErrorMessage`, dan `OfflineWeatherService`. `OpenWeatherMapService` ada di `src/Composta/Services`. |
 | `Database/` | Script skema, fungsi `st_*`, dan data awal. Satu-satunya sumber skema database. |
 | `../Composta/` | Model, enum, interface, `CarbonCalculatorService`, dan `CompostAdvisorService` yang dipakai bersama. |
 
