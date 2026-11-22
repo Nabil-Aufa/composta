@@ -96,7 +96,18 @@ namespace Composta.Data
 
         public void Delete(string id)
         {
-            EnsureSuccess(ExecuteFunction("SELECT st_delete_batch(:_id)", p => p.AddWithValue("_id", id)),
+            throw new NotSupportedException("Gunakan Delete(CompostBatch) agar pemilik batch ikut diperiksa.");
+        }
+
+        public void Delete(CompostBatch batch)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+
+            EnsureSuccess(ExecuteFunction("SELECT st_delete_batch(:_id, :_user_id)", p =>
+                {
+                    p.AddWithValue("_id", batch.Id);
+                    p.AddWithValue("_user_id", batch.UserId);
+                }),
                 "Gagal menghapus batch dari database.");
         }
 
@@ -350,10 +361,11 @@ namespace Composta.Data
         private static int UpdateBatch(NpgsqlConnection conn, NpgsqlTransaction? tx, CompostBatch batch)
         {
             return ExecuteFunction(conn, tx,
-                "SELECT st_update_batch(:_id, :_status, :_brown_green_ratio, :_estimated_maturity_date)",
+                "SELECT st_update_batch(:_id, :_user_id, :_status, :_brown_green_ratio, :_estimated_maturity_date)",
                 p =>
                 {
                     p.AddWithValue("_id", batch.Id);
+                    p.AddWithValue("_user_id", batch.UserId);
                     p.AddWithValue("_status", batch.Status.ToString());
                     p.AddWithValue("_brown_green_ratio", ToNumeric(batch.BrownGreenRatio));
                     p.AddWithValue("_estimated_maturity_date", batch.EstimatedMaturityDate);

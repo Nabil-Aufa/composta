@@ -1,6 +1,9 @@
 DROP TABLE IF EXISTS compost_recommendations, maintenance_schedules, waste_items,
     waste_categories, compost_batches, user_badges, badges, users CASCADE;
 
+DROP FUNCTION IF EXISTS st_update_batch(VARCHAR, VARCHAR, NUMERIC, TIMESTAMP);
+DROP FUNCTION IF EXISTS st_delete_batch(VARCHAR);
+
 CREATE TABLE users (
     id          VARCHAR(36)  PRIMARY KEY,
     name        VARCHAR(100) NOT NULL,
@@ -315,8 +318,8 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION st_update_batch(_id VARCHAR, _status VARCHAR, _brown_green_ratio NUMERIC,
-                                           _estimated_maturity_date TIMESTAMP)
+CREATE OR REPLACE FUNCTION st_update_batch(_id VARCHAR, _user_id VARCHAR, _status VARCHAR,
+                                           _brown_green_ratio NUMERIC, _estimated_maturity_date TIMESTAMP)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
@@ -325,7 +328,7 @@ BEGIN
     SET status = _status,
         brown_green_ratio = _brown_green_ratio,
         estimated_maturity_date = _estimated_maturity_date
-    WHERE id = _id;
+    WHERE id = _id AND user_id = _user_id;
 
     IF FOUND THEN
         RETURN 1;
@@ -335,12 +338,12 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION st_delete_batch(_id VARCHAR)
+CREATE OR REPLACE FUNCTION st_delete_batch(_id VARCHAR, _user_id VARCHAR)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
 BEGIN
-    DELETE FROM compost_batches WHERE id = _id;
+    DELETE FROM compost_batches WHERE id = _id AND user_id = _user_id;
 
     IF FOUND THEN
         RETURN 1;

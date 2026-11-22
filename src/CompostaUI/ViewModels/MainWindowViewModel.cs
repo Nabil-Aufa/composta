@@ -465,7 +465,7 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.BatchRepository.Delete(batch.Id);
+                AppData.BatchRepository.Delete(batch);
             }
             catch (Exception ex)
             {
