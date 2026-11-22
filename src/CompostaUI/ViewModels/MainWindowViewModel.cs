@@ -71,7 +71,6 @@ namespace Composta.ViewModels
             Weather = weather ?? new WeatherViewModel(AppData.WeatherService);
             Weather.WeatherUpdated += () =>
             {
-
                 if (SelectedBatch != null)
                 {
                     ShowRecommendation(SelectedBatch.Batch);
@@ -150,6 +149,8 @@ namespace Composta.ViewModels
             get { return !IsHighPriority && !IsMediumPriority; }
         }
 
+        public Task MaturityRefreshTask { get; private set; } = Task.CompletedTask;
+
         public async Task LoadAsync()
         {
             await Task.WhenAll(
@@ -159,6 +160,7 @@ namespace Composta.ViewModels
 
             if (IsDatabaseConnected)
             {
+                MaturityRefreshTask = RefreshMaturityEstimateInBackgroundAsync();
                 await ShowMaintenanceReminderAsync();
             }
         }
@@ -507,9 +509,27 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
         {
-            int estimatedDays = AppData.HasRefreshedMaturityDays
-                ? AppData.CachedMaturityDays
-                : await Task.Run(AppData.RefreshEstimatedMaturityDays);
+            int estimatedDays;
+            if (AppData.HasRefreshedMaturityDays)
+            {
+                estimatedDays = AppData.CachedMaturityDays;
+            }
+            else
+            {
+                string previousStatus = DatabaseStatusText;
+                DatabaseStatusText = previousStatus + "  •  Menghitung estimasi panen...";
+                try
+                {
+                    estimatedDays = await Task.Run(AppData.RefreshEstimatedMaturityDays);
+                }
+                finally
+                {
+                    if (IsDatabaseConnected)
+                    {
+                        DatabaseStatusText = previousStatus;
+                    }
+                }
+            }
 
             bool confirmed = await _dialogs.ConfirmAsync("Buat Batch Baru",
                 $"Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk {estimatedDays} hari ke depan akan dibuat otomatis.",

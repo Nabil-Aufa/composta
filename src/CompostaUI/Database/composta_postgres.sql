@@ -154,8 +154,8 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT w.id, w.item_type, w.name, w.weight, w.date_added,
-            w.brown_green_type, w.moisture_content, w.reason,
-            c.id, c.name, c.co2e_factor_per_kg, c.is_compostable
+           w.brown_green_type, w.moisture_content, w.reason,
+           c.id, c.name, c.co2e_factor_per_kg, c.is_compostable
     FROM waste_items w
     LEFT JOIN waste_categories c ON c.id = w.category_id
     WHERE w.batch_id = _batch_id
@@ -208,7 +208,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION st_insert_schedule(_id VARCHAR, _batch_id VARCHAR, _task_type VARCHAR,
-                                            _due_date TIMESTAMP, _is_completed BOOLEAN DEFAULT FALSE)
+                                              _due_date TIMESTAMP, _is_completed BOOLEAN DEFAULT FALSE)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
@@ -290,8 +290,8 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION st_insert_batch(_id VARCHAR, _user_id VARCHAR, _start_date TIMESTAMP,
-                                        _status VARCHAR, _brown_green_ratio NUMERIC,
-                                        _estimated_maturity_date TIMESTAMP)
+                                           _status VARCHAR, _brown_green_ratio NUMERIC,
+                                           _estimated_maturity_date TIMESTAMP)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
@@ -311,7 +311,7 @@ CREATE OR REPLACE FUNCTION st_insert_waste_item(_id VARCHAR, _batch_id VARCHAR, 
 AS $$
 BEGIN
     INSERT INTO waste_items (id, batch_id, category_id, item_type, name, weight, date_added,
-                            brown_green_type, moisture_content, reason)
+                             brown_green_type, moisture_content, reason)
     VALUES (_id, _batch_id, _category_id, _item_type, _name, _weight, _date_added,
             _brown_green_type, _moisture_content, _reason);
     RETURN 1;
@@ -334,8 +334,8 @@ BEGIN
         UPDATE maintenance_schedules
         SET due_date = _estimated_maturity_date
         WHERE batch_id = _id
-            AND task_type = 'Harvest'
-            AND is_completed = FALSE;
+          AND task_type = 'Harvest'
+          AND is_completed = FALSE;
 
         RETURN 1;
     ELSE

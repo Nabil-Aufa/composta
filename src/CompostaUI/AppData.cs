@@ -40,15 +40,15 @@ namespace Composta
         public static CompostBatchRepository BatchRepository { get; }
         public static MaintenanceScheduleRepository ScheduleRepository { get; }
 
-        public static IWeatherService WeatherService { get; }
+        public static IWeatherService WeatherService { get; private set; }
         public static ICarbonCalculator CarbonCalculator { get; }
-        public static CompostAdvisorService Advisor { get; }
+        public static CompostAdvisorService Advisor { get; private set; }
 
         public static User CurrentUser { get; private set; }
-     public static bool IsLoggedIn { get; private set; }
-     public static List<WasteCategory> Categories { get; private set; }
-     public static int CachedMaturityDays { get; private set; } = CompostAdvisorService.DefaultMaturityDays;
-     public static bool HasRefreshedMaturityDays { get; private set; }
+        public static bool IsLoggedIn { get; private set; }
+        public static List<WasteCategory> Categories { get; private set; }
+        public static int CachedMaturityDays { get; private set; } = CompostAdvisorService.DefaultMaturityDays;
+        public static bool HasRefreshedMaturityDays { get; private set; }
 
         public static string DatabaseInfo
         {
@@ -98,15 +98,16 @@ namespace Composta
             User user = UserRepository.GetById(userId)
                 ?? throw new InvalidOperationException("User tidak ditemukan.");
 
-            int estimatedMaturityDays = CachedMaturityDays;
-
             foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
             {
                 BatchStatus oldStatus = batch.Status;
                 DateTime oldMaturityDate = batch.EstimatedMaturityDate;
 
                 batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
-                batch.RecalculateEstimatedMaturityDate(estimatedMaturityDays);
+                if (HasRefreshedMaturityDays)
+                {
+                    batch.RecalculateEstimatedMaturityDate(CachedMaturityDays);
+                }
                 batch.UpdateProgress();
 
                 if (batch.Status != oldStatus || batch.EstimatedMaturityDate != oldMaturityDate)
@@ -133,6 +134,14 @@ namespace Composta
         {
             CurrentUser = new User();
             IsLoggedIn = false;
+            CachedMaturityDays = CompostAdvisorService.DefaultMaturityDays;
+            HasRefreshedMaturityDays = false;
+        }
+
+        public static void SetWeatherServiceForTesting(IWeatherService service)
+        {
+            WeatherService = service ?? throw new ArgumentNullException(nameof(service));
+            Advisor = new CompostAdvisorService(WeatherService);
             CachedMaturityDays = CompostAdvisorService.DefaultMaturityDays;
             HasRefreshedMaturityDays = false;
         }
