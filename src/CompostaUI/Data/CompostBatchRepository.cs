@@ -118,14 +118,12 @@ namespace Composta.Data
                 "Batch tidak ditemukan atau bukan milik profil yang sedang masuk.");
         }
 
-        // [UBAH BAGIAN INI] Meneruskan parameter maturityDays ke overload di bawahnya
         public void AddWasteItem(CompostBatch batch, WasteItem item, int? maturityDays = null)
         {
             ArgumentNullException.ThrowIfNull(batch);
             AddWasteItem(batch, item, batch.UserId, maturityDays);
         }
 
-        // [UBAH BAGIAN INI] Menambahkan parameter opsional int? maturityDays = null
         public void AddWasteItem(CompostBatch batch, WasteItem item, string actingUserId, int? maturityDays = null)
         {
             ArgumentNullException.ThrowIfNull(batch);

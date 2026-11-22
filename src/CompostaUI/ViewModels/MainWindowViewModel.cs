@@ -71,8 +71,6 @@ namespace Composta.ViewModels
             Weather = weather ?? new WeatherViewModel(AppData.WeatherService);
             Weather.WeatherUpdated += () =>
             {
-            
-                _ = RefreshMaturityEstimateInBackgroundAsync();
 
                 if (SelectedBatch != null)
                 {
@@ -154,8 +152,6 @@ namespace Composta.ViewModels
 
         public async Task LoadAsync()
         {
-            await Task.Run(() => AppData.RefreshEstimatedMaturityDays(Weather.Location));
-
             await Task.WhenAll(
                 LoadDashboardAsync(null),
                 Weather.RefreshCommand.ExecuteAsync(null)
@@ -170,8 +166,26 @@ namespace Composta.ViewModels
         
         private async Task RefreshMaturityEstimateInBackgroundAsync()
         {
-            string location = Weather.Location;
-            int estimatedDays = await Task.Run(() => AppData.RefreshEstimatedMaturityDays(location));
+            if (AppData.HasRefreshedMaturityDays)
+            {
+                return;
+            }
+
+            string baseStatus = "Terhubung ke PostgreSQL  •  " + AppData.DatabaseInfo;
+            DatabaseStatusText = baseStatus + "  •  Menghitung estimasi panen...";
+
+            int estimatedDays;
+            try
+            {
+                estimatedDays = await Task.Run(AppData.RefreshEstimatedMaturityDays);
+            }
+            finally
+            {
+                if (IsDatabaseConnected)
+                {
+                    DatabaseStatusText = baseStatus;
+                }
+            }
 
             if (!IsDatabaseConnected)
             {
@@ -180,6 +194,7 @@ namespace Composta.ViewModels
 
             List<CompostBatch> batchesSnapshot = AppData.CurrentUser.Batches.ToList();
             bool anyUpdated = false;
+            string? syncError = null;
 
             foreach (CompostBatch batch in batchesSnapshot)
             {
@@ -196,11 +211,19 @@ namespace Composta.ViewModels
                         AppData.BatchRepository.Update(batch, AppData.CurrentUser.Id);
                         anyUpdated = true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Abaikan kegagalan sinkronisasi background agar UI tidak terganggu
+                        syncError ??= DatabaseErrorMessage.From(ex, AppData.DatabaseInfo);
                     }
                 }
+            }
+
+            if (syncError != null)
+            {
+                await _dialogs.ShowMessageAsync(
+                    "Sinkronisasi Estimasi Gagal",
+                    "Estimasi waktu matang terbaru gagal disimpan ke database.\n\n" + syncError,
+                    MessageTone.Warning);
             }
 
             if (anyUpdated && IsDatabaseConnected)
@@ -484,8 +507,9 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
         {
-
-            int estimatedDays = await Task.Run(() => AppData.RefreshEstimatedMaturityDays(Weather.Location));
+            int estimatedDays = AppData.HasRefreshedMaturityDays
+                ? AppData.CachedMaturityDays
+                : await Task.Run(AppData.RefreshEstimatedMaturityDays);
 
             bool confirmed = await _dialogs.ConfirmAsync("Buat Batch Baru",
                 $"Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk {estimatedDays} hari ke depan akan dibuat otomatis.",

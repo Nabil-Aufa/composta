@@ -45,11 +45,10 @@ namespace Composta
         public static CompostAdvisorService Advisor { get; }
 
         public static User CurrentUser { get; private set; }
-        public static bool IsLoggedIn { get; private set; }
-        public static List<WasteCategory> Categories { get; private set; }
-
-        // [TAMBAHAN] Cache estimasi hari matang agar Login/Load dan AddWaste tidak memblokir UI
-        public static int CachedMaturityDays { get; private set; } = CompostAdvisorService.DefaultMaturityDays;
+     public static bool IsLoggedIn { get; private set; }
+     public static List<WasteCategory> Categories { get; private set; }
+     public static int CachedMaturityDays { get; private set; } = CompostAdvisorService.DefaultMaturityDays;
+     public static bool HasRefreshedMaturityDays { get; private set; }
 
         public static string DatabaseInfo
         {
@@ -99,7 +98,6 @@ namespace Composta
             User user = UserRepository.GetById(userId)
                 ?? throw new InvalidOperationException("User tidak ditemukan.");
 
-            // [UBAH] Gunakan nilai cache agar proses Login tidak membekukan UI selama 5 detik
             int estimatedMaturityDays = CachedMaturityDays;
 
             foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
@@ -124,11 +122,10 @@ namespace Composta
             IsLoggedIn = true;
         }
 
-        // [TAMBAHAN] Dipanggil dari background task menggunakan lokasi aktif pada kartu cuaca
-        public static int RefreshEstimatedMaturityDays(string? location = null)
+        public static int RefreshEstimatedMaturityDays()
         {
-            string targetLocation = string.IsNullOrWhiteSpace(location) ? Location : location.Trim();
-            CachedMaturityDays = Advisor.EstimateMaturityDays(targetLocation);
+            CachedMaturityDays = Advisor.EstimateMaturityDays(Location);
+            HasRefreshedMaturityDays = true;
             return CachedMaturityDays;
         }
 
@@ -137,6 +134,7 @@ namespace Composta
             CurrentUser = new User();
             IsLoggedIn = false;
             CachedMaturityDays = CompostAdvisorService.DefaultMaturityDays;
+            HasRefreshedMaturityDays = false;
         }
 
         public static IWeatherService CreateWeatherService(string? apiKey)
