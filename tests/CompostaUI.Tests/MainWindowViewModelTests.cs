@@ -118,12 +118,64 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
+        public async Task NewBatch_IsCancelledWithoutConfirmation()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            _dialogs.ConfirmResult = false;
+
+            await vm.NewBatchCommand.ExecuteAsync(null);
+
+            Assert.Equal(4, vm.Batches.Count);
+            Assert.Equal(5, Db.Count("SELECT COUNT(*) FROM compost_batches"));
+            Assert.Contains(_dialogs.Messages, m => m.StartsWith("Buat Batch Baru:"));
+            Assert.False(_dialogs.DestructiveByTitle["Buat Batch Baru"]);
+            Assert.DoesNotContain(_dialogs.Messages, m => m.StartsWith("Berhasil:"));
+        }
+
+        [SkippableFact]
+        public async Task CompleteSchedule_AlsoCompletesEarlierSchedulesOfSameTask()
+        {
+            RequireDatabase();
+
+            const string activeBatchId = "b8d0e6f2-4a1b-4c2d-9e3f-000000000003";
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand(
+                    "INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) VALUES " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000081', '" + activeBatchId + "', 'Water', NOW() - INTERVAL '8 days', FALSE), " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000082', '" + activeBatchId + "', 'Water', NOW() - INTERVAL '1 days', FALSE), " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000083', '" + activeBatchId + "', 'Turn', NOW() - INTERVAL '3 days', FALSE), " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000084', '" + activeBatchId + "', 'Water', NOW() + INTERVAL '6 days', FALSE)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            vm.SelectedBatch = vm.Batches.Single(b => b.Batch.Id == activeBatchId);
+            MaintenanceScheduleItemViewModel latestWater = vm.MaintenanceSchedules
+                .Single(s => s.Schedule.Id == "d2f4b6c8-3e5a-4b7c-9d1e-000000000082");
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(latestWater);
+
+            Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE batch_id = '"
+                + activeBatchId + "' AND task_type = 'Water' AND is_completed"));
+            Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE id IN "
+                + "('d2f4b6c8-3e5a-4b7c-9d1e-000000000083', 'd2f4b6c8-3e5a-4b7c-9d1e-000000000084') AND NOT is_completed"));
+            Assert.True(vm.MaintenanceSchedules.Single(s => s.Schedule.Id.EndsWith("081")).IsCompleted);
+            Assert.False(vm.MaintenanceSchedules.Single(s => s.Schedule.Id.EndsWith("083")).IsCompleted);
+            Assert.False(vm.MaintenanceSchedules.Single(s => s.Schedule.Id.EndsWith("084")).IsCompleted);
+        }
+
+        [SkippableFact]
         public async Task NewBatch_IsSavedAndSelected()
         {
             RequireDatabase();
 
             MainWindowViewModel vm = await LoadedViewModel();
             await vm.NewBatchCommand.ExecuteAsync(null);
+            Assert.False(_dialogs.DestructiveByTitle["Buat Batch Baru"]);
 
             Assert.Equal(5, vm.Batches.Count);
             Assert.Equal("Batch 5", vm.SelectedBatch?.Name);
@@ -213,6 +265,7 @@ namespace Composta.UITests
             Assert.Equal(3, vm.Batches.Count);
             Assert.DoesNotContain(vm.Batches, b => b.Batch.Id == target.Batch.Id);
             Assert.Equal(0, Db.Count(itemsOfTarget));
+            Assert.True(_dialogs.DestructiveByTitle["Konfirmasi"]);
         }
 
         [SkippableFact]

@@ -18,9 +18,9 @@ namespace Composta.Services
             await ShowMessageWindowAsync(new MessageViewModel(title, message, tone));
         }
 
-        public Task<bool> ConfirmAsync(string title, string message)
+        public Task<bool> ConfirmAsync(string title, string message, bool isDestructive)
         {
-            return ShowMessageWindowAsync(new MessageViewModel(title, message, MessageTone.Confirm));
+            return ShowMessageWindowAsync(new MessageViewModel(title, message, MessageTone.Confirm, isDestructive));
         }
 
         private async Task<bool> ShowMessageWindowAsync(MessageViewModel viewModel)

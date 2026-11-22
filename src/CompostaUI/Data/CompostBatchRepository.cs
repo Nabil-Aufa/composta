@@ -172,6 +172,39 @@ namespace Composta.Data
             }
         }
 
+        public List<MaintenanceSchedule> CompleteScheduleWithEarlier(CompostBatch batch, MaintenanceSchedule schedule)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+            ArgumentNullException.ThrowIfNull(schedule);
+
+            List<MaintenanceSchedule> toComplete = batch.Schedules
+                .Where(s => !s.IsCompleted
+                    && s.TaskType == schedule.TaskType
+                    && s.DueDate <= schedule.DueDate
+                    && s.Id != schedule.Id)
+                .Append(schedule)
+                .ToList();
+
+            using NpgsqlConnection conn = OpenConnection();
+            using NpgsqlTransaction tx = conn.BeginTransaction();
+
+            foreach (MaintenanceSchedule item in toComplete)
+            {
+                EnsureSuccess(ExecuteFunction(conn, tx, "SELECT st_complete_schedule(:_id)",
+                    p => p.AddWithValue("_id", item.Id)),
+                    "Gagal memperbarui status jadwal perawatan di database.");
+            }
+
+            tx.Commit();
+
+            foreach (MaintenanceSchedule item in toComplete)
+            {
+                item.MarkCompleted();
+            }
+
+            return toComplete;
+        }
+
         public void AddSchedule(CompostBatch batch, MaintenanceSchedule schedule)
         {
             ArgumentNullException.ThrowIfNull(batch);

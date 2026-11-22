@@ -28,9 +28,12 @@ namespace Composta.UITests
             return Task.CompletedTask;
         }
 
-        public Task<bool> ConfirmAsync(string title, string message)
+        public Dictionary<string, bool> DestructiveByTitle { get; } = new Dictionary<string, bool>();
+
+        public Task<bool> ConfirmAsync(string title, string message, bool isDestructive)
         {
             Messages.Add(title + ": " + message);
+            DestructiveByTitle[title] = isDestructive;
             return Task.FromResult(ConfirmResult);
         }
 

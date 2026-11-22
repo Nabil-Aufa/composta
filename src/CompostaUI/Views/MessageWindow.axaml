@@ -90,7 +90,7 @@
                         IsVisible="{Binding IsConfirmation}" IsCancel="True"
                         Command="{Binding CancelCommand}" />
                 <Button Content="{Binding PrimaryText}" Classes="primary round"
-                        Classes.destructive="{Binding IsConfirmation}"
+                        Classes.destructive="{Binding IsDestructive}"
                         IsDefault="True" MinWidth="110"
                         Command="{Binding AcceptCommand}" />
             </StackPanel>

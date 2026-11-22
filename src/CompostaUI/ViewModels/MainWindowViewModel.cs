@@ -343,7 +343,8 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanCompleteSchedule))]
         private async Task CompleteScheduleAsync(MaintenanceScheduleItemViewModel? item)
         {
-            if (item == null || !item.CanComplete)
+            CompostBatch? batch = SelectedBatch?.Batch;
+            if (item == null || !item.CanComplete || batch == null)
             {
                 return;
             }
@@ -356,7 +357,7 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.CompleteSchedule(item.Schedule);
+                AppData.CompleteSchedule(batch, item.Schedule);
             }
             catch (Exception ex)
             {
@@ -367,10 +368,7 @@ namespace Composta.ViewModels
             }
 
             RefreshMaintenanceSchedules();
-            if (SelectedBatch != null)
-            {
-                ShowRecommendation(SelectedBatch.Batch);
-            }
+            ShowRecommendation(batch);
         }
 
         [RelayCommand(CanExecute = nameof(CanModifyData))]
@@ -387,6 +385,14 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
         {
+            bool confirmed = await _dialogs.ConfirmAsync("Buat Batch Baru",
+                "Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk 60 hari ke depan akan dibuat otomatis.",
+                isDestructive: false);
+            if (!confirmed)
+            {
+                return;
+            }
+
             CompostBatch batch = new CompostBatch(AppData.CurrentUser.Id, DateTime.Now, 60);
             try
             {
@@ -442,7 +448,8 @@ namespace Composta.ViewModels
 
             string batchName = AppData.GetBatchName(batch);
             bool confirmed = await _dialogs.ConfirmAsync("Konfirmasi",
-                "Yakin ingin menghapus " + batchName + " beserta seluruh sampah di dalamnya?");
+                "Yakin ingin menghapus " + batchName + " beserta seluruh sampah di dalamnya?",
+                isDestructive: true);
             if (!confirmed)
             {
                 return;

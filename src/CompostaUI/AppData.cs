@@ -130,9 +130,9 @@ namespace Composta
             BatchRepository.Add(batch);
         }
 
-        public static void CompleteSchedule(MaintenanceSchedule schedule)
+        public static List<MaintenanceSchedule> CompleteSchedule(CompostBatch batch, MaintenanceSchedule schedule)
         {
-            ScheduleRepository.CompleteSchedule(schedule);
+            return BatchRepository.CompleteScheduleWithEarlier(batch, schedule);
         }
 
         public static List<MaintenanceSchedule> GetDueOrOverdueSchedules()
