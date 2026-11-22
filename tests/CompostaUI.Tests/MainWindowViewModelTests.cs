@@ -54,6 +54,44 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
+        public async Task Load_FillsCo2eChartFromTimelineMatchingTotal()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            List<Composta.Models.CO2eTimelinePoint> timeline = AppData.GetCO2eTimeline();
+
+            Assert.False(vm.Co2eChart.HasNoData);
+            var series = Assert.IsType<LiveChartsCore.SkiaSharpView.LineSeries<double>>(Assert.Single(vm.Co2eChart.Series));
+            double[] values = series.Values!.ToArray();
+            Assert.Equal(timeline.Select(p => p.CumulativeCO2e), values);
+            Assert.Equal(vm.TotalCo2eText, values.Last().ToString("0.##") + " kg");
+            Assert.Equal(timeline.Count, vm.Co2eChart.XAxes[0].Labels!.Count);
+        }
+
+        [SkippableFact]
+        public async Task Load_KeepsDashboardWhenTimelineFunctionIsMissing()
+        {
+            RequireDatabase();
+
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand("DROP FUNCTION st_select_co2e_timeline(VARCHAR)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+
+            Assert.True(vm.IsDatabaseConnected);
+            Assert.Equal(4, vm.Batches.Count);
+            Assert.True(vm.Co2eChart.HasNoData);
+            Assert.Contains(_dialogs.Messages,
+                m => m.StartsWith("Grafik CO2e Gagal Dimuat:") && m.Contains("belum sesuai dengan versi aplikasi"));
+            Assert.Equal(MessageTone.Error, _dialogs.TonesByTitle["Grafik CO2e Gagal Dimuat"]);
+        }
+
+        [SkippableFact]
         public async Task SelectingBatch_UpdatesRecommendationAndCommands()
         {
             RequireDatabase();
