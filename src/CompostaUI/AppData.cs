@@ -23,7 +23,8 @@ namespace Composta
             BatchRepository = new CompostBatchRepository(Connstring);
             ScheduleRepository = new MaintenanceScheduleRepository(Connstring);
 
-            WeatherService = new OfflineWeatherService();
+            string? weatherKey = Environment.GetEnvironmentVariable("COMPOSTA_WEATHER_KEY");
+            WeatherService = CreateWeatherService(weatherKey);
             CarbonCalculator = new CarbonCalculatorService();
             Advisor = new CompostAdvisorService(WeatherService);
 
@@ -121,6 +122,15 @@ namespace Composta
         {
             CurrentUser = new User();
             IsLoggedIn = false;
+        }
+
+        public static IWeatherService CreateWeatherService(string? apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                return new OfflineWeatherService();
+            }
+            return new OpenWeatherMapService(apiKey.Trim());
         }
 
         public static void CreateBatchWithDefaultSchedules(CompostBatch batch)
