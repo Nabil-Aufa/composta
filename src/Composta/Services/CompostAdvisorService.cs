@@ -5,8 +5,14 @@ namespace Composta.Services
 {
     public class CompostAdvisorService : IRecommendationEngine
     {
-        private const double MinimumRatio = 2.0;
-        private const double MaximumRatio = 3.0;
+        public const double DefaultMinimumRatio = 2.0;
+        public const double DefaultMaximumRatio = 3.0;
+
+        private const double WetMinimumRatio = 2.5;
+        private const double WetMaximumRatio = 3.5;
+
+        private const double HotDryMinimumRatio = 1.5;
+        private const double HotDryMaximumRatio = 2.5;
 
         private IWeatherService _weatherService;
 
@@ -21,10 +27,41 @@ namespace Composta.Services
             set { _weatherService = value ?? throw new ArgumentNullException(nameof(value)); }
         }
 
+        public static (double MinRatio, double MaxRatio) GetTargetRatio(WeatherData? weather)
+        {
+            if (weather == null)
+            {
+                return (DefaultMinimumRatio, DefaultMaximumRatio);
+            }
+
+            if (weather.IsRainy() || weather.Humidity > 85)
+            {
+                return (WetMinimumRatio, WetMaximumRatio);
+            }
+
+            if (weather.Temperature > 32 && weather.Humidity < 50)
+            {
+                return (HotDryMinimumRatio, HotDryMaximumRatio);
+            }
+
+            return (DefaultMinimumRatio, DefaultMaximumRatio);
+        }
+
         public CompostRecommendation GenerateRecommendation(CompostBatch batch, string loc)
         {
-            WeatherData weather = _weatherService.GetCurrentWeather(loc);
-            return GenerateRecommendation(batch, weather);
+            ArgumentNullException.ThrowIfNull(batch);
+
+            WeatherData? weather;
+            try
+            {
+                weather = _weatherService.GetCurrentWeather(loc);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TimeoutException or InvalidOperationException)
+            {
+                weather = null;
+            }
+
+            return GenerateRecommendationInternal(batch, weather);
         }
 
         public CompostRecommendation GenerateRecommendation(CompostBatch batch, WeatherData weather)
@@ -32,6 +69,11 @@ namespace Composta.Services
             ArgumentNullException.ThrowIfNull(batch);
             ArgumentNullException.ThrowIfNull(weather);
 
+            return GenerateRecommendationInternal(batch, weather);
+        }
+
+        private static CompostRecommendation GenerateRecommendationInternal(CompostBatch batch, WeatherData? weather)
+        {
             batch.UpdateProgress();
 
             if (batch.IsReadyToHarvest())
@@ -42,51 +84,58 @@ namespace Composta.Services
             List<string> advice = new List<string>();
             int score = 0;
 
+            (double minRatio, double maxRatio) = GetTargetRatio(weather);
+            string targetText = $"{minRatio:0.#}-{maxRatio:0.#}";
+
             double ratio = batch.CalculateRatio();
             if (batch.WasteItems.Count == 0)
             {
-                advice.Add("Batch masih kosong, tambahkan bahan brown dan green.");
+                advice.Add($"Batch masih kosong, tambahkan bahan brown dan green (target rasio {targetText}).");
                 score += 1;
             }
             else if (!batch.HasGreenMaterial())
             {
-                advice.Add("Belum ada bahan green, tambahkan sisa sayur atau buah agar kompos bisa terurai.");
+                advice.Add($"Belum ada bahan green (target rasio {targetText}), tambahkan sisa sayur atau buah agar kompos bisa terurai.");
                 score += 2;
             }
-            else if (ratio < MinimumRatio)
+            else if (ratio < minRatio)
             {
-                advice.Add($"Rasio brown/green {ratio:0.##} terlalu rendah, tambahkan bahan brown seperti daun kering atau kardus.");
+                advice.Add($"Rasio brown/green {ratio:0.##} terlalu rendah (target {targetText}), tambahkan bahan brown seperti daun kering atau kardus.");
                 score += 2;
             }
-            else if (ratio > MaximumRatio)
+            else if (ratio > maxRatio)
             {
-                advice.Add($"Rasio brown/green {ratio:0.##} terlalu tinggi, tambahkan bahan green seperti sisa sayur atau buah.");
+                advice.Add($"Rasio brown/green {ratio:0.##} terlalu tinggi (target {targetText}), tambahkan bahan green seperti sisa sayur atau buah.");
                 score += 1;
             }
 
-            if (weather.IsRainy())
+            if (weather != null)
             {
-                advice.Add("Sedang hujan, tutup tumpukan kompos agar tidak terlalu basah.");
-                score += 2;
-            }
-            else if (weather.Temperature > 32 && weather.Humidity < 50)
-            {
-                advice.Add("Cuaca panas dan kering, siram kompos agar tetap lembap.");
-                score += 2;
-            }
-            else if (weather.Humidity > 85)
-            {
-                advice.Add("Kelembapan udara tinggi, aduk kompos untuk menambah sirkulasi udara.");
-                score += 1;
+                if (weather.IsRainy())
+                {
+                    advice.Add("Sedang hujan, tutup tumpukan kompos agar tidak terlalu basah.");
+                    score += 2;
+                }
+                else if (weather.Temperature > 32 && weather.Humidity < 50)
+                {
+                    advice.Add("Cuaca panas dan kering, siram kompos agar tetap lembap.");
+                    score += 2;
+                }
+                else if (weather.Humidity > 85)
+                {
+                    advice.Add("Kelembapan udara tinggi, aduk kompos untuk menambah sirkulasi udara.");
+                    score += 1;
+                }
+
+                if (weather.Temperature < 15)
+                {
+                    advice.Add("Suhu rendah memperlambat pengomposan, tutup kompos agar panas tertahan.");
+                    score += 1;
+                }
             }
 
-            if (weather.Temperature < 15)
-            {
-                advice.Add("Suhu rendah memperlambat pengomposan, tutup kompos agar panas tertahan.");
-                score += 1;
-            }
-
-            if (!weather.IsRainy() && batch.WasteItems.OfType<CompostableWaste>().Any(w => w.NeedsWater()))
+            bool rainy = weather?.IsRainy() ?? false;
+            if (!rainy && batch.WasteItems.OfType<CompostableWaste>().Any(w => w.NeedsWater()))
             {
                 advice.Add("Beberapa bahan terlalu kering, tambahkan air secukupnya.");
                 score += 1;
@@ -101,7 +150,7 @@ namespace Composta.Services
 
             if (advice.Count == 0)
             {
-                advice.Add("Kondisi kompos sudah baik, lanjutkan perawatan rutin.");
+                advice.Add($"Kondisi kompos sudah baik (target rasio {targetText}), lanjutkan perawatan rutin.");
             }
 
             string priority = score >= 4 ? "High" : score >= 2 ? "Medium" : "Low";

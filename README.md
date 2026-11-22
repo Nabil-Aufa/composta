@@ -105,6 +105,8 @@ Beberapa hal berbeda dari proposal awal:
 | Faktor CO2e "data IPCC/EPA" | **EPA WARM versi 16** | Faktor tiap kategori dihitung dari selisih emisi TPA dan pengomposan di WARM, lengkap dengan sumber dan asumsinya di [docs/faktor-co2e.md](docs/faktor-co2e.md). |
 | Kredensial database | **Connection string lewat `COMPOSTA_DB`** | Nilai bawaan `postgres/postgres` hanya untuk pengembangan lokal. Di perangkat lain, kredensial diatur lewat environment variable, bukan diubah di kode. |
 
+Aturan target rasio brown/green dinamis berdasarkan cuaca dijelaskan di [docs/target-rasio-cuaca.md](docs/target-rasio-cuaca.md).
+
 ## Struktur Repository
 
 | Folder | Isi |
