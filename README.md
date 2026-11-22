@@ -89,6 +89,8 @@ Beberapa hal berbeda dari proposal awal:
 | SQLite | **PostgreSQL** | Mengikuti materi praktikum (stored function `st_*`, pgAdmin4), tipe data dan constraint ditegakkan ketat oleh database, dan mendukung banyak user. |
 | MVVM | **MVVM dengan CommunityToolkit.Mvvm** | View (`.axaml`) hanya berisi tampilan, logika ada di ViewModel sehingga dapat diuji tanpa membuka jendela. ViewModel tidak bergantung pada Avalonia, sehingga dapat dipakai ulang jika suatu saat pindah ke WPF. Panduan ada di [src/CompostaUI/README.md](src/CompostaUI/README.md). |
 
+Aturan target rasio brown/green dinamis berdasarkan cuaca dijelaskan di [docs/target-rasio-cuaca.md](docs/target-rasio-cuaca.md).
+
 ## Struktur Repository
 
 | Folder | Isi |
