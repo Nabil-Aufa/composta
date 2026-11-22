@@ -46,7 +46,7 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | 20 | Hentikan server PostgreSQL lalu buka aplikasi | Pesan "Tidak dapat terhubung ke server PostgreSQL", status merah, semua tombol nonaktif, aplikasi tidak crash | [ ] |
 | 21 | Atur `COMPOSTA_DB` ke database yang belum dibuat | Pesan "Database ... belum dibuat" | [ ] |
 | 22 | Jalankan aplikasi pada database dengan skema lama | Pesan "Skema database ... belum sesuai dengan versi aplikasi ini" | [ ] |
-| 23 | API cuaca mati atau tanpa API key *(menyusul #6)* | Aplikasi tetap berjalan dengan data cuaca offline | [ ] |
+| 23 | Jalankan tanpa `COMPOSTA_WEATHER_KEY`, lalu dengan API key salah atau internet dimatikan, tekan Refresh cuaca | Aplikasi tetap berjalan, kartu cuaca berlabel "simulasi", pesan tidak menampilkan API key, rekomendasi tetap muncul | [ ] |
 
 ## Fitur Menyusul
 | No | Fitur | Issue | OK |
