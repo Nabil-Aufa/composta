@@ -480,5 +480,29 @@ namespace Composta.UITests
             Assert.Equal(vm.TotalCo2eText, chartTotal.ToString("0.##") + " kg");
             Assert.Equal(vm.TotalCo2eText + " CO2e", profile.TotalCo2eText);
         }
+
+        [SkippableFact]
+        public async Task RecommendationHistoryFailure_IsReportedOnce()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand("DROP FUNCTION st_insert_recommendation", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            BatchItemViewModel first = vm.Batches.First(b => !b.IsArchived);
+            BatchItemViewModel second = vm.Batches.Last(b => !b.IsArchived && b != first);
+            vm.SelectedBatch = second;
+            vm.SelectedBatch = first;
+            vm.SelectedBatch = second;
+
+            Assert.True(vm.RecommendationHistoryFailed);
+            Assert.Single(_dialogs.Messages, m => m.StartsWith("Riwayat Rekomendasi Gagal Disimpan:"));
+            Assert.False(string.IsNullOrEmpty(vm.RecommendationText));
+        }
     }
 }

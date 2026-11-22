@@ -337,9 +337,17 @@ namespace Composta.ViewModels
             {
                 AppData.SaveRecommendationIfChanged(recommendation);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (RecommendationHistoryFailed)
+                {
+                    return;
+                }
+
                 RecommendationHistoryFailed = true;
+                _ = _dialogs.ShowMessageAsync("Riwayat Rekomendasi Gagal Disimpan",
+                    "Rekomendasi tetap ditampilkan, tetapi riwayatnya tidak tersimpan.\n\n"
+                    + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Warning);
             }
         }
 
