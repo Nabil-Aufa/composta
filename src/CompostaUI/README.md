@@ -94,17 +94,29 @@ Gunakan properti `bool` di ViewModel dan style class di `App.axaml`, bukan warna
 - Panel kanan bisa digulir agar rekomendasi tetap dapat dibaca pada jendela kecil.
 
 ### Integrasi backend cuaca (#6)
-Kartu memakai `WeatherViewModel`, yang menerima `IWeatherService` melalui constructor.
-`MainWindowViewModel` memasok `AppData.WeatherService`. Pada branch ini layanan tersebut masih
-`OfflineWeatherService`, sesuai izin memakai data contoh di #9. Tidak ada API key yang dibutuhkan
-untuk menjalankan UI ini.
+`AppData.WeatherService` membaca environment variable `COMPOSTA_WEATHER_KEY`.
+- Jika `COMPOSTA_WEATHER_KEY` terisi, aplikasi memakai `OpenWeatherMapService` (`src/Composta/Services/OpenWeatherMapService.cs`, di-link melalui `CompostaUI.csproj`) untuk mengambil cuaca aktual dari OpenWeatherMap API (default lokasi `Yogyakarta`).
+- Jika `COMPOSTA_WEATHER_KEY` kosong/tidak diatur, aplikasi otomatis memakai `OfflineWeatherService` tanpa error.
+- Saat menggunakan `OpenWeatherMapService`, pemanggilan `GetCurrentWeather` dijalankan di background dengan batas waktu 10 detik. Jika internet terputus, timeout, atau API key tidak valid, kartu otomatis melakukan fallback ke `OfflineWeatherService` dengan label simulasi.
 
-Setelah #6 tersedia, pasok implementasi API melalui `AppData.WeatherService`. Pemanggilan sinkron
-`GetCurrentWeather` dijalankan di background; error/timeout (10 detik) ditangani oleh kartu dengan
-fallback simulasi dan pesan kegagalan. Hasil permintaan yang terlambat tidak menimpa kartu.
-Timeout membatasi waktu tunggu UI; interface sinkron saat ini belum dapat membatalkan request provider.
-Jika backend #6 menangani fallback sendiri, backend perlu meneruskan informasi sumber/fallback
-agar kartu tetap bisa menandai data offline dengan benar. Verifikasi cuaca API aktual masih menunggu #6.
+#### Mengatur API key cuaca (`COMPOSTA_WEATHER_KEY`)
+1. Daftar dan buat API key gratis di [OpenWeatherMap](https://openweathermap.org/api).
+2. Atur environment variable `COMPOSTA_WEATHER_KEY` sebelum menjalankan aplikasi (jangan menyimpan API key di dalam kode/repository):
+  - **Windows (PowerShell):**
+    ```powershell
+    $env:COMPOSTA_WEATHER_KEY="api_key_anda"
+    dotnet run
+    ```
+  - **Windows (Command Prompt / CMD):**
+    ```cmd
+    set COMPOSTA_WEATHER_KEY=api_key_anda
+    dotnet run
+    ```
+  - **macOS / Linux:**
+    ```bash
+    export COMPOSTA_WEATHER_KEY="api_key_anda"
+    dotnet run
+    ```
 
 ### Pengujian kartu cuaca
 ```bash
