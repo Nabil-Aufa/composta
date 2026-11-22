@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Composta.Enums;
+using Composta.Services;
 
 namespace Composta.Models
 {
@@ -71,9 +72,20 @@ namespace Composta.Models
 
         public double GetTotalCO2eSaved()
         {
+            List<WasteItem> allItems = _batches
+                .SelectMany(b => b.WasteItems)
+                .ToList();
+
+            CarbonCalculatorService calculator = new CarbonCalculatorService();
+            return calculator.CalculateCO2eSaved(allItems);
+        }
+
+        public double GetTotalCompostableWeight()
+        {
             double total = _batches
                 .SelectMany(b => b.WasteItems)
-                .Sum(item => item.Weight * item.GetCO2eFactor());
+                .OfType<CompostableWaste>()
+                .Sum(w => w.Weight);
             return Math.Round(total, 2);
         }
     }

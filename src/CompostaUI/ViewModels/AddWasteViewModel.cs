@@ -77,6 +77,7 @@ namespace Composta.ViewModels
         public IReadOnlyList<WasteCategory> Categories { get; }
 
         public string? SavedBatchId { get; private set; }
+        public IReadOnlyList<Badge> UnlockedBadges { get; private set; } = Array.Empty<Badge>();
 
         public bool HasBatches
         {
@@ -203,6 +204,7 @@ namespace Composta.ViewModels
                 return;
             }
 
+            UnlockedBadges = AppData.CheckAndAwardBadges();
             SavedBatchId = SelectedBatch.Batch.Id;
             CloseRequested?.Invoke(true);
         }
