@@ -149,6 +149,8 @@ namespace Composta.ViewModels
             get { return !IsHighPriority && !IsMediumPriority; }
         }
 
+        public Task MaturityRefreshTask { get; private set; } = Task.CompletedTask;
+
         public async Task LoadAsync()
         {
             await Task.WhenAll(
@@ -158,7 +160,89 @@ namespace Composta.ViewModels
 
             if (IsDatabaseConnected)
             {
+                MaturityRefreshTask = RefreshMaturityEstimateInBackgroundAsync();
                 await ShowMaintenanceReminderAsync();
+            }
+        }
+
+        
+        private async Task RefreshMaturityEstimateInBackgroundAsync()
+        {
+            if (AppData.HasRefreshedMaturityDays)
+            {
+                return;
+            }
+
+            string baseStatus = "Terhubung ke PostgreSQL  •  " + AppData.DatabaseInfo;
+            DatabaseStatusText = baseStatus + "  •  Menghitung estimasi panen...";
+
+            int estimatedDays;
+            try
+            {
+                estimatedDays = await Task.Run(AppData.RefreshEstimatedMaturityDays);
+            }
+            finally
+            {
+                if (IsDatabaseConnected)
+                {
+                    DatabaseStatusText = baseStatus;
+                }
+            }
+
+            if (!IsDatabaseConnected)
+            {
+                return;
+            }
+
+            List<CompostBatch> batchesSnapshot = AppData.CurrentUser.Batches.ToList();
+            bool anyUpdated = false;
+            string? syncError = null;
+
+            foreach (CompostBatch batch in batchesSnapshot)
+            {
+                BatchStatus oldStatus = batch.Status;
+                DateTime oldMaturityDate = batch.EstimatedMaturityDate;
+
+                batch.RecalculateEstimatedMaturityDate(estimatedDays);
+                batch.UpdateProgress();
+
+                if (batch.Status != oldStatus || batch.EstimatedMaturityDate != oldMaturityDate)
+                {
+                    try
+                    {
+                        AppData.BatchRepository.Update(batch, AppData.CurrentUser.Id);
+                        anyUpdated = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        syncError ??= DatabaseErrorMessage.From(ex, AppData.DatabaseInfo);
+                    }
+                }
+            }
+
+            if (syncError != null)
+            {
+                await _dialogs.ShowMessageAsync(
+                    "Sinkronisasi Estimasi Gagal",
+                    "Estimasi waktu matang terbaru gagal disimpan ke database.\n\n" + syncError,
+                    MessageTone.Warning);
+            }
+
+            if (anyUpdated && IsDatabaseConnected)
+            {
+                string? currentSelectedId = SelectedBatch?.Batch.Id;
+                List<CompostBatch> latestBatches = AppData.CurrentUser.Batches.ToList();
+
+                Batches.Clear();
+                foreach (CompostBatch batch in latestBatches)
+                {
+                    Batches.Add(new BatchItemViewModel(batch));
+                }
+
+                SelectedBatch = Batches.FirstOrDefault(b => b.Batch.Id == currentSelectedId)
+                    ?? Batches.FirstOrDefault(b => !b.IsArchived)
+                    ?? Batches.FirstOrDefault();
+                RefreshMaintenanceSchedules();
             }
         }
 
@@ -425,15 +509,37 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
         {
+            int estimatedDays;
+            if (AppData.HasRefreshedMaturityDays)
+            {
+                estimatedDays = AppData.CachedMaturityDays;
+            }
+            else
+            {
+                string previousStatus = DatabaseStatusText;
+                DatabaseStatusText = previousStatus + "  •  Menghitung estimasi panen...";
+                try
+                {
+                    estimatedDays = await Task.Run(AppData.RefreshEstimatedMaturityDays);
+                }
+                finally
+                {
+                    if (IsDatabaseConnected)
+                    {
+                        DatabaseStatusText = previousStatus;
+                    }
+                }
+            }
+
             bool confirmed = await _dialogs.ConfirmAsync("Buat Batch Baru",
-                "Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk 60 hari ke depan akan dibuat otomatis.",
+                $"Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk {estimatedDays} hari ke depan akan dibuat otomatis.",
                 isDestructive: false);
             if (!confirmed)
             {
                 return;
             }
 
-            CompostBatch batch = new CompostBatch(AppData.CurrentUser.Id, DateTime.Now, 60);
+            CompostBatch batch = new CompostBatch(AppData.CurrentUser.Id, DateTime.Now, estimatedDays);
             try
             {
                 AppData.BatchRepository.Add(batch);

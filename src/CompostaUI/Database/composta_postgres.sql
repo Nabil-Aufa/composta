@@ -331,6 +331,12 @@ BEGIN
     WHERE id = _id AND user_id = _user_id;
 
     IF FOUND THEN
+        UPDATE maintenance_schedules
+        SET due_date = _estimated_maturity_date
+        WHERE batch_id = _id
+          AND task_type = 'Harvest'
+          AND is_completed = FALSE;
+
         RETURN 1;
     ELSE
         RETURN 0;

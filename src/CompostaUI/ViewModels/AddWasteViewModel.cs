@@ -195,7 +195,7 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.BatchRepository.AddWasteItem(SelectedBatch.Batch, item, AppData.CurrentUser.Id);
+                AppData.BatchRepository.AddWasteItem(SelectedBatch.Batch, item, AppData.CurrentUser.Id, AppData.CachedMaturityDays);
             }
             catch (Exception ex)
             {

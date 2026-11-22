@@ -118,13 +118,13 @@ namespace Composta.Data
                 "Batch tidak ditemukan atau bukan milik profil yang sedang masuk.");
         }
 
-        public void AddWasteItem(CompostBatch batch, WasteItem item)
+        public void AddWasteItem(CompostBatch batch, WasteItem item, int? maturityDays = null)
         {
             ArgumentNullException.ThrowIfNull(batch);
-            AddWasteItem(batch, item, batch.UserId);
+            AddWasteItem(batch, item, batch.UserId, maturityDays);
         }
 
-        public void AddWasteItem(CompostBatch batch, WasteItem item, string actingUserId)
+        public void AddWasteItem(CompostBatch batch, WasteItem item, string actingUserId, int? maturityDays = null)
         {
             ArgumentNullException.ThrowIfNull(batch);
             ArgumentNullException.ThrowIfNull(item);
@@ -142,7 +142,17 @@ namespace Composta.Data
             using NpgsqlConnection conn = OpenConnection();
             using NpgsqlTransaction tx = conn.BeginTransaction();
 
+            DateTime previousMaturityDate = batch.EstimatedMaturityDate;
+            Dictionary<string, DateTime> previousHarvestDueDates = batch.Schedules
+                .Where(s => s.TaskType == TaskType.Harvest && !s.IsCompleted)
+                .ToDictionary(s => s.Id, s => s.DueDate);
+
             batch.AddWasteItem(item);
+            if (maturityDays.HasValue)
+            {
+                batch.RecalculateEstimatedMaturityDate(maturityDays.Value);
+            }
+
             try
             {
                 EnsureSuccess(InsertWasteItem(conn, tx, batch.Id, item), "Gagal menyimpan sampah ke database.");
@@ -153,6 +163,11 @@ namespace Composta.Data
             {
                 batch.WasteItems.Remove(item);
                 batch.BrownGreenRatio = batch.CalculateRatio();
+                batch.EstimatedMaturityDate = previousMaturityDate;
+                foreach (MaintenanceSchedule schedule in batch.Schedules.Where(s => previousHarvestDueDates.ContainsKey(s.Id)))
+                {
+                    schedule.DueDate = previousHarvestDueDates[schedule.Id];
+                }
                 throw;
             }
         }

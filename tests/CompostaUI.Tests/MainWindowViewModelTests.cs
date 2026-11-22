@@ -1,4 +1,6 @@
 using Composta.Enums;
+using Composta.Interfaces;
+using Composta.Models;
 using Composta.ViewModels;
 
 namespace Composta.UITests
@@ -29,6 +31,7 @@ namespace Composta.UITests
             AppData.Login(DatabaseFixture.NabilId);
             MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
             await vm.LoadAsync();
+            await vm.MaturityRefreshTask;
             return vm;
         }
 
@@ -503,6 +506,57 @@ namespace Composta.UITests
             Assert.True(vm.RecommendationHistoryFailed);
             Assert.Single(_dialogs.Messages, m => m.StartsWith("Riwayat Rekomendasi Gagal Disimpan:"));
             Assert.False(string.IsNullOrEmpty(vm.RecommendationText));
+        }
+
+        [SkippableFact]
+        public async Task Load_RefreshesMaturityEstimateFromWeatherAndPersistsAcrossRelogin()
+        {
+            RequireDatabase();
+
+            IWeatherService originalService = AppData.WeatherService;
+            try
+            {
+                FakeForecastWeatherService fakeWeather = new FakeForecastWeatherService(
+                    new WeatherData(28, 65, 0, "Clear", DateTime.Now));
+                AppData.SetWeatherServiceForTesting(fakeWeather);
+
+                AppData.Login(DatabaseFixture.NabilId);
+                MainWindowViewModel vm = new MainWindowViewModel(_dialogs, new WeatherViewModel(fakeWeather));
+                await vm.LoadAsync();
+                await vm.MaturityRefreshTask;
+
+                Assert.True(AppData.HasRefreshedMaturityDays);
+                Assert.Equal(52, AppData.CachedMaturityDays);
+
+                CompostBatch activeBatch = vm.Batches.Single(b => b.IsActive).Batch;
+                DateTime expectedMaturity = activeBatch.GetMaturityAnchorDate().AddDays(52);
+                Assert.Equal(expectedMaturity, activeBatch.EstimatedMaturityDate);
+
+                AppData.Logout();
+                AppData.Login(DatabaseFixture.NabilId);
+
+                CompostBatch reloadedBatch = AppData.CurrentUser.Batches.Single(b => b.Id == activeBatch.Id);
+                Assert.Equal(expectedMaturity, reloadedBatch.EstimatedMaturityDate);
+            }
+            finally
+            {
+                AppData.SetWeatherServiceForTesting(originalService);
+                AppData.Logout();
+            }
+        }
+
+        private sealed class FakeForecastWeatherService : IWeatherService
+        {
+            private readonly WeatherData _weather;
+
+            public FakeForecastWeatherService(WeatherData weather)
+            {
+                _weather = weather;
+            }
+
+            public WeatherData GetCurrentWeather(string location) => _weather;
+
+            public List<WeatherData> GetForecast(string location, int days) => new() { _weather };
         }
     }
 }

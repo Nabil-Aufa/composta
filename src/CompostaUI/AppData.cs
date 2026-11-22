@@ -40,13 +40,15 @@ namespace Composta
         public static CompostBatchRepository BatchRepository { get; }
         public static MaintenanceScheduleRepository ScheduleRepository { get; }
 
-        public static IWeatherService WeatherService { get; }
+        public static IWeatherService WeatherService { get; private set; }
         public static ICarbonCalculator CarbonCalculator { get; }
-        public static CompostAdvisorService Advisor { get; }
+        public static CompostAdvisorService Advisor { get; private set; }
 
         public static User CurrentUser { get; private set; }
         public static bool IsLoggedIn { get; private set; }
         public static List<WasteCategory> Categories { get; private set; }
+        public static int CachedMaturityDays { get; private set; } = CompostAdvisorService.DefaultMaturityDays;
+        public static bool HasRefreshedMaturityDays { get; private set; }
 
         public static string DatabaseInfo
         {
@@ -99,13 +101,19 @@ namespace Composta
             foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
             {
                 BatchStatus oldStatus = batch.Status;
+                DateTime oldMaturityDate = batch.EstimatedMaturityDate;
+
+                batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
+                if (HasRefreshedMaturityDays)
+                {
+                    batch.RecalculateEstimatedMaturityDate(CachedMaturityDays);
+                }
                 batch.UpdateProgress();
-                if (batch.Status != oldStatus)
+
+                if (batch.Status != oldStatus || batch.EstimatedMaturityDate != oldMaturityDate)
                 {
                     BatchRepository.Update(batch, user.Id);
                 }
-
-                batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
 
                 user.AddBatch(batch);
             }
@@ -115,10 +123,27 @@ namespace Composta
             IsLoggedIn = true;
         }
 
+        public static int RefreshEstimatedMaturityDays()
+        {
+            CachedMaturityDays = Advisor.EstimateMaturityDays(Location);
+            HasRefreshedMaturityDays = true;
+            return CachedMaturityDays;
+        }
+
         public static void Logout()
         {
             CurrentUser = new User();
             IsLoggedIn = false;
+            CachedMaturityDays = CompostAdvisorService.DefaultMaturityDays;
+            HasRefreshedMaturityDays = false;
+        }
+
+        public static void SetWeatherServiceForTesting(IWeatherService service)
+        {
+            WeatherService = service ?? throw new ArgumentNullException(nameof(service));
+            Advisor = new CompostAdvisorService(WeatherService);
+            CachedMaturityDays = CompostAdvisorService.DefaultMaturityDays;
+            HasRefreshedMaturityDays = false;
         }
 
         public static IWeatherService CreateWeatherService(string? apiKey)

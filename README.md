@@ -107,6 +107,8 @@ Beberapa hal berbeda dari proposal awal:
 
 Aturan target rasio brown/green dinamis berdasarkan cuaca dijelaskan di [docs/target-rasio-cuaca.md](docs/target-rasio-cuaca.md).
 
+Rumus dan contoh perhitungan estimasi waktu matang kompos dinamis dijelaskan di [docs/estimasi-waktu-matang.md](docs/estimasi-waktu-matang.md).
+
 ## Struktur Repository
 
 | Folder | Isi |

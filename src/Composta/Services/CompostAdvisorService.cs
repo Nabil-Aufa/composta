@@ -5,6 +5,10 @@ namespace Composta.Services
 {
     public class CompostAdvisorService : IRecommendationEngine
     {
+        public const int DefaultMaturityDays = 60;
+        public const int MinimumMaturityDays = 14;
+        public const int DefaultForecastDays = 5;
+
         public const double DefaultMinimumRatio = 2.0;
         public const double DefaultMaximumRatio = 3.0;
 
@@ -25,6 +29,64 @@ namespace Composta.Services
         {
             get { return _weatherService; }
             set { _weatherService = value ?? throw new ArgumentNullException(nameof(value)); }
+        }
+
+        public static int EstimateMaturityDays(IReadOnlyList<WeatherData>? forecast)
+        {
+            List<WeatherData>? validForecast = forecast?
+                .Where(w => w != null)
+                .ToList();
+
+            if (validForecast == null || validForecast.Count == 0)
+            {
+                return DefaultMaturityDays;
+            }
+
+            double averageTemperature = validForecast.Average(w => w.Temperature);
+            double averageHumidity = validForecast.Average(w => w.Humidity);
+
+            int temperatureAdjustment;
+            if (averageTemperature >= 25 && averageTemperature <= 35)
+            {
+                temperatureAdjustment = -8;
+            }
+            else if (averageTemperature > 35)
+            {
+                temperatureAdjustment = 5;
+            }
+            else if (averageTemperature < 15)
+            {
+                temperatureAdjustment = 12;
+            }
+            else
+            {
+                temperatureAdjustment = 4;
+            }
+
+            int humidityAdjustment = (averageHumidity < 45 || averageHumidity > 85) ? 6 : 0;
+
+            int estimatedDays = DefaultMaturityDays + temperatureAdjustment + humidityAdjustment;
+            return Math.Max(MinimumMaturityDays, estimatedDays);
+        }
+
+        private static readonly TimeSpan ForecastTimeout = TimeSpan.FromSeconds(5);
+
+        public int EstimateMaturityDays(string loc, int days = DefaultForecastDays)
+        {
+            List<WeatherData>? forecast;
+            try
+            {
+                forecast = Task.Run(() => _weatherService.GetForecast(loc, days))
+                    .WaitAsync(ForecastTimeout)
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch
+            {
+                forecast = null;
+            }
+
+            return EstimateMaturityDays(forecast);
         }
 
         public static (double MinRatio, double MaxRatio) GetTargetRatio(WeatherData? weather)
