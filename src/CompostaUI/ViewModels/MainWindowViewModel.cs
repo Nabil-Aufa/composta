@@ -311,7 +311,27 @@ namespace Composta.ViewModels
             CompostRecommendation recommendation = AppData.Advisor.GenerateRecommendation(batch, weather);
             RecommendationText = recommendation.Message;
             Priority = recommendation.Priority;
+            SaveRecommendationHistory(recommendation);
         }
+
+        private void SaveRecommendationHistory(CompostRecommendation recommendation)
+        {
+            if (!IsDatabaseConnected)
+            {
+                return;
+            }
+
+            try
+            {
+                AppData.SaveRecommendationIfChanged(recommendation);
+            }
+            catch (Exception)
+            {
+                RecommendationHistoryFailed = true;
+            }
+        }
+
+        public bool RecommendationHistoryFailed { get; private set; }
 
         private void ShowEmptyRecommendation()
         {

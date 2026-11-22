@@ -147,11 +147,18 @@ namespace Composta
             return ScheduleRepository.GetDueOrOverdueByUser(CurrentUser.Batches);
         }
 
-        public static CompostRecommendation GenerateAndSaveRecommendation(CompostBatch batch)
+        public static bool SaveRecommendationIfChanged(CompostRecommendation recommendation)
         {
-            CompostRecommendation recommendation = Advisor.GenerateRecommendation(batch, Location);
+            ArgumentNullException.ThrowIfNull(recommendation);
+
+            CompostRecommendation? latest = ScheduleRepository.GetRecommendationsByBatch(recommendation.BatchId).FirstOrDefault();
+            if (latest != null && latest.Message == recommendation.Message && latest.Priority == recommendation.Priority)
+            {
+                return false;
+            }
+
             ScheduleRepository.AddRecommendation(recommendation);
-            return recommendation;
+            return true;
         }
 
         public static List<CompostRecommendation> GetBatchRecommendations(string batchId)

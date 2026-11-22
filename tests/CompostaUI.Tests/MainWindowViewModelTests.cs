@@ -410,5 +410,24 @@ namespace Composta.UITests
                 _dialogs.Messages,
                 message => message.StartsWith("Pengingat Perawatan:"));
         }
+
+        [SkippableFact]
+        public async Task Recommendation_IsSavedOnceUntilItChanges()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            string batchId = vm.SelectedBatch!.Batch.Id;
+            string countSql = "SELECT COUNT(*) FROM compost_recommendations WHERE batch_id = '" + batchId + "'";
+            long afterLoad = Db.Count(countSql);
+
+            BatchItemViewModel selected = vm.SelectedBatch;
+            vm.SelectedBatch = vm.Batches.First(b => b != selected);
+            vm.SelectedBatch = selected;
+
+            Assert.Equal(1, afterLoad);
+            Assert.Equal(afterLoad, Db.Count(countSql));
+            Assert.False(vm.RecommendationHistoryFailed);
+        }
     }
 }
