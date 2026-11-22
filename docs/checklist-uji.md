@@ -34,8 +34,8 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | 12 | Klik "+ Catat Sampah" | Hanya batch berstatus Aktif yang bisa dipilih | [ ] |
 | 13 | Klik "Simpan" dengan nama kosong | Pesan "Nama sampah wajib diisi.", jendela tidak tertutup | [ ] |
 | 14 | Kosongkan kolom berat lalu simpan | Pesan "Berat harus lebih dari 0 kg ..." | [ ] |
-| 15 | Pilih kategori Plastik | Pilihan brown/green dan kelembapan disembunyikan, kolom alasan muncul, pratinjau kuning "Tidak dapat dikomposkan" | [ ] |
-| 16 | Simpan sampah kategori Plastik | Pesan sampah anorganik tidak dapat dimasukkan ke batch | [ ] |
+| 15 | Buka daftar kategori, lalu pilih Plastik | Plastik dan Kaca & Logam bertanda "(tidak dapat dikompos)"; setelah dipilih, pilihan brown/green dan kelembapan disembunyikan, muncul keterangan bahwa sampah ini tidak perlu disimpan, pratinjau kuning "Tidak dapat dikomposkan" berisi saran ke bank sampah | [ ] |
+| 16 | Lihat tombol "Simpan catatan" saat kategori Plastik dipilih | Tombol nonaktif; kembali ke kategori organik membuat tombol aktif lagi | [ ] |
 | 17 | Geser kelembapan ke bawah 40% | Pratinjau menyarankan menambah sedikit air | [ ] |
 | 18 | Isi "Daun mangga", Daun Kering & Ranting, Brown, 3 kg, simpan ke Batch 4 | Jendela tertutup, total sampah bertambah 3 kg, rasio Batch 4 berubah | [ ] |
 | 19 | Klik "Batal" | Jendela tertutup tanpa menyimpan | [ ] |
