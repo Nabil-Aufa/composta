@@ -112,9 +112,6 @@ BEGIN
     INSERT INTO users (id, name, email, joined_at)
     VALUES (_id, _name, LOWER(TRIM(_email)), _joined_at);
     RETURN 1;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -185,9 +182,6 @@ BEGIN
     INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed)
     VALUES (_id, _batch_id, _task_type, _due_date, _is_completed);
     RETURN 1;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -205,9 +199,6 @@ BEGIN
     ELSE
         RETURN 0;
     END IF;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -223,9 +214,6 @@ BEGIN
     ELSE
         RETURN 0;
     END IF;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -251,9 +239,6 @@ BEGIN
     INSERT INTO compost_recommendations (id, batch_id, message, priority, created_at)
     VALUES (_id, _batch_id, _message, _priority, _created_at);
     RETURN 1;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -280,9 +265,6 @@ BEGIN
     INSERT INTO compost_batches (id, user_id, start_date, status, brown_green_ratio, estimated_maturity_date)
     VALUES (_id, _user_id, _start_date, _status, _brown_green_ratio, _estimated_maturity_date);
     RETURN 1;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -299,9 +281,6 @@ BEGIN
     VALUES (_id, _batch_id, _category_id, _item_type, _name, _weight, _date_added,
             _brown_green_type, _moisture_content, _reason);
     RETURN 1;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -322,9 +301,6 @@ BEGIN
     ELSE
         RETURN 0;
     END IF;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 
@@ -340,9 +316,6 @@ BEGIN
     ELSE
         RETURN 0;
     END IF;
-EXCEPTION
-    WHEN OTHERS THEN
-        RETURN 0;
 END;
 $$;
 

@@ -51,6 +51,96 @@ namespace Composta.UITests
             Assert.StartsWith("Database composta_tidak_ada@localhost belum dibuat.", message);
         }
 
+        [SkippableFact]
+        public void DuplicateEmail_IsReportedAsAlreadyRegistered()
+        {
+            RequireDatabase();
+
+            Exception ex = Capture(() => new UserRepository(Db.Connstring)
+                .Add(new Composta.Models.User("Nabil Lain", "nabil@composta.id")));
+            string message = DatabaseErrorMessage.From(ex, "composta_test@localhost");
+
+            Assert.Equal(UniqueViolationState, Assert.IsType<PostgresException>(ex).SqlState);
+            Assert.StartsWith("Email tersebut sudah terdaftar.", message);
+            Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM users"));
+        }
+
+        [SkippableFact]
+        public void MissingOwner_IsReportedAndBatchIsRolledBack()
+        {
+            RequireDatabase();
+
+            Composta.Models.CompostBatch batch = new Composta.Models.CompostBatch("user-tidak-ada", DateTime.Now, 60);
+            Exception ex = Capture(() => new CompostBatchRepository(Db.Connstring).Add(batch));
+            string message = DatabaseErrorMessage.From(ex, "composta_test@localhost");
+
+            Assert.StartsWith("Data terkait tidak ditemukan di database", message);
+            Assert.Equal(5, Db.Count("SELECT COUNT(*) FROM compost_batches"));
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM maintenance_schedules"));
+        }
+
+        [SkippableFact]
+        public void RatioTooLarge_IsReportedAsNumberTooLarge()
+        {
+            RequireDatabase();
+
+            Composta.Models.CompostBatch batch = new Composta.Models.CompostBatch(DatabaseFixture.DemoUserId, DateTime.Now, 60)
+            {
+                BrownGreenRatio = 1000
+            };
+            Exception ex = Capture(() => new CompostBatchRepository(Db.Connstring).Add(batch));
+
+            Assert.Equal("Angka yang dimasukkan terlalu besar untuk disimpan.",
+                DatabaseErrorMessage.From(ex, "composta_test@localhost"));
+            Assert.Equal(5, Db.Count("SELECT COUNT(*) FROM compost_batches"));
+        }
+
+        [SkippableFact]
+        public void NameTooLong_IsReportedAsTextTooLong()
+        {
+            RequireDatabase();
+
+            Exception ex = Capture(() => new UserRepository(Db.Connstring)
+                .Add(new Composta.Models.User(new string('a', 101), "panjang@composta.id")));
+
+            Assert.Equal("Teks yang dimasukkan terlalu panjang untuk disimpan.",
+                DatabaseErrorMessage.From(ex, "composta_test@localhost"));
+        }
+
+        [SkippableFact]
+        public void NegativeWeight_IsReportedAsRuleViolation()
+        {
+            RequireDatabase();
+
+            Exception ex = Capture(() =>
+            {
+                using NpgsqlConnection conn = new NpgsqlConnection(Db.Connstring);
+                conn.Open();
+                using NpgsqlCommand cmd = new NpgsqlCommand(
+                    "SELECT st_insert_waste_item('w-negatif', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000003', NULL, " +
+                    "'compostable', 'Uji', -1, NOW()::timestamp, 'Brown', 50, NULL)", conn);
+                cmd.ExecuteScalar();
+            });
+
+            Assert.Equal("Data tidak memenuhi aturan database, periksa kembali isian yang dimasukkan.",
+                DatabaseErrorMessage.From(ex, "composta_test@localhost"));
+            Assert.Equal(11, Db.Count("SELECT COUNT(*) FROM waste_items"));
+        }
+
+        [SkippableFact]
+        public void UpdatingMissingBatch_StillReportsNotFound()
+        {
+            RequireDatabase();
+
+            Composta.Models.CompostBatch batch = new Composta.Models.CompostBatch(DatabaseFixture.DemoUserId, DateTime.Now, 60);
+            InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+                () => new CompostBatchRepository(Db.Connstring).Update(batch));
+
+            Assert.Equal("Gagal memperbarui batch di database.", DatabaseErrorMessage.From(ex, "composta_test@localhost"));
+        }
+
+        private const string UniqueViolationState = "23505";
+
         [Fact]
         public void ServerNotRunning_AsksToStartPostgres()
         {
