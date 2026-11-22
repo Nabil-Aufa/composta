@@ -89,18 +89,42 @@ namespace Composta.Data
         public void Update(CompostBatch entity)
         {
             ArgumentNullException.ThrowIfNull(entity);
+            Update(entity, entity.UserId);
+        }
+
+        public void Update(CompostBatch batch, string actingUserId)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
 
             using NpgsqlConnection conn = OpenConnection();
-            EnsureSuccess(UpdateBatch(conn, null, entity), "Gagal memperbarui batch di database.");
+            EnsureSuccess(UpdateBatch(conn, null, batch, actingUserId), "Gagal memperbarui batch di database.");
         }
 
         public void Delete(string id)
         {
-            EnsureSuccess(ExecuteFunction("SELECT st_delete_batch(:_id)", p => p.AddWithValue("_id", id)),
-                "Gagal menghapus batch dari database.");
+            CompostBatch batch = GetById(id) ?? throw new InvalidOperationException("Batch tidak ditemukan di database.");
+            Delete(batch, batch.UserId);
+        }
+
+        public void Delete(CompostBatch batch, string actingUserId)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+
+            EnsureSuccess(ExecuteFunction("SELECT st_delete_batch(:_id, :_user_id)", p =>
+                {
+                    p.AddWithValue("_id", batch.Id);
+                    p.AddWithValue("_user_id", actingUserId);
+                }),
+                "Batch tidak ditemukan atau bukan milik profil yang sedang masuk.");
         }
 
         public void AddWasteItem(CompostBatch batch, WasteItem item)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+            AddWasteItem(batch, item, batch.UserId);
+        }
+
+        public void AddWasteItem(CompostBatch batch, WasteItem item, string actingUserId)
         {
             ArgumentNullException.ThrowIfNull(batch);
             ArgumentNullException.ThrowIfNull(item);
@@ -122,7 +146,7 @@ namespace Composta.Data
             try
             {
                 EnsureSuccess(InsertWasteItem(conn, tx, batch.Id, item), "Gagal menyimpan sampah ke database.");
-                EnsureSuccess(UpdateBatch(conn, tx, batch), "Gagal memperbarui rasio batch di database.");
+                EnsureSuccess(UpdateBatch(conn, tx, batch, actingUserId), "Gagal memperbarui rasio batch di database.");
                 tx.Commit();
             }
             catch
@@ -134,6 +158,12 @@ namespace Composta.Data
         }
 
         public void Harvest(CompostBatch batch)
+        {
+            ArgumentNullException.ThrowIfNull(batch);
+            Harvest(batch, batch.UserId);
+        }
+
+        public void Harvest(CompostBatch batch, string actingUserId)
         {
             ArgumentNullException.ThrowIfNull(batch);
 
@@ -150,7 +180,7 @@ namespace Composta.Data
             batch.Status = BatchStatus.Archived;
             try
             {
-                EnsureSuccess(UpdateBatch(conn, tx, batch), "Gagal memperbarui batch di database.");
+                EnsureSuccess(UpdateBatch(conn, tx, batch, actingUserId), "Gagal memperbarui batch di database.");
                 foreach (MaintenanceSchedule schedule in pending)
                 {
                     EnsureSuccess(ExecuteFunction(conn, tx, "SELECT st_complete_schedule(:_id)",
@@ -347,13 +377,14 @@ namespace Composta.Data
                 });
         }
 
-        private static int UpdateBatch(NpgsqlConnection conn, NpgsqlTransaction? tx, CompostBatch batch)
+        private static int UpdateBatch(NpgsqlConnection conn, NpgsqlTransaction? tx, CompostBatch batch, string actingUserId)
         {
             return ExecuteFunction(conn, tx,
-                "SELECT st_update_batch(:_id, :_status, :_brown_green_ratio, :_estimated_maturity_date)",
+                "SELECT st_update_batch(:_id, :_user_id, :_status, :_brown_green_ratio, :_estimated_maturity_date)",
                 p =>
                 {
                     p.AddWithValue("_id", batch.Id);
+                    p.AddWithValue("_user_id", actingUserId);
                     p.AddWithValue("_status", batch.Status.ToString());
                     p.AddWithValue("_brown_green_ratio", ToNumeric(batch.BrownGreenRatio));
                     p.AddWithValue("_estimated_maturity_date", batch.EstimatedMaturityDate);

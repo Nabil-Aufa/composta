@@ -92,5 +92,29 @@ namespace Composta.UITests
             Assert.Equal(curingOrLater, vm.IsCuringOrLater);
             Assert.Equal(readyOrLater, vm.IsReadyOrLater);
         }
+
+        [Fact]
+        public void RatioTextShowsDashWithoutGreenMaterial()
+        {
+            CompostBatch batch = CreateBatch();
+            batch.AddWasteItem(new CompostableWaste("Daun kering", 2.5, null, BrownGreenType.Brown, 60));
+
+            BatchItemViewModel vm = new BatchItemViewModel(batch, Start);
+
+            Assert.Equal("–", vm.RatioText);
+            Assert.Contains("rasio brown/green –", vm.Detail);
+        }
+
+        [Fact]
+        public void RatioTextShowsBrownDividedByGreen()
+        {
+            CompostBatch batch = CreateBatch();
+            batch.AddWasteItem(new CompostableWaste("Daun kering", 5, null, BrownGreenType.Brown, 60));
+            batch.AddWasteItem(new CompostableWaste("Sisa sayur", 2, null, BrownGreenType.Green, 60));
+
+            BatchItemViewModel vm = new BatchItemViewModel(batch, Start);
+
+            Assert.Equal("2.5", vm.RatioText.Replace(',', '.'));
+        }
     }
 }

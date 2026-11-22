@@ -59,15 +59,12 @@ namespace Composta
 
         public static void Load()
         {
-            if (IsLoggedIn)
+            if (!IsLoggedIn)
             {
-                Login(CurrentUser.Id);
-                return;
+                throw new InvalidOperationException("Belum ada profil yang masuk. Pilih profil terlebih dahulu.");
             }
 
-            User user = UserRepository.GetAll().FirstOrDefault()
-                ?? throw new InvalidOperationException("Tabel users masih kosong.");
-            Login(user.Id);
+            Login(CurrentUser.Id);
         }
 
         public static List<User> GetUsers()
@@ -105,7 +102,7 @@ namespace Composta
                 batch.UpdateProgress();
                 if (batch.Status != oldStatus)
                 {
-                    BatchRepository.Update(batch);
+                    BatchRepository.Update(batch, user.Id);
                 }
 
                 batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
@@ -150,11 +147,18 @@ namespace Composta
             return ScheduleRepository.GetDueOrOverdueByUser(CurrentUser.Batches);
         }
 
-        public static CompostRecommendation GenerateAndSaveRecommendation(CompostBatch batch)
+        public static bool SaveRecommendationIfChanged(CompostRecommendation recommendation)
         {
-            CompostRecommendation recommendation = Advisor.GenerateRecommendation(batch, Location);
+            ArgumentNullException.ThrowIfNull(recommendation);
+
+            CompostRecommendation? latest = ScheduleRepository.GetRecommendationsByBatch(recommendation.BatchId).FirstOrDefault();
+            if (latest != null && latest.Message == recommendation.Message && latest.Priority == recommendation.Priority)
+            {
+                return false;
+            }
+
             ScheduleRepository.AddRecommendation(recommendation);
-            return recommendation;
+            return true;
         }
 
         public static List<CompostRecommendation> GetBatchRecommendations(string batchId)

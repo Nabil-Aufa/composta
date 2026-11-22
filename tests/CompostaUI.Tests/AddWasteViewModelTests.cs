@@ -10,7 +10,7 @@ namespace Composta.UITests
 
         private static AddWasteViewModel NewForm()
         {
-            AppData.Load();
+            AppData.Login(DatabaseFixture.NabilId);
             return new AddWasteViewModel(null);
         }
 
@@ -124,7 +124,7 @@ namespace Composta.UITests
             form.SelectedCategory = form.Categories.First(c => c.Name.StartsWith("Sisa Sayur"));
             form.Weight = 4;
 
-            Assert.Equal("Estimasi emisi dicegah: 2 kg CO2e", form.PreviewTitle);
+            Assert.Equal("Estimasi emisi dicegah: 1,68 kg CO2e", form.PreviewTitle);
 
             form.Moisture = 20;
             Assert.Equal("20%", form.MoistureText);

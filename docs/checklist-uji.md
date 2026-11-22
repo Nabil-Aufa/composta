@@ -13,7 +13,7 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
 | 1 | Buka aplikasi | Sapaan "Halo, Nabil Aufa Danaputra!", status "Terhubung ke PostgreSQL", 4 batch tampil | [ ] |
-| 2 | Lihat kartu ringkasan | CO2e dicegah 11,9 kg, batch berjalan 3, total sampah 30,5 kg | [ ] |
+| 2 | Lihat kartu ringkasan | CO2e dicegah 6,13 kg, batch berjalan 3, total sampah 30,5 kg | [ ] |
 | 3 | Lihat daftar batch | Keempat status tampil dengan warna berbeda: Sudah Dipanen, Siap Panen, Pematangan, Aktif | [ ] |
 | 4 | Lihat batch terpilih saat dibuka | Batch 2 (Siap Panen) terpilih, rekomendasi "Kompos sudah matang dan siap dipanen", prioritas tinggi | [ ] |
 | 5 | Pilih Batch 3 (Pematangan) | Rekomendasi menyebut jadwal perawatan yang terlewat | [ ] |
@@ -46,7 +46,7 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | 20 | Hentikan server PostgreSQL lalu buka aplikasi | Pesan "Tidak dapat terhubung ke server PostgreSQL", status merah, semua tombol nonaktif, aplikasi tidak crash | [ ] |
 | 21 | Atur `COMPOSTA_DB` ke database yang belum dibuat | Pesan "Database ... belum dibuat" | [ ] |
 | 22 | Jalankan aplikasi pada database dengan skema lama | Pesan "Skema database ... belum sesuai dengan versi aplikasi ini" | [ ] |
-| 23 | API cuaca mati atau tanpa API key *(menyusul #6)* | Aplikasi tetap berjalan dengan data cuaca offline | [ ] |
+| 23 | Jalankan tanpa `COMPOSTA_WEATHER_KEY`, lalu dengan API key salah atau internet dimatikan, tekan Refresh cuaca | Aplikasi tetap berjalan, kartu cuaca berlabel "simulasi", pesan tidak menampilkan API key, rekomendasi tetap muncul | [ ] |
 
 ## Fitur Menyusul
 | No | Fitur | Issue | OK |

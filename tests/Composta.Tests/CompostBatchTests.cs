@@ -13,10 +13,12 @@ namespace Composta.Tests
         }
 
         [Fact]
-        public void CalculateRatio_WithoutGreen_ReturnsBrownWeight()
+        public void CalculateRatio_WithoutGreen_ReturnsZero()
         {
-            Assert.Equal(4, TestData.BatchWithRatio(4, 0).CalculateRatio());
+            Assert.Equal(0, TestData.BatchWithRatio(4, 0).CalculateRatio());
             Assert.Equal(0, TestData.NewBatch().CalculateRatio());
+            Assert.False(TestData.BatchWithRatio(4, 0).HasGreenMaterial());
+            Assert.True(TestData.BatchWithRatio(4, 2).HasGreenMaterial());
         }
 
         [Fact]

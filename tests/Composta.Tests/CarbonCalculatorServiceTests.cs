@@ -40,8 +40,20 @@ namespace Composta.Tests
                 new CompostableWaste("Campuran", 3, null, BrownGreenType.Green, 60)
             };
 
-            Assert.Equal(1.5, _calculator.CalculateCO2eSaved(items), 2);
+            Assert.Equal(3 * CarbonCalculatorService.FoodWasteAvoidedFactor, _calculator.CalculateCO2eSaved(items), 2);
             Assert.Equal(0.9, new CarbonCalculatorService(0.3).CalculateCO2eSaved(items), 2);
+        }
+
+        [Fact]
+        public void CategoryWithZeroFactor_IsNotReplacedByDefault()
+        {
+            WasteCategory leaves = new WasteCategory("Daun Kering & Ranting", 0, true);
+            List<WasteItem> items = new List<WasteItem>
+            {
+                new CompostableWaste("Daun", 5, leaves, BrownGreenType.Brown, 40)
+            };
+
+            Assert.Equal(0, _calculator.CalculateCO2eSaved(items));
         }
 
         [Fact]

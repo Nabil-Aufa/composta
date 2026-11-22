@@ -233,7 +233,7 @@ namespace Composta.ViewModels
             UserName = user.Name;
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
-            double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));
+            double totalCo2e = AppData.CarbonCalculator.CalculateCO2eSaved(user.Batches.SelectMany(b => b.WasteItems).ToList());
             TotalCo2eText = totalCo2e.ToString("0.##") + " kg";
             ActiveBatchCountText = user.GetActiveBatches().Count.ToString();
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";
@@ -323,7 +323,35 @@ namespace Composta.ViewModels
             CompostRecommendation recommendation = AppData.Advisor.GenerateRecommendation(batch, weather);
             RecommendationText = recommendation.Message;
             Priority = recommendation.Priority;
+            SaveRecommendationHistory(recommendation);
         }
+
+        private void SaveRecommendationHistory(CompostRecommendation recommendation)
+        {
+            if (!IsDatabaseConnected)
+            {
+                return;
+            }
+
+            try
+            {
+                AppData.SaveRecommendationIfChanged(recommendation);
+            }
+            catch (Exception ex)
+            {
+                if (RecommendationHistoryFailed)
+                {
+                    return;
+                }
+
+                RecommendationHistoryFailed = true;
+                _ = _dialogs.ShowMessageAsync("Riwayat Rekomendasi Gagal Disimpan",
+                    "Rekomendasi tetap ditampilkan, tetapi riwayatnya tidak tersimpan.\n\n"
+                    + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Warning);
+            }
+        }
+
+        public bool RecommendationHistoryFailed { get; private set; }
 
         private void ShowEmptyRecommendation()
         {
@@ -436,7 +464,7 @@ namespace Composta.ViewModels
             string batchName = AppData.GetBatchName(batch);
             try
             {
-                AppData.BatchRepository.Harvest(batch);
+                AppData.BatchRepository.Harvest(batch, AppData.CurrentUser.Id);
             }
             catch (Exception ex)
             {
@@ -477,7 +505,7 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.BatchRepository.Delete(batch.Id);
+                AppData.BatchRepository.Delete(batch, AppData.CurrentUser.Id);
             }
             catch (Exception ex)
             {

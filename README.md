@@ -57,8 +57,21 @@ cd src/CompostaUI
 dotnet run
 ```
 
-Data cuaca saat ini masih memakai `OfflineWeatherService` (data contoh). Cara mengatur API key cuaca akan ditambahkan
-bersama integrasi API cuaca ([#6](https://github.com/Nabil-Aufa/composta/issues/6)).
+### 4. Mengatur API key cuaca (opsional)
+Cuaca aktual diambil dari [OpenWeatherMap](https://openweathermap.org/api). Buat API key gratis, lalu atur environment
+variable `COMPOSTA_WEATHER_KEY` sebelum `dotnet run`:
+
+```bash
+# macOS / Linux
+export COMPOSTA_WEATHER_KEY="api_key_anda"
+
+# Windows (PowerShell)
+$env:COMPOSTA_WEATHER_KEY = "api_key_anda"
+```
+
+Tanpa API key, atau saat internet terputus dan API tidak merespons dalam 10 detik, aplikasi tetap berjalan dengan
+data cuaca simulasi yang diberi label jelas di kartu cuaca. API key tidak boleh disimpan di kode maupun repository.
+Detail integrasi ada di [src/CompostaUI/README.md](src/CompostaUI/README.md#integrasi-backend-cuaca-6).
 
 ## Menjalankan Test
 
@@ -68,7 +81,7 @@ dotnet test tests/CompostaUI.Tests
 ```
 
 - `Composta.Tests`: unit test model dan service inti (`CompostAdvisorService`, `CarbonCalculatorService`, `CompostBatch`).
-- `CompostaUI.Tests`: test validasi, login per user, dan ViewModel yang terhubung ke PostgreSQL. Test ini memakai
+- `CompostaUI.Tests`: test validasi, login per user, repository, layanan cuaca, dan ViewModel yang terhubung ke PostgreSQL. Test ini memakai
   database terpisah dari `COMPOSTA_TEST_DB` (default `composta_test`) dan **mengosongkan isinya** setiap kali test
   dijalankan. Karena itu nama databasenya wajib diakhiri `_test`; selain itu test database ditolak. Jika database test tidak tersedia, test database
   dilewati (skipped).
@@ -88,6 +101,9 @@ Beberapa hal berbeda dari proposal awal:
 | WPF | **Avalonia** | WPF hanya berjalan di Windows, sedangkan pengembangan juga dilakukan di macOS. Avalonia memakai XAML yang hampir sama dengan WPF dan berjalan di Windows, macOS, dan Linux. Model dan service di `src/Composta` dipakai bersama tanpa perubahan. |
 | SQLite | **PostgreSQL** | Mengikuti materi praktikum (stored function `st_*`, pgAdmin4), tipe data dan constraint ditegakkan ketat oleh database, dan mendukung banyak user. |
 | MVVM | **MVVM dengan CommunityToolkit.Mvvm** | View (`.axaml`) hanya berisi tampilan, logika ada di ViewModel sehingga dapat diuji tanpa membuka jendela. ViewModel tidak bergantung pada Avalonia, sehingga dapat dipakai ulang jika suatu saat pindah ke WPF. Panduan ada di [src/CompostaUI/README.md](src/CompostaUI/README.md). |
+| Login pengguna | **Pilih profil tanpa password** | Composta dirancang untuk satu perangkat yang dipakai bersama, misalnya satu rumah tangga atau satu kebun. Profil dipakai untuk memisahkan batch dan dampak CO2e tiap orang, bukan untuk melindungi data rahasia. Profil cukup berisi nama dan email unik. Jika aplikasi dipakai lintas perangkat, perlu ditambah autentikasi dengan password yang di-hash. |
+| Faktor CO2e "data IPCC/EPA" | **EPA WARM versi 16** | Faktor tiap kategori dihitung dari selisih emisi TPA dan pengomposan di WARM, lengkap dengan sumber dan asumsinya di [docs/faktor-co2e.md](docs/faktor-co2e.md). |
+| Kredensial database | **Connection string lewat `COMPOSTA_DB`** | Nilai bawaan `postgres/postgres` hanya untuk pengembangan lokal. Di perangkat lain, kredensial diatur lewat environment variable, bukan diubah di kode. |
 
 Aturan target rasio brown/green dinamis berdasarkan cuaca dijelaskan di [docs/target-rasio-cuaca.md](docs/target-rasio-cuaca.md).
 

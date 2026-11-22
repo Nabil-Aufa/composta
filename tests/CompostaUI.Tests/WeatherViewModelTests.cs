@@ -40,6 +40,21 @@ namespace Composta.UITests
         }
 
         [Fact]
+        public async Task UnreachableOpenWeatherMap_FallsBackToOfflineWithoutLeakingApiKey()
+        {
+            OpenWeatherMapService service = new OpenWeatherMapService("kunci-rahasia", "http://127.0.0.1:1");
+            WeatherViewModel vm = new WeatherViewModel(service, TimeSpan.FromSeconds(5));
+
+            await vm.RefreshCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsOffline);
+            Assert.NotNull(vm.CurrentWeather);
+            Assert.Contains("simulasi", vm.StatusText);
+            Assert.DoesNotContain("kunci-rahasia", vm.StatusText);
+            Assert.False(vm.IsLoading);
+        }
+
+        [Fact]
         public async Task ProviderFailure_FallsBackAndCanBeRetriedWithoutLeakingError()
         {
             bool failing = true;

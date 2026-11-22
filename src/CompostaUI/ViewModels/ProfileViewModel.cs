@@ -13,7 +13,7 @@ namespace Composta.ViewModels
             Email = user.Email;
             JoinedAtText = "Bergabung " + user.JoinedAt.ToString("dd MMM yyyy");
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";
-            TotalCo2eText = user.Batches.Sum(calculator.CalculateBatchImpact).ToString("0.##") + " kg CO2e";
+            TotalCo2eText = calculator.CalculateCO2eSaved(user.Batches.SelectMany(b => b.WasteItems).ToList()).ToString("0.##") + " kg CO2e";
             BatchCountText = user.Batches.Count.ToString();
         }
 
