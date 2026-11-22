@@ -57,6 +57,30 @@ namespace Composta.UITests
         }
 
         [Theory]
+        [InlineData(-3, 0)]
+        [InlineData(0, 0)]
+        [InlineData(15, 50)]
+        [InlineData(30, 100)]
+        [InlineData(45, 100)]
+        public void ProgressUsesGivenToday(int daysSinceStart, double expected)
+        {
+            BatchItemViewModel vm = new BatchItemViewModel(CreateBatch(), Start.AddDays(daysSinceStart));
+
+            Assert.Equal(expected, vm.Progress, 3);
+        }
+
+        [Fact]
+        public void ProgressIsFullWhenMaturityNotAfterStart()
+        {
+            CompostBatch batch = CreateBatch();
+            batch.EstimatedMaturityDate = Start;
+
+            BatchItemViewModel vm = new BatchItemViewModel(batch, Start);
+
+            Assert.Equal(100, vm.Progress);
+        }
+
+        [Theory]
         [InlineData(BatchStatus.Active, false, false)]
         [InlineData(BatchStatus.Curing, true, false)]
         [InlineData(BatchStatus.Ready, true, true)]

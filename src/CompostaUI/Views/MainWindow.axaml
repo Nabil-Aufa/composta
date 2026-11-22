@@ -10,12 +10,9 @@
         Width="1280" Height="820"
         MinWidth="1060" MinHeight="620"
         WindowStartupLocation="CenterScreen">
-    <!-- Mengikuti frame "Dashboard desktop · Revisi" di halaman UI GUIDE Figma -->
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <!-- Konten dibatasi lebar maksimum dan diletakkan di tengah agar tetap rapi saat jendela dimaksimalkan -->
         <StackPanel Margin="32,24,32,28" Spacing="24" MaxWidth="1280" HorizontalAlignment="Stretch">
 
-            <!-- Top bar -->
             <Border Classes="topbar">
                 <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto">
                     <ctl:BrandLogo />
@@ -38,7 +35,6 @@
                 </Grid>
             </Border>
 
-            <!-- Banner ringkasan -->
             <Border Classes="banner" MinHeight="196">
                 <Grid ColumnDefinitions="*,480">
                     <StackPanel Margin="32,28" Spacing="18" VerticalAlignment="Center">
@@ -63,14 +59,12 @@
                         </Grid>
                     </StackPanel>
 
-                    <!-- Foto banner dari Figma -->
                     <Image Grid.Column="1" Source="avares://CompostaUI/Assets/Images/banner.jpg"
                            Stretch="UniformToFill" HorizontalAlignment="Right" VerticalAlignment="Center" />
                 </Grid>
             </Border>
 
             <Grid ColumnDefinitions="*,24,380">
-                <!-- Kolom kiri: batch dan jadwal -->
                 <StackPanel Spacing="20">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Text="Batch kompos" Classes="title" VerticalAlignment="Center" />
@@ -104,7 +98,6 @@
                                     <Border Classes="row">
                                         <Grid ColumnDefinitions="*,90,150,140,140" Margin="16,10"
                                               VerticalAlignment="Center">
-                                            <!-- Nama di atas, progres + hari di satu baris: tinggi semua baris sama -->
                                             <StackPanel VerticalAlignment="Center" Spacing="7">
                                                 <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
                                                            Foreground="{StaticResource InkBrush}"
@@ -137,7 +130,6 @@
                         </ListBox>
                     </StackPanel>
 
-                    <!-- Jadwal perawatan -->
                     <Border Classes="card">
                         <StackPanel Spacing="14">
                             <StackPanel Spacing="2">
@@ -147,11 +139,9 @@
                                            FontWeight="SemiBold" Foreground="{StaticResource ForestBrush}" />
                             </StackPanel>
 
-                            <!-- Timeline tahap batch terpilih -->
                             <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,6"
                                   IsVisible="{Binding SelectedBatch, Converter={x:Static ObjectConverters.IsNotNull}}"
                                   AutomationProperties.Name="Timeline tahap batch">
-                                <!-- Aktif -->
                                 <Grid Grid.Column="0" ColumnDefinitions="*,*">
                                     <Border Grid.Column="1" Classes="stepLine"
                                             Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}" />
@@ -161,7 +151,6 @@
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Aktif" Classes="stepLabel reached"
                                            Classes.current="{Binding SelectedBatch.IsActive, FallbackValue=False}" />
 
-                                <!-- Pematangan -->
                                 <Grid Grid.Column="1" ColumnDefinitions="*,*">
                                     <Border Grid.Column="0" Classes="stepLine"
                                             Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}" />
@@ -175,7 +164,6 @@
                                            Classes.reached="{Binding SelectedBatch.IsCuringOrLater, FallbackValue=False}"
                                            Classes.current="{Binding SelectedBatch.IsCuring, FallbackValue=False}" />
 
-                                <!-- Siap Panen -->
                                 <Grid Grid.Column="2" ColumnDefinitions="*,*">
                                     <Border Grid.Column="0" Classes="stepLine"
                                             Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}" />
@@ -189,7 +177,6 @@
                                            Classes.reached="{Binding SelectedBatch.IsReadyOrLater, FallbackValue=False}"
                                            Classes.current="{Binding SelectedBatch.IsReady, FallbackValue=False}" />
 
-                                <!-- Dipanen -->
                                 <Grid Grid.Column="3" ColumnDefinitions="*,*">
                                     <Border Grid.Column="0" Classes="stepLine"
                                             Classes.reached="{Binding SelectedBatch.IsArchived, FallbackValue=False}" />
@@ -251,7 +238,6 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Kolom kanan: rekomendasi, cuaca, grafik -->
                 <StackPanel Grid.Column="2" Spacing="16">
                     <Border Background="{StaticResource ForestBrush}" CornerRadius="16" Padding="24">
                         <StackPanel Spacing="10">
@@ -276,7 +262,6 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Cuaca -->
                     <Border Classes="leaf">
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto,Auto">
@@ -324,7 +309,6 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Grafik CO2e -->
                     <Border Classes="leaf">
                         <StackPanel Spacing="4">
                             <TextBlock Text="Total emisi yang dicegah" Classes="section" />
@@ -345,7 +329,6 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Status koneksi database -->
             <StackPanel Orientation="Horizontal" Spacing="6">
                 <Ellipse Width="8" Height="8" Fill="{StaticResource ForestBrush}"
                          IsVisible="{Binding IsDatabaseConnected}" VerticalAlignment="Center" />

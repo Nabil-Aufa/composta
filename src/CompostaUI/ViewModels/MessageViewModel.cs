@@ -14,12 +14,11 @@ namespace Composta.ViewModels
 
     public partial class MessageViewModel : ObservableObject
     {
-        public MessageViewModel(string title, string message, bool isConfirmation = false)
+        public MessageViewModel(string title, string message, MessageTone tone)
         {
             Title = title ?? string.Empty;
             Message = message ?? string.Empty;
-            IsConfirmation = isConfirmation;
-            Tone = ToneFromTitle(Title, isConfirmation);
+            Tone = tone;
         }
 
         public event Action<bool>? CloseRequested;
@@ -30,7 +29,7 @@ namespace Composta.ViewModels
 
         public string WindowTitle => "Composta - " + Title;
 
-        public bool IsConfirmation { get; }
+        public bool IsConfirmation => Tone == MessageTone.Confirm;
 
         public MessageTone Tone { get; }
 
@@ -45,31 +44,6 @@ namespace Composta.ViewModels
         public bool IsConfirm => Tone == MessageTone.Confirm;
 
         public string PrimaryText => IsConfirmation ? "Ya, lanjutkan" : "Mengerti";
-
-        public static MessageTone ToneFromTitle(string title, bool isConfirmation)
-        {
-            if (isConfirmation)
-            {
-                return MessageTone.Confirm;
-            }
-
-            if (title.Contains("Gagal", StringComparison.OrdinalIgnoreCase))
-            {
-                return MessageTone.Error;
-            }
-
-            if (title.Contains("Berhasil", StringComparison.OrdinalIgnoreCase))
-            {
-                return MessageTone.Success;
-            }
-
-            if (title.Contains("Pengingat", StringComparison.OrdinalIgnoreCase))
-            {
-                return MessageTone.Warning;
-            }
-
-            return MessageTone.Info;
-        }
 
         [RelayCommand]
         private void Accept()

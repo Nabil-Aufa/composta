@@ -9,8 +9,6 @@
         Title="Composta - Pilih Pengguna"
         Width="1040" Height="660" MinWidth="820" MinHeight="560"
         WindowStartupLocation="CenterScreen">
-    <!-- Mengikuti frame "Pilih pengguna" dan "Buat profil" di halaman UI GUIDE Figma -->
-    <!-- Konten dibatasi lebar maksimum dan diletakkan di tengah agar tetap rapi saat jendela dimaksimalkan -->
     <DockPanel Margin="32,24,32,28" MaxWidth="1120">
         <Border DockPanel.Dock="Top" Classes="topbar">
             <ctl:BrandLogo HorizontalAlignment="Left" />
@@ -20,7 +18,6 @@
                       Margin="0,24,0,0">
             <Grid ColumnDefinitions="*,40,460" Margin="24,32,0,0">
 
-                <!-- Kolom kiri -->
                 <StackPanel Spacing="10">
                     <StackPanel Spacing="10" IsVisible="{Binding IsSelectProfileView}">
                         <TextBlock Text="Pilih pengguna" Classes="display" />
@@ -49,7 +46,6 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Kolom kanan: Profil tersimpan -->
                 <Border Grid.Column="2" Classes="card" VerticalAlignment="Top"
                         IsVisible="{Binding IsSelectProfileView}">
                     <StackPanel Spacing="16">
@@ -97,7 +93,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Kolom kanan: Identitas pengguna -->
                 <Border Grid.Column="2" Classes="card" VerticalAlignment="Top"
                         IsVisible="{Binding IsCreateProfileView}">
                     <StackPanel Spacing="14">

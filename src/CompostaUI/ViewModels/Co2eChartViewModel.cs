@@ -11,7 +11,6 @@ namespace Composta.ViewModels
 {
     public partial class Co2eChartViewModel : ObservableObject
     {
-        // Warna dari design system: forest untuk garis, muted untuk label, line untuk garis bantu.
         private static readonly SKColor Forest = new SKColor(0x24, 0x4B, 0x38);
         private static readonly SKColor Muted = new SKColor(0x65, 0x70, 0x63);
         private static readonly SKColor Line = new SKColor(0xCF, 0xD8, 0xC6);

@@ -21,8 +21,8 @@ namespace Composta.ViewModels
                 + batch.CalculateRatio().ToString("0.##") + "  •  matang "
                 + batch.EstimatedMaturityDate.ToString("dd MMM yyyy");
 
-            double totalDays = (batch.EstimatedMaturityDate - batch.StartDate).TotalDays;
-            double elapsedDays = (DateTime.Now - batch.StartDate).TotalDays;
+            double totalDays = (batch.EstimatedMaturityDate.Date - batch.StartDate.Date).TotalDays;
+            double elapsedDays = (today.Date - batch.StartDate.Date).TotalDays;
             Progress = totalDays > 0 ? Math.Clamp(elapsedDays / totalDays * 100, 0, 100) : 100;
 
             int totalDayCount = Math.Max(1, (batch.EstimatedMaturityDate.Date - batch.StartDate.Date).Days);
@@ -73,7 +73,6 @@ namespace Composta.ViewModels
             get { return Batch.Status == BatchStatus.Archived; }
         }
 
-        // Tahap timeline yang sudah dilewati atau sedang berjalan (Aktif -> Pematangan -> Siap Panen -> Dipanen)
         public bool IsCuringOrLater
         {
             get { return Batch.Status >= BatchStatus.Curing; }

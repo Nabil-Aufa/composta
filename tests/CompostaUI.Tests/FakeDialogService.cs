@@ -19,9 +19,12 @@ namespace Composta.UITests
 
         public Func<AddWasteViewModel, bool>? OnAddWaste { get; set; }
 
-        public Task ShowMessageAsync(string title, string message)
+        public Dictionary<string, MessageTone> TonesByTitle { get; } = new Dictionary<string, MessageTone>();
+
+        public Task ShowMessageAsync(string title, string message, MessageTone tone)
         {
             Messages.Add(title + ": " + message);
+            TonesByTitle[title] = tone;
             return Task.CompletedTask;
         }
 

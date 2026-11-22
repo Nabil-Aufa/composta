@@ -207,7 +207,7 @@ namespace Composta.ViewModels
                 list + "\n\n" +
                 "Pilih batch tersebut untuk menandai jadwal sebagai selesai.";
 
-            await _dialogs.ShowMessageAsync("Pengingat Perawatan", message);
+            await _dialogs.ShowMessageAsync("Pengingat Perawatan", message, MessageTone.Warning);
         }
 
 
@@ -221,7 +221,7 @@ namespace Composta.ViewModels
             {
                 IsDatabaseConnected = false;
                 DatabaseStatusText = "Tidak terhubung ke PostgreSQL";
-                await _dialogs.ShowMessageAsync("Database Gagal", DatabaseErrorMessage.From(ex, AppData.DatabaseInfo));
+                await _dialogs.ShowMessageAsync("Database Gagal", DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -354,7 +354,8 @@ namespace Composta.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowMessageAsync("Update Gagal",
-                    item.TaskName + " gagal ditandai selesai.\n\n" + ex.Message);
+                    item.TaskName + " gagal ditandai selesai.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo),
+                    MessageTone.Error);
                 return;
             }
 
@@ -386,7 +387,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + ex.Message, MessageTone.Error);
                 return;
             }
 
@@ -394,7 +395,7 @@ namespace Composta.ViewModels
 
             CompostBatch? savedBatch = AppData.CurrentUser.Batches.FirstOrDefault(b => b.Id == batch.Id);
             string batchName = savedBatch != null ? AppData.GetBatchName(savedBatch) : "Batch baru";
-            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil ditambahkan ke database.");
+            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil ditambahkan ke database.", MessageTone.Success);
         }
 
         [RelayCommand(CanExecute = nameof(CanHarvest))]
@@ -403,7 +404,7 @@ namespace Composta.ViewModels
             CompostBatch? batch = SelectedBatch?.Batch;
             if (batch == null || batch.Status != BatchStatus.Ready)
             {
-                await _dialogs.ShowMessageAsync("Panen", "Pilih batch yang berstatus Siap Panen terlebih dahulu.");
+                await _dialogs.ShowMessageAsync("Panen", "Pilih batch yang berstatus Siap Panen terlebih dahulu.", MessageTone.Info);
                 return;
             }
 
@@ -416,12 +417,12 @@ namespace Composta.ViewModels
             catch (Exception ex)
             {
                 batch.Status = BatchStatus.Ready;
-                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + ex.Message, MessageTone.Error);
                 return;
             }
 
             await LoadDashboardAsync(batch.Id);
-            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dipanen.");
+            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dipanen.", MessageTone.Success);
         }
 
         [RelayCommand(CanExecute = nameof(CanDeleteBatch))]
@@ -430,7 +431,7 @@ namespace Composta.ViewModels
             CompostBatch? batch = SelectedBatch?.Batch;
             if (batch == null)
             {
-                await _dialogs.ShowMessageAsync("Hapus Batch", "Mohon pilih batch yang akan dihapus.");
+                await _dialogs.ShowMessageAsync("Hapus Batch", "Mohon pilih batch yang akan dihapus.", MessageTone.Info);
                 return;
             }
 
@@ -448,12 +449,12 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + ex.Message, MessageTone.Error);
                 return;
             }
 
             await LoadDashboardAsync(null);
-            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dihapus dari database.");
+            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dihapus dari database.", MessageTone.Success);
         }
     }
 }

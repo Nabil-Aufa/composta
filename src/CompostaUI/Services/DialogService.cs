@@ -13,14 +13,14 @@ namespace Composta.Services
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
-        public async Task ShowMessageAsync(string title, string message)
+        public async Task ShowMessageAsync(string title, string message, MessageTone tone)
         {
-            await ShowMessageWindowAsync(new MessageViewModel(title, message));
+            await ShowMessageWindowAsync(new MessageViewModel(title, message, tone));
         }
 
         public Task<bool> ConfirmAsync(string title, string message)
         {
-            return ShowMessageWindowAsync(new MessageViewModel(title, message, isConfirmation: true));
+            return ShowMessageWindowAsync(new MessageViewModel(title, message, MessageTone.Confirm));
         }
 
         private async Task<bool> ShowMessageWindowAsync(MessageViewModel viewModel)

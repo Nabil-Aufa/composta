@@ -116,6 +116,7 @@ namespace Composta.UITests
             Assert.Equal("Batch 5", vm.SelectedBatch?.Name);
             Assert.True(vm.SelectedBatch?.IsActive);
             Assert.Contains("Berhasil: Batch 5 berhasil ditambahkan ke database.", _dialogs.Messages);
+            Assert.Equal(MessageTone.Success, _dialogs.TonesByTitle["Berhasil"]);
             Assert.Equal(6, Db.Count("SELECT COUNT(*) FROM compost_batches"));
         }
 
@@ -214,6 +215,7 @@ namespace Composta.UITests
                 _dialogs.Messages,
                 message => message.StartsWith("Pengingat Perawatan:")
                     && message.Contains("Terlambat:"));
+            Assert.Equal(MessageTone.Warning, _dialogs.TonesByTitle["Pengingat Perawatan"]);
         }
 
         [SkippableFact]

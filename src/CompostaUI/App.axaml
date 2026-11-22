@@ -2,10 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Composta.App"
              RequestedThemeVariant="Light">
-    <!--
-        Token desain diambil dari Figma "Composta — UI/UX Design",
-        halaman 02 · Design system (Foundations v1) dan UI GUIDE.
-    -->
     <Application.Resources>
         <FontFamily x:Key="ManropeFont">avares://CompostaUI/Assets/Fonts#Manrope</FontFamily>
 
@@ -26,7 +22,6 @@
         <SolidColorBrush x:Key="SageBrush" Color="{StaticResource SageColor}" />
         <SolidColorBrush x:Key="LineBrush" Color="{StaticResource LineColor}" />
         <SolidColorBrush x:Key="TerraBrush" Color="{StaticResource TerraColor}" />
-        <!-- Panel hijau muda (banner, cuaca, grafik, baris terpilih) -->
         <SolidColorBrush x:Key="LeafBrush" Color="#E3EBDA" />
         <SolidColorBrush x:Key="DisabledBrush" Color="#E6E7E2" />
         <SolidColorBrush x:Key="DisabledTextBrush" Color="#9AA29A" />
@@ -44,7 +39,6 @@
             </FluentTheme.Palettes>
         </FluentTheme>
 
-        <!-- Tipografi: Manrope untuk navigasi, data, dan tindakan -->
         <Style Selector=":is(TopLevel)">
             <Setter Property="FontFamily" Value="{StaticResource ManropeFont}" />
         </Style>
@@ -110,7 +104,6 @@
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
         </Style>
 
-        <!-- Panel: radius 16 px, banner: radius 24 px -->
         <Style Selector="Border.card">
             <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
             <Setter Property="CornerRadius" Value="16" />
@@ -150,7 +143,6 @@
             <Setter Property="Background" Value="{StaticResource LineBrush}" />
         </Style>
 
-        <!-- Tombol: radius 8 px kontrol, target klik minimal 44 px -->
         <Style Selector="Button">
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -191,7 +183,6 @@
             <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
         </Style>
 
-        <!-- Tombol putih di atas panel hijau tua -->
         <Style Selector="Button.light">
             <Setter Property="Background" Value="White" />
             <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
@@ -201,7 +192,6 @@
             <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
         </Style>
 
-        <!-- Tombol teks tanpa latar -->
         <Style Selector="Button.ghost">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
@@ -228,7 +218,6 @@
             <Setter Property="Foreground" Value="{StaticResource TerraBrush}" />
         </Style>
 
-        <!-- Disabled dipakai saat input belum lengkap -->
         <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
             <Setter Property="Foreground" Value="{StaticResource DisabledTextBrush}" />
@@ -251,7 +240,6 @@
             <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
         </Style>
 
-        <!-- Toggle Hijau / Cokelat -->
         <Style Selector="RadioButton.segment">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -277,7 +265,6 @@
             <Setter Property="BorderThickness" Value="2" />
         </Style>
 
-        <!-- Input -->
         <Style Selector="TextBox, ComboBox, NumericUpDown">
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="MinHeight" Value="40" />
@@ -322,7 +309,6 @@
             <Setter Property="Background" Value="{StaticResource LineBrush}" />
         </Style>
 
-        <!-- Badge tahap pengomposan (UI GUIDE · Tahap batch) -->
         <Style Selector="Border.pill">
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Padding" Value="12,4" />
@@ -358,7 +344,6 @@
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
         </Style>
 
-        <!-- Progres batch di baris tabel -->
         <Style Selector="ProgressBar.thin">
             <Setter Property="Height" Value="4" />
             <Setter Property="MinHeight" Value="4" />
@@ -367,7 +352,6 @@
             <Setter Property="Background" Value="{StaticResource LineBrush}" />
         </Style>
 
-        <!-- Timeline tahap batch (Aktif → Pematangan → Siap Panen → Dipanen) -->
         <Style Selector="Border.stepDot">
             <Setter Property="Width" Value="14" />
             <Setter Property="Height" Value="14" />
@@ -407,7 +391,6 @@
             <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
         </Style>
 
-        <!-- Panel pratinjau (Catat Sampah) -->
         <Style Selector="Border.preview">
             <Setter Property="Background" Value="{StaticResource LeafBrush}" />
             <Setter Property="CornerRadius" Value="16" />
@@ -425,7 +408,6 @@
             <Setter Property="Foreground" Value="{StaticResource TerraBrush}" />
         </Style>
 
-        <!-- Daftar batch berbentuk tabel -->
         <Style Selector="ListBox.rows">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="0" />
@@ -444,7 +426,6 @@
         <Style Selector="ListBox.rows ListBoxItem Border.row">
             <Setter Property="Background" Value="White" />
             <Setter Property="CornerRadius" Value="8" />
-            <!-- Garis kiri selalu 3 px (transparan) agar isi baris tidak bergeser saat dipilih -->
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="3,0,0,0" />
             <Setter Property="MinHeight" Value="60" />
@@ -468,7 +449,6 @@
         <Style Selector="ListBox.rows ListBoxItem:selected TextBlock.pickHint">
             <Setter Property="IsVisible" Value="False" />
         </Style>
-        <!-- Varian dengan garis tepi (daftar profil) -->
         <Style Selector="ListBox.rows.outlined ListBoxItem Border.row">
             <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
             <Setter Property="BorderThickness" Value="1" />

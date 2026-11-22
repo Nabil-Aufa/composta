@@ -5,24 +5,32 @@ namespace Composta.UITests
     public class MessageViewModelTests
     {
         [Theory]
-        [InlineData("Pengingat Perawatan", MessageTone.Warning)]
-        [InlineData("Database Gagal", MessageTone.Error)]
-        [InlineData("Delete Gagal", MessageTone.Error)]
-        [InlineData("Berhasil", MessageTone.Success)]
-        [InlineData("Panen", MessageTone.Info)]
-        public void ToneFollowsTitle(string title, MessageTone expected)
+        [InlineData(MessageTone.Info)]
+        [InlineData(MessageTone.Success)]
+        [InlineData(MessageTone.Warning)]
+        [InlineData(MessageTone.Error)]
+        public void ToneComesFromParameter(MessageTone tone)
         {
-            MessageViewModel viewModel = new MessageViewModel(title, "isi");
+            MessageViewModel viewModel = new MessageViewModel("Judul Bebas", "isi", tone);
 
-            Assert.Equal(expected, viewModel.Tone);
+            Assert.Equal(tone, viewModel.Tone);
             Assert.False(viewModel.IsConfirmation);
             Assert.Equal("Mengerti", viewModel.PrimaryText);
         }
 
         [Fact]
+        public void ToneDoesNotDependOnTitle()
+        {
+            MessageViewModel viewModel = new MessageViewModel("Update Gagal", "isi", MessageTone.Info);
+
+            Assert.True(viewModel.IsInfo);
+            Assert.False(viewModel.IsError);
+        }
+
+        [Fact]
         public void ConfirmationUsesConfirmToneAndButtons()
         {
-            MessageViewModel viewModel = new MessageViewModel("Konfirmasi", "Hapus?", isConfirmation: true);
+            MessageViewModel viewModel = new MessageViewModel("Konfirmasi", "Hapus?", MessageTone.Confirm);
 
             Assert.True(viewModel.IsConfirm);
             Assert.True(viewModel.IsConfirmation);
@@ -35,7 +43,7 @@ namespace Composta.UITests
         [InlineData(false)]
         public void CommandsRequestCloseWithResult(bool accept)
         {
-            MessageViewModel viewModel = new MessageViewModel("Konfirmasi", "Hapus?", isConfirmation: true);
+            MessageViewModel viewModel = new MessageViewModel("Konfirmasi", "Hapus?", MessageTone.Confirm);
             bool? result = null;
             viewModel.CloseRequested += value => result = value;
 

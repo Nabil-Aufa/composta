@@ -7,7 +7,6 @@
         Title="Composta - Profil Pengguna"
         Width="760" Height="480" MinWidth="560" MinHeight="420"
         WindowStartupLocation="CenterOwner">
-    <!-- Mengikuti frame "Profil pengguna" di halaman UI GUIDE Figma -->
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="32,32,32,28" Spacing="20" MaxWidth="960">
             <TextBlock Text="Profil pengguna" Classes="display" FontSize="30" />

@@ -3,9 +3,6 @@ using Avalonia.Data.Converters;
 
 namespace Composta.Converters
 {
-    /// <summary>
-    /// Mengubah nama lengkap menjadi inisial untuk avatar, misalnya "Nayla Thalita" menjadi "NT".
-    /// </summary>
     public class InitialsConverter : IValueConverter
     {
         public static readonly InitialsConverter Instance = new InitialsConverter();

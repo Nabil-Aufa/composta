@@ -10,7 +10,6 @@
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Background="White">
-    <!-- Pengganti MessageBox bawaan: memakai warna, font, dan tombol dari App.axaml -->
     <Window.Styles>
         <Style Selector="Border.toneBadge">
             <Setter Property="Width" Value="44" />
@@ -51,7 +50,6 @@
             <Setter Property="Stroke" Value="{StaticResource TerraBrush}" />
         </Style>
 
-        <!-- Tombol utama berwarna terakota untuk konfirmasi tindakan yang tidak bisa dibatalkan -->
         <Style Selector="Button.primary.destructive">
             <Setter Property="Background" Value="{StaticResource TerraBrush}" />
         </Style>

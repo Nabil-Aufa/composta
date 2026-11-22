@@ -11,7 +11,6 @@
         CanResize="False"
         WindowStartupLocation="CenterOwner"
         Background="White">
-    <!-- Mengikuti frame "Catat Sampah" di halaman UI GUIDE Figma -->
     <StackPanel Margin="32,24,32,24" Spacing="20" MaxWidth="880">
         <StackPanel Spacing="14">
             <ctl:BrandLogo HorizontalAlignment="Left" />
@@ -20,7 +19,6 @@
         </StackPanel>
 
         <Grid ColumnDefinitions="*,32,300">
-            <!-- Form -->
             <StackPanel Spacing="16">
                 <StackPanel>
                     <TextBlock Classes="field" Text="Batch tujuan" />
@@ -98,7 +96,6 @@
                 <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="error" />
             </StackPanel>
 
-            <!-- Pratinjau -->
             <Border Grid.Column="2" Classes="preview" Classes.warning="{Binding IsPreviewWarning}"
                     VerticalAlignment="Top" MinHeight="220">
                 <StackPanel Spacing="12">
