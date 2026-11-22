@@ -70,6 +70,41 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
+        public async Task CompleteSchedule_SavesStatusAndUpdatesRecommendation()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            vm.SelectedBatch = vm.Batches.Single(b => b.Batch.Schedules.Any(s => s.IsOverdue()));
+            MaintenanceScheduleItemViewModel overdue = vm.MaintenanceSchedules.Single(s => s.IsOverdue);
+            Assert.Contains("jadwal perawatan yang terlewat", vm.RecommendationText);
+            Assert.True(vm.CompleteScheduleCommand.CanExecute(overdue));
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(overdue);
+
+            MaintenanceScheduleItemViewModel done = vm.MaintenanceSchedules.Single(s => s.Schedule.Id == overdue.Schedule.Id);
+            Assert.True(done.IsCompleted);
+            Assert.Equal("Selesai", done.StatusText);
+            Assert.False(vm.CompleteScheduleCommand.CanExecute(done));
+            Assert.DoesNotContain("jadwal perawatan yang terlewat", vm.RecommendationText);
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE id = '"
+                + overdue.Schedule.Id + "' AND is_completed"));
+        }
+
+        [SkippableFact]
+        public async Task CompleteSchedule_IsDisabledWithoutDatabase()
+        {
+            MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
+            MaintenanceScheduleItemViewModel item = new MaintenanceScheduleItemViewModel(
+                new Composta.Models.MaintenanceSchedule(TaskType.Turn, DateTime.Today));
+
+            Assert.False(vm.CompleteScheduleCommand.CanExecute(item));
+            Assert.False(vm.CompleteScheduleCommand.CanExecute(null));
+            Assert.True(vm.HasNoMaintenanceSchedules);
+            Assert.Contains("batch kompos yang dipilih", vm.MaintenanceEmptyText);
+        }
+
+        [SkippableFact]
         public async Task NewBatch_IsSavedAndSelected()
         {
             RequireDatabase();
@@ -81,6 +116,7 @@ namespace Composta.UITests
             Assert.Equal("Batch 5", vm.SelectedBatch?.Name);
             Assert.True(vm.SelectedBatch?.IsActive);
             Assert.Contains("Berhasil: Batch 5 berhasil ditambahkan ke database.", _dialogs.Messages);
+            Assert.Equal(MessageTone.Success, _dialogs.TonesByTitle["Berhasil"]);
             Assert.Equal(6, Db.Count("SELECT COUNT(*) FROM compost_batches"));
         }
 
@@ -179,6 +215,7 @@ namespace Composta.UITests
                 _dialogs.Messages,
                 message => message.StartsWith("Pengingat Perawatan:")
                     && message.Contains("Terlambat:"));
+            Assert.Equal(MessageTone.Warning, _dialogs.TonesByTitle["Pengingat Perawatan"]);
         }
 
         [SkippableFact]

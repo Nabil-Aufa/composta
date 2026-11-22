@@ -17,7 +17,7 @@ namespace Composta.UITests
             await vm.RefreshCommand.ExecuteAsync(null);
 
             Assert.Equal("Bandung", service.LastLocation);
-            Assert.Equal("Cuaca hari ini • Bandung", vm.LocationText);
+            Assert.Equal("Cuaca · Bandung", vm.LocationText);
             Assert.Equal("31°C", vm.TemperatureText);
             Assert.Contains("65%", vm.DetailText);
             Assert.EndsWith(timestamp.ToString("dd MMM yyyy HH:mm:ss"), vm.UpdatedAtText);

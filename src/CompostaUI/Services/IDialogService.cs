@@ -4,7 +4,7 @@ namespace Composta.Services
 {
     public interface IDialogService
     {
-        Task ShowMessageAsync(string title, string message);
+        Task ShowMessageAsync(string title, string message, MessageTone tone);
 
         Task<bool> ConfirmAsync(string title, string message);
 

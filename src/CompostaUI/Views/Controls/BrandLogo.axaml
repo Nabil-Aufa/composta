@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Composta.Views.Controls.BrandLogo">
+    <Image Source="avares://CompostaUI/Assets/Images/logo.png" Height="40" Stretch="Uniform"
+           HorizontalAlignment="Left" VerticalAlignment="Center"
+           RenderOptions.BitmapInterpolationMode="HighQuality"
+           AutomationProperties.Name="Composta" />
+</UserControl>

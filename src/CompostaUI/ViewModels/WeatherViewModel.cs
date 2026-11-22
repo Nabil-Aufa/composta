@@ -102,7 +102,7 @@ namespace Composta.ViewModels
                 }
 
                 CurrentWeather = weather;
-                LocationText = "Cuaca hari ini • " + location;
+                LocationText = "Cuaca · " + location;
                 TemperatureText = weather.Temperature.ToString("0.#") + "°C";
                 ConditionText = weather.Condition;
                 DetailText = "Kelembapan " + weather.Humidity.ToString("0") + "% • Curah hujan "

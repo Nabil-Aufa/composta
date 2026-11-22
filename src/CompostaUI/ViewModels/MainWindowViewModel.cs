@@ -16,15 +16,19 @@ namespace Composta.ViewModels
         private string _greeting = string.Empty;
 
         [ObservableProperty]
+        private string _userName = string.Empty;
+
+        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AddWasteCommand))]
         [NotifyCanExecuteChangedFor(nameof(NewBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
         [NotifyCanExecuteChangedFor(nameof(DeleteBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(ShowProfileCommand))]
+        [NotifyCanExecuteChangedFor(nameof(CompleteScheduleCommand))]
         private bool _isDatabaseConnected;
 
         [ObservableProperty]
-        private string _databaseStatusText = "● Menghubungkan ke PostgreSQL...";
+        private string _databaseStatusText = "Menghubungkan ke PostgreSQL...";
 
         [ObservableProperty]
         private string _totalCo2eText = "-";
@@ -82,6 +86,9 @@ namespace Composta.ViewModels
         [ObservableProperty]
         private bool _hasNoMaintenanceSchedules = true;
 
+        [ObservableProperty]
+        private string _maintenanceEmptyText = "Jadwal akan muncul setelah ada batch kompos yang dipilih.";
+
         public WeatherViewModel Weather { get; }
         public Co2eChartViewModel Co2eChart { get; } = new();
 
@@ -99,6 +106,7 @@ namespace Composta.ViewModels
             _session.Logout();
             IsDatabaseConnected = false;
             Greeting = string.Empty;
+            UserName = string.Empty;
             TotalCo2eText = "-";
             TotalWeightText = "-";
             ActiveBatchCountText = "-";
@@ -157,10 +165,12 @@ namespace Composta.ViewModels
         private async Task ShowMaintenanceReminderAsync()
         {
             var schedules = AppData.CurrentUser.Batches
-                .SelectMany(batch => batch.Schedules)
-                .Where(schedule =>
-                    !schedule.IsCompleted &&
-                    schedule.DueDate.Date <= DateTime.Today)
+                .SelectMany(batch => batch.Schedules
+                    .Where(schedule =>
+                        !schedule.IsCompleted &&
+                        schedule.DueDate.Date <= DateTime.Today)
+                    .Select(schedule => (Batch: batch, Schedule: schedule)))
+                .OrderBy(item => item.Schedule.DueDate)
                 .ToList();
 
             if (schedules.Count == 0)
@@ -169,18 +179,35 @@ namespace Composta.ViewModels
             }
 
             int overdueCount = schedules.Count(
-                schedule => schedule.DueDate.Date < DateTime.Today);
+                item => item.Schedule.DueDate.Date < DateTime.Today);
 
             int todayCount = schedules.Count(
-                schedule => schedule.DueDate.Date == DateTime.Today);
+                item => item.Schedule.DueDate.Date == DateTime.Today);
+
+            const int MaxListed = 5;
+            IEnumerable<string> lines = schedules
+                .Take(MaxListed)
+                .Select(item =>
+                {
+                    int lateDays = (DateTime.Today - item.Schedule.DueDate.Date).Days;
+                    string when = lateDays > 0 ? $"terlambat {lateDays} hari" : "hari ini";
+                    string task = new MaintenanceScheduleItemViewModel(item.Schedule).TaskName;
+                    return $"•  {AppData.GetBatchName(item.Batch)}: {task} ({when})";
+                });
+
+            string list = string.Join("\n", lines);
+            if (schedules.Count > MaxListed)
+            {
+                list += $"\n•  dan {schedules.Count - MaxListed} jadwal lainnya";
+            }
 
             string message =
-                $"Ada {schedules.Count} jadwal perawatan yang perlu diperhatikan.\n\n" +
-                $"Terlambat: {overdueCount}\n" +
-                $"Jatuh tempo hari ini: {todayCount}\n\n" +
-                "Pilih batch untuk melihat detail jadwal perawatan.";
+                $"Ada {schedules.Count} jadwal perawatan yang perlu diperhatikan " +
+                $"(Terlambat: {overdueCount}, jatuh tempo hari ini: {todayCount}).\n\n" +
+                list + "\n\n" +
+                "Pilih batch tersebut untuk menandai jadwal sebagai selesai.";
 
-            await _dialogs.ShowMessageAsync("Pengingat Perawatan", message);
+            await _dialogs.ShowMessageAsync("Pengingat Perawatan", message, MessageTone.Warning);
         }
 
 
@@ -193,15 +220,16 @@ namespace Composta.ViewModels
             catch (Exception ex)
             {
                 IsDatabaseConnected = false;
-                DatabaseStatusText = "● Tidak terhubung ke PostgreSQL";
-                await _dialogs.ShowMessageAsync("Database Gagal", DatabaseErrorMessage.From(ex, AppData.DatabaseInfo));
+                DatabaseStatusText = "Tidak terhubung ke PostgreSQL";
+                await _dialogs.ShowMessageAsync("Database Gagal", DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
             IsDatabaseConnected = true;
-            DatabaseStatusText = "● Terhubung ke PostgreSQL  •  " + AppData.DatabaseInfo;
+            DatabaseStatusText = "Terhubung ke PostgreSQL  •  " + AppData.DatabaseInfo;
 
             User user = AppData.CurrentUser;
+            UserName = user.Name;
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
             double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));
@@ -256,6 +284,9 @@ namespace Composta.ViewModels
             }
 
             HasNoMaintenanceSchedules = MaintenanceSchedules.Count == 0;
+            MaintenanceEmptyText = SelectedBatch == null
+                ? "Jadwal akan muncul setelah ada batch kompos yang dipilih."
+                : "Batch ini belum punya jadwal perawatan.";
         }
 
         private void ShowRecommendation(CompostBatch batch)
@@ -303,6 +334,38 @@ namespace Composta.ViewModels
             return IsDatabaseConnected && SelectedBatch != null;
         }
 
+        private bool CanCompleteSchedule(MaintenanceScheduleItemViewModel? item)
+        {
+            return IsDatabaseConnected && item != null && item.CanComplete;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanCompleteSchedule))]
+        private async Task CompleteScheduleAsync(MaintenanceScheduleItemViewModel? item)
+        {
+            if (item == null || item.IsCompleted)
+            {
+                return;
+            }
+
+            try
+            {
+                AppData.CompleteSchedule(item.Schedule);
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowMessageAsync("Update Gagal",
+                    item.TaskName + " gagal ditandai selesai.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo),
+                    MessageTone.Error);
+                return;
+            }
+
+            RefreshMaintenanceSchedules();
+            if (SelectedBatch != null)
+            {
+                ShowRecommendation(SelectedBatch.Batch);
+            }
+        }
+
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task AddWasteAsync()
         {
@@ -324,7 +387,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + ex.Message, MessageTone.Error);
                 return;
             }
 
@@ -332,7 +395,7 @@ namespace Composta.ViewModels
 
             CompostBatch? savedBatch = AppData.CurrentUser.Batches.FirstOrDefault(b => b.Id == batch.Id);
             string batchName = savedBatch != null ? AppData.GetBatchName(savedBatch) : "Batch baru";
-            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil ditambahkan ke database.");
+            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil ditambahkan ke database.", MessageTone.Success);
         }
 
         [RelayCommand(CanExecute = nameof(CanHarvest))]
@@ -341,7 +404,7 @@ namespace Composta.ViewModels
             CompostBatch? batch = SelectedBatch?.Batch;
             if (batch == null || batch.Status != BatchStatus.Ready)
             {
-                await _dialogs.ShowMessageAsync("Panen", "Pilih batch yang berstatus Siap Panen terlebih dahulu.");
+                await _dialogs.ShowMessageAsync("Panen", "Pilih batch yang berstatus Siap Panen terlebih dahulu.", MessageTone.Info);
                 return;
             }
 
@@ -354,12 +417,12 @@ namespace Composta.ViewModels
             catch (Exception ex)
             {
                 batch.Status = BatchStatus.Ready;
-                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + ex.Message, MessageTone.Error);
                 return;
             }
 
             await LoadDashboardAsync(batch.Id);
-            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dipanen.");
+            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dipanen.", MessageTone.Success);
         }
 
         [RelayCommand(CanExecute = nameof(CanDeleteBatch))]
@@ -368,7 +431,7 @@ namespace Composta.ViewModels
             CompostBatch? batch = SelectedBatch?.Batch;
             if (batch == null)
             {
-                await _dialogs.ShowMessageAsync("Hapus Batch", "Mohon pilih batch yang akan dihapus.");
+                await _dialogs.ShowMessageAsync("Hapus Batch", "Mohon pilih batch yang akan dihapus.", MessageTone.Info);
                 return;
             }
 
@@ -386,12 +449,12 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + ex.Message);
+                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + ex.Message, MessageTone.Error);
                 return;
             }
 
             await LoadDashboardAsync(null);
-            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dihapus dari database.");
+            await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dihapus dari database.", MessageTone.Success);
         }
     }
 }

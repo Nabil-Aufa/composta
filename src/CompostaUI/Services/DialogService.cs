@@ -1,9 +1,6 @@
 using Avalonia.Controls;
 using Composta.ViewModels;
 using Composta.Views;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
-using MessageBoxIcon = MsBox.Avalonia.Enums.Icon;
 
 namespace Composta.Services
 {
@@ -16,17 +13,34 @@ namespace Composta.Services
             _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
-        public async Task ShowMessageAsync(string title, string message)
+        public async Task ShowMessageAsync(string title, string message, MessageTone tone)
         {
-            await MessageBoxManager.GetMessageBoxStandard(title, message).ShowWindowDialogAsync(_owner);
+            await ShowMessageWindowAsync(new MessageViewModel(title, message, tone));
         }
 
-        public async Task<bool> ConfirmAsync(string title, string message)
+        public Task<bool> ConfirmAsync(string title, string message)
         {
-            ButtonResult answer = await MessageBoxManager
-                .GetMessageBoxStandard(title, message, ButtonEnum.YesNo, MessageBoxIcon.Question)
-                .ShowWindowDialogAsync(_owner);
-            return answer == ButtonResult.Yes;
+            return ShowMessageWindowAsync(new MessageViewModel(title, message, MessageTone.Confirm));
+        }
+
+        private async Task<bool> ShowMessageWindowAsync(MessageViewModel viewModel)
+        {
+            MessageWindow window = new MessageWindow { DataContext = viewModel };
+
+            void CloseWindow(bool accepted)
+            {
+                window.Close(accepted);
+            }
+
+            viewModel.CloseRequested += CloseWindow;
+            try
+            {
+                return await window.ShowDialog<bool>(_owner);
+            }
+            finally
+            {
+                viewModel.CloseRequested -= CloseWindow;
+            }
         }
 
         public Task ShowProfileAsync(ProfileViewModel viewModel)

@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Composta.ViewModels"
+        x:Class="Composta.Views.MessageWindow"
+        x:DataType="vm:MessageViewModel"
+        x:CompileBindings="True"
+        Title="{Binding WindowTitle}"
+        Width="460" SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="White">
+    <Window.Styles>
+        <Style Selector="Border.toneBadge">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="CornerRadius" Value="22" />
+            <Setter Property="Background" Value="{StaticResource SageBrush}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+        <Style Selector="Border.toneBadge Path">
+            <Setter Property="Stroke" Value="{StaticResource ForestBrush}" />
+            <Setter Property="StrokeThickness" Value="2.5" />
+            <Setter Property="StrokeLineCap" Value="Round" />
+            <Setter Property="StrokeJoin" Value="Round" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.toneBadge.success">
+            <Setter Property="Background" Value="#DCE8D2" />
+        </Style>
+        <Style Selector="Border.toneBadge.warning">
+            <Setter Property="Background" Value="#F5E6CC" />
+        </Style>
+        <Style Selector="Border.toneBadge.warning Path">
+            <Setter Property="Stroke" Value="#6E4A1C" />
+        </Style>
+        <Style Selector="Border.toneBadge.error">
+            <Setter Property="Background" Value="#F6DEDB" />
+        </Style>
+        <Style Selector="Border.toneBadge.error Path">
+            <Setter Property="Stroke" Value="#B3261E" />
+        </Style>
+        <Style Selector="Border.toneBadge.confirm">
+            <Setter Property="Background" Value="#F4E6DF" />
+        </Style>
+        <Style Selector="Border.toneBadge.confirm Path">
+            <Setter Property="Stroke" Value="{StaticResource TerraBrush}" />
+        </Style>
+
+        <Style Selector="Button.primary.destructive">
+            <Setter Property="Background" Value="{StaticResource TerraBrush}" />
+        </Style>
+        <Style Selector="Button.primary.destructive:pointerover /template/ ContentPresenter#PART_ContentPresenter, Button.primary.destructive:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#6F3A26" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </Window.Styles>
+
+    <StackPanel Margin="28,26,28,22" Spacing="22">
+        <Grid ColumnDefinitions="Auto,*">
+            <Border Classes="toneBadge"
+                    Classes.success="{Binding IsSuccess}"
+                    Classes.warning="{Binding IsWarning}"
+                    Classes.error="{Binding IsError}"
+                    Classes.confirm="{Binding IsConfirm}">
+                <Panel>
+                    <Path IsVisible="{Binding IsInfo}" Data="M12,7.5 L12,7.51 M12,11 L12,17" />
+                    <Path IsVisible="{Binding IsSuccess}" Data="M5.5,12.5 L10,17 L18.5,7.5" />
+                    <Path IsVisible="{Binding IsWarning}" Data="M12,6.5 L12,13 M12,17 L12,17.01" />
+                    <Path IsVisible="{Binding IsError}" Data="M7.5,7.5 L16.5,16.5 M16.5,7.5 L7.5,16.5" />
+                    <Path IsVisible="{Binding IsConfirm}"
+                          Data="M9,9.2 C9,5.8 15,5.8 15,9.2 C15,11.6 12,11.6 12,14 M12,17.5 L12,17.51" />
+                </Panel>
+            </Border>
+
+            <StackPanel Grid.Column="1" Margin="16,0,0,0" Spacing="8">
+                <TextBlock Text="{Binding Title}" Classes="title" FontSize="20" TextWrapping="Wrap" />
+                <SelectableTextBlock Text="{Binding Message}" FontSize="14" LineHeight="21"
+                                     Foreground="{StaticResource InkBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Spacing="16">
+            <Border Classes="divider" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                <Button Content="Batal" Classes="secondary round"
+                        IsVisible="{Binding IsConfirmation}" IsCancel="True"
+                        Command="{Binding CancelCommand}" />
+                <Button Content="{Binding PrimaryText}" Classes="primary round"
+                        Classes.destructive="{Binding IsConfirmation}"
+                        IsDefault="True" MinWidth="110"
+                        Command="{Binding AcceptCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</Window>
