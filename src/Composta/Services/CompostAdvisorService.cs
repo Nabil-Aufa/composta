@@ -69,14 +69,19 @@ namespace Composta.Services
             return Math.Max(MinimumMaturityDays, estimatedDays);
         }
 
+        private static readonly TimeSpan ForecastTimeout = TimeSpan.FromSeconds(5);
+
         public int EstimateMaturityDays(string loc, int days = DefaultForecastDays)
         {
             List<WeatherData>? forecast;
             try
             {
-                forecast = _weatherService.GetForecast(loc, days);
+                forecast = Task.Run(() => _weatherService.GetForecast(loc, days))
+                    .WaitAsync(ForecastTimeout)
+                    .GetAwaiter()
+                    .GetResult();
             }
-            catch (Exception ex) when (ex is HttpRequestException or TimeoutException or InvalidOperationException or ArgumentException)
+            catch
             {
                 forecast = null;
             }
