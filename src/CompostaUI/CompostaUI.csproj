@@ -30,6 +30,7 @@
     <Compile Include="../Composta/Interfaces/**/*.cs" Link="Interfaces/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../Composta/Services/CarbonCalculatorService.cs" Link="Services/CarbonCalculatorService.cs" />
     <Compile Include="../Composta/Services/CompostAdvisorService.cs" Link="Services/CompostAdvisorService.cs" />
+    <Compile Include="../Composta/Services/OpenWeatherMapService.cs" Link="Services/OpenWeatherMapService.cs" />
   </ItemGroup>
 
 </Project>
