@@ -102,6 +102,7 @@ Beberapa hal berbeda dari proposal awal:
 | SQLite | **PostgreSQL** | Mengikuti materi praktikum (stored function `st_*`, pgAdmin4), tipe data dan constraint ditegakkan ketat oleh database, dan mendukung banyak user. |
 | MVVM | **MVVM dengan CommunityToolkit.Mvvm** | View (`.axaml`) hanya berisi tampilan, logika ada di ViewModel sehingga dapat diuji tanpa membuka jendela. ViewModel tidak bergantung pada Avalonia, sehingga dapat dipakai ulang jika suatu saat pindah ke WPF. Panduan ada di [src/CompostaUI/README.md](src/CompostaUI/README.md). |
 | Login pengguna | **Pilih profil tanpa password** | Composta dirancang untuk satu perangkat yang dipakai bersama, misalnya satu rumah tangga atau satu kebun. Profil dipakai untuk memisahkan batch dan dampak CO2e tiap orang, bukan untuk melindungi data rahasia. Profil cukup berisi nama dan email unik. Jika aplikasi dipakai lintas perangkat, perlu ditambah autentikasi dengan password yang di-hash. |
+| Faktor CO2e "data IPCC/EPA" | **EPA WARM versi 16** | Faktor tiap kategori dihitung dari selisih emisi TPA dan pengomposan di WARM, lengkap dengan sumber dan asumsinya di [docs/faktor-co2e.md](docs/faktor-co2e.md). |
 | Kredensial database | **Connection string lewat `COMPOSTA_DB`** | Nilai bawaan `postgres/postgres` hanya untuk pengembangan lokal. Di perangkat lain, kredensial diatur lewat environment variable, bukan diubah di kode. |
 
 ## Struktur Repository

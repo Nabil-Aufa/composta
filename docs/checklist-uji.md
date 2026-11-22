@@ -13,7 +13,7 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
 | 1 | Buka aplikasi | Sapaan "Halo, Nabil Aufa Danaputra!", status "Terhubung ke PostgreSQL", 4 batch tampil | [ ] |
-| 2 | Lihat kartu ringkasan | CO2e dicegah 11,9 kg, batch berjalan 3, total sampah 30,5 kg | [ ] |
+| 2 | Lihat kartu ringkasan | CO2e dicegah 6,14 kg, batch berjalan 3, total sampah 30,5 kg | [ ] |
 | 3 | Lihat daftar batch | Keempat status tampil dengan warna berbeda: Sudah Dipanen, Siap Panen, Pematangan, Aktif | [ ] |
 | 4 | Lihat batch terpilih saat dibuka | Batch 2 (Siap Panen) terpilih, rekomendasi "Kompos sudah matang dan siap dipanen", prioritas tinggi | [ ] |
 | 5 | Pilih Batch 3 (Pematangan) | Rekomendasi menyebut jadwal perawatan yang terlewat | [ ] |
