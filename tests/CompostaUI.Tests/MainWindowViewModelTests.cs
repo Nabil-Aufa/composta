@@ -11,6 +11,19 @@ namespace Composta.UITests
         {
         }
 
+        private const string ReadyBatchId = "b8d0e6f2-4a1b-4c2d-9e3f-000000000001";
+
+        private void AddPendingSchedulesToReadyBatch()
+        {
+            using var conn = new Npgsql.NpgsqlConnection(Db.Connstring);
+            conn.Open();
+            using var cmd = new Npgsql.NpgsqlCommand(
+                "INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) VALUES " +
+                "('d2f4b6c8-3e5a-4b7c-9d1e-000000000091', '" + ReadyBatchId + "', 'Water', NOW() - INTERVAL '6 days', FALSE), " +
+                "('d2f4b6c8-3e5a-4b7c-9d1e-000000000092', '" + ReadyBatchId + "', 'Harvest', NOW() - INTERVAL '5 days', FALSE)", conn);
+            cmd.ExecuteNonQuery();
+        }
+
         private async Task<MainWindowViewModel> LoadedViewModel()
         {
             MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
@@ -63,6 +76,7 @@ namespace Composta.UITests
             Assert.Equal("Kompos dari batch ini sudah dipanen.", vm.RecommendationText);
             Assert.True(vm.IsLowPriority);
             Assert.False(vm.HarvestCommand.CanExecute(null));
+            Assert.False(vm.DeleteBatchCommand.CanExecute(null));
 
             vm.SelectedBatch = null;
             Assert.Equal("Belum ada batch yang dipilih.", vm.RecommendationText);
@@ -105,12 +119,64 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
+        public async Task NewBatch_IsCancelledWithoutConfirmation()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            _dialogs.ConfirmResult = false;
+
+            await vm.NewBatchCommand.ExecuteAsync(null);
+
+            Assert.Equal(4, vm.Batches.Count);
+            Assert.Equal(5, Db.Count("SELECT COUNT(*) FROM compost_batches"));
+            Assert.Contains(_dialogs.Messages, m => m.StartsWith("Buat Batch Baru:"));
+            Assert.False(_dialogs.DestructiveByTitle["Buat Batch Baru"]);
+            Assert.DoesNotContain(_dialogs.Messages, m => m.StartsWith("Berhasil:"));
+        }
+
+        [SkippableFact]
+        public async Task CompleteSchedule_AlsoCompletesEarlierSchedulesOfSameTask()
+        {
+            RequireDatabase();
+
+            const string activeBatchId = "b8d0e6f2-4a1b-4c2d-9e3f-000000000003";
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand(
+                    "INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) VALUES " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000081', '" + activeBatchId + "', 'Water', NOW() - INTERVAL '8 days', FALSE), " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000082', '" + activeBatchId + "', 'Water', NOW() - INTERVAL '1 days', FALSE), " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000083', '" + activeBatchId + "', 'Turn', NOW() - INTERVAL '3 days', FALSE), " +
+                    "('d2f4b6c8-3e5a-4b7c-9d1e-000000000084', '" + activeBatchId + "', 'Water', NOW() + INTERVAL '6 days', FALSE)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            vm.SelectedBatch = vm.Batches.Single(b => b.Batch.Id == activeBatchId);
+            MaintenanceScheduleItemViewModel latestWater = vm.MaintenanceSchedules
+                .Single(s => s.Schedule.Id == "d2f4b6c8-3e5a-4b7c-9d1e-000000000082");
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(latestWater);
+
+            Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE batch_id = '"
+                + activeBatchId + "' AND task_type = 'Water' AND is_completed"));
+            Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE id IN "
+                + "('d2f4b6c8-3e5a-4b7c-9d1e-000000000083', 'd2f4b6c8-3e5a-4b7c-9d1e-000000000084') AND NOT is_completed"));
+            Assert.True(vm.MaintenanceSchedules.Single(s => s.Schedule.Id.EndsWith("081")).IsCompleted);
+            Assert.False(vm.MaintenanceSchedules.Single(s => s.Schedule.Id.EndsWith("083")).IsCompleted);
+            Assert.False(vm.MaintenanceSchedules.Single(s => s.Schedule.Id.EndsWith("084")).IsCompleted);
+        }
+
+        [SkippableFact]
         public async Task NewBatch_IsSavedAndSelected()
         {
             RequireDatabase();
 
             MainWindowViewModel vm = await LoadedViewModel();
             await vm.NewBatchCommand.ExecuteAsync(null);
+            Assert.False(_dialogs.DestructiveByTitle["Buat Batch Baru"]);
 
             Assert.Equal(5, vm.Batches.Count);
             Assert.Equal("Batch 5", vm.SelectedBatch?.Name);
@@ -124,6 +190,7 @@ namespace Composta.UITests
         public async Task Harvest_ArchivesReadyBatch()
         {
             RequireDatabase();
+            AddPendingSchedulesToReadyBatch();
 
             MainWindowViewModel vm = await LoadedViewModel();
             BatchItemViewModel ready = vm.Batches.Single(b => b.IsReady);
@@ -134,6 +201,49 @@ namespace Composta.UITests
             Assert.True(vm.SelectedBatch?.IsArchived);
             Assert.Equal("2", vm.ActiveBatchCountText);
             Assert.Equal(2, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE status = 'Archived'"));
+            Assert.Equal(2, vm.MaintenanceSchedules.Count);
+            Assert.All(vm.MaintenanceSchedules, s => Assert.True(s.IsCompleted));
+            Assert.Equal(0, Db.Count("SELECT COUNT(*) FROM maintenance_schedules WHERE batch_id = '"
+                + ready.Batch.Id + "' AND NOT is_completed"));
+        }
+
+        [SkippableFact]
+        public async Task CompletingHarvestSchedule_HarvestsReadyBatch()
+        {
+            RequireDatabase();
+            AddPendingSchedulesToReadyBatch();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            BatchItemViewModel ready = vm.Batches.Single(b => b.IsReady);
+            string batchId = ready.Batch.Id;
+            vm.SelectedBatch = ready;
+            MaintenanceScheduleItemViewModel harvest = vm.MaintenanceSchedules
+                .Single(s => s.Schedule.TaskType == TaskType.Harvest);
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(harvest);
+
+            Assert.True(vm.Batches.Single(b => b.Batch.Id == batchId).IsArchived);
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '"
+                + batchId + "' AND status = 'Archived'"));
+            Assert.Contains(_dialogs.Messages, m => m.EndsWith("berhasil dipanen."));
+        }
+
+        [SkippableFact]
+        public async Task CompletingHarvestSchedule_OfUnreadyBatch_DoesNotHarvest()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            BatchItemViewModel active = vm.Batches.Single(b => b.IsActive);
+            vm.SelectedBatch = active;
+            MaintenanceScheduleItemViewModel harvest = new MaintenanceScheduleItemViewModel(
+                new Composta.Models.MaintenanceSchedule(TaskType.Harvest, DateTime.Today));
+
+            await vm.CompleteScheduleCommand.ExecuteAsync(harvest);
+
+            Assert.True(active.IsActive);
+            Assert.Contains(_dialogs.Messages, m => m.StartsWith("Panen:"));
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE status = 'Archived'"));
         }
 
         [SkippableFact]
@@ -156,6 +266,42 @@ namespace Composta.UITests
             Assert.Equal(3, vm.Batches.Count);
             Assert.DoesNotContain(vm.Batches, b => b.Batch.Id == target.Batch.Id);
             Assert.Equal(0, Db.Count(itemsOfTarget));
+            Assert.True(_dialogs.DestructiveByTitle["Konfirmasi"]);
+        }
+
+        [SkippableFact]
+        public async Task DeleteBatch_KeepsHarvestedBatchAndCo2eHistory()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            BatchItemViewModel harvested = vm.Batches.Single(b => b.IsArchived);
+            string totalBefore = vm.TotalCo2eText;
+            vm.SelectedBatch = harvested;
+            _dialogs.ConfirmResult = true;
+
+            await vm.DeleteBatchCommand.ExecuteAsync(null);
+
+            Assert.Equal(4, vm.Batches.Count);
+            Assert.Equal(totalBefore, vm.TotalCo2eText);
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '" + harvested.Batch.Id + "'"));
+            Assert.Contains(_dialogs.Messages, m => m.StartsWith("Hapus Batch:") && m.Contains("tidak dapat dihapus"));
+            Assert.DoesNotContain(_dialogs.Messages, m => m.StartsWith("Konfirmasi:"));
+        }
+
+        [SkippableFact]
+        public async Task Harvest_DisablesDeleteForHarvestedBatch()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            vm.SelectedBatch = vm.Batches.Single(b => b.IsReady);
+            Assert.True(vm.DeleteBatchCommand.CanExecute(null));
+
+            await vm.HarvestCommand.ExecuteAsync(null);
+
+            Assert.True(vm.SelectedBatch?.IsArchived);
+            Assert.False(vm.DeleteBatchCommand.CanExecute(null));
         }
 
         [SkippableFact]
@@ -216,6 +362,31 @@ namespace Composta.UITests
                 message => message.StartsWith("Pengingat Perawatan:")
                     && message.Contains("Terlambat:"));
             Assert.Equal(MessageTone.Warning, _dialogs.TonesByTitle["Pengingat Perawatan"]);
+        }
+
+        [SkippableFact]
+        public async Task Load_IgnoresOverdueSchedulesOfHarvestedBatch()
+        {
+            RequireDatabase();
+
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand(
+                    "UPDATE maintenance_schedules SET is_completed = TRUE; " +
+                    "INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) " +
+                    "VALUES ('d2f4b6c8-3e5a-4b7c-9d1e-000000000099', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000005', " +
+                    "'Water', NOW() - INTERVAL '30 days', FALSE)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+
+            Assert.True(vm.IsDatabaseConnected);
+            Assert.True(vm.Batches[0].IsArchived);
+            Assert.DoesNotContain(
+                _dialogs.Messages,
+                message => message.StartsWith("Pengingat Perawatan:"));
         }
 
         [SkippableFact]

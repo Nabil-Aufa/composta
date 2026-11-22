@@ -41,6 +41,24 @@ namespace Composta.UITests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public void ConfirmationFollowsDestructiveFlag(bool isDestructive)
+        {
+            MessageViewModel viewModel = new MessageViewModel("Konfirmasi", "Lanjut?", MessageTone.Confirm, isDestructive);
+
+            Assert.Equal(isDestructive, viewModel.IsDestructive);
+        }
+
+        [Fact]
+        public void NonConfirmationIsNeverDestructive()
+        {
+            MessageViewModel viewModel = new MessageViewModel("Gagal", "isi", MessageTone.Error, isDestructive: true);
+
+            Assert.False(viewModel.IsDestructive);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public void CommandsRequestCloseWithResult(bool accept)
         {
             MessageViewModel viewModel = new MessageViewModel("Konfirmasi", "Hapus?", MessageTone.Confirm);

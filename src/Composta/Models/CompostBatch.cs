@@ -122,6 +122,12 @@ namespace Composta.Models
 
             _brownGreenRatio = CalculateRatio();
 
+            if (!HasCompostableWaste())
+            {
+                _status = BatchStatus.Active;
+                return;
+            }
+
             DateTime now = DateTime.Now;
             double totalDays = (_estimatedMaturityDate - _startDate).TotalDays;
             double elapsedDays = (now - _startDate).TotalDays;
@@ -145,8 +151,18 @@ namespace Composta.Models
             return Math.Round(_wasteItems.Sum(w => w.Weight), 2);
         }
 
+        public bool HasCompostableWaste()
+        {
+            return _wasteItems.OfType<CompostableWaste>().Any();
+        }
+
         public bool IsReadyToHarvest()
         {
+            if (!HasCompostableWaste())
+            {
+                return false;
+            }
+
             return _status == BatchStatus.Ready ||
                     (_status != BatchStatus.Archived && DateTime.Now >= _estimatedMaturityDate);
         }

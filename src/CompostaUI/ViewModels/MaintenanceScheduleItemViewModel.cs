@@ -35,6 +35,6 @@ namespace Composta.ViewModels
 
         public bool IsPending => !IsCompleted && !IsOverdue;
 
-        public bool CanComplete => !IsCompleted;
+        public bool CanComplete => !IsCompleted && Schedule.DueDate.Date <= DateTime.Today;
     }
 }

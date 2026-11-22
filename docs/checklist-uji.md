@@ -18,20 +18,20 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | 4 | Lihat batch terpilih saat dibuka | Batch 2 (Siap Panen) terpilih, rekomendasi "Kompos sudah matang dan siap dipanen", prioritas tinggi | [ ] |
 | 5 | Pilih Batch 3 (Pematangan) | Rekomendasi menyebut jadwal perawatan yang terlewat | [ ] |
 | 6 | Pilih Batch 4 (Aktif) | Rekomendasi menyebut rasio brown/green terlalu rendah, tombol Panen nonaktif | [ ] |
-| 7 | Pilih Batch 1 (Sudah Dipanen) | Rekomendasi "Kompos dari batch ini sudah dipanen.", tombol Panen nonaktif | [ ] |
+| 7 | Pilih Batch 1 (Sudah Dipanen) | Rekomendasi "Kompos dari batch ini sudah dipanen.", tombol Panen dan Hapus nonaktif | [ ] |
 
 ## Batch
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
-| 8 | Klik "+ Batch Baru" | Pesan "Batch 5 berhasil ditambahkan", Batch 5 berstatus Aktif dan terpilih | [ ] |
+| 8 | Klik "+ Batch Baru", jawab "Ya, lanjutkan" | Muncul konfirmasi dengan tombol hijau, lalu pesan "Batch 5 berhasil ditambahkan", Batch 5 berstatus Aktif dan terpilih | [ ] |
 | 9 | Pilih Batch 2, klik "Panen" | Pesan "Batch 2 berhasil dipanen", status menjadi Sudah Dipanen, batch berjalan berkurang 1 | [ ] |
-| 10 | Pilih Batch 5, klik "Hapus", jawab "No" | Batch tidak terhapus | [ ] |
-| 11 | Pilih Batch 5, klik "Hapus", jawab "Yes" | Pesan berhasil dihapus, Batch 5 hilang dari daftar | [ ] |
+| 10 | Pilih Batch 5, klik "Hapus", jawab "Batal" | Batch tidak terhapus | [ ] |
+| 11 | Pilih Batch 5, klik "Hapus", jawab "Ya, lanjutkan" | Pesan berhasil dihapus, Batch 5 hilang dari daftar | [ ] |
 
 ## Catat Sampah
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
-| 12 | Klik "+ Catat Sampah" | Hanya batch Aktif dan Pematangan yang bisa dipilih | [ ] |
+| 12 | Klik "+ Catat Sampah" | Hanya batch berstatus Aktif yang bisa dipilih | [ ] |
 | 13 | Klik "Simpan" dengan nama kosong | Pesan "Nama sampah wajib diisi.", jendela tidak tertutup | [ ] |
 | 14 | Kosongkan kolom berat lalu simpan | Pesan "Berat harus lebih dari 0 kg ..." | [ ] |
 | 15 | Pilih kategori Plastik | Pilihan brown/green dan kelembapan disembunyikan, kolom alasan muncul, pratinjau kuning "Tidak dapat dikomposkan" | [ ] |

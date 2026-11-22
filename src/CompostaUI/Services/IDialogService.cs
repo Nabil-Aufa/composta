@@ -6,7 +6,7 @@ namespace Composta.Services
     {
         Task ShowMessageAsync(string title, string message, MessageTone tone);
 
-        Task<bool> ConfirmAsync(string title, string message);
+        Task<bool> ConfirmAsync(string title, string message, bool isDestructive);
 
         Task<bool> ShowAddWasteAsync(AddWasteViewModel viewModel);
 

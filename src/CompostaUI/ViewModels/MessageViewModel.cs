@@ -14,12 +14,15 @@ namespace Composta.ViewModels
 
     public partial class MessageViewModel : ObservableObject
     {
-        public MessageViewModel(string title, string message, MessageTone tone)
+        public MessageViewModel(string title, string message, MessageTone tone, bool isDestructive = false)
         {
             Title = title ?? string.Empty;
             Message = message ?? string.Empty;
             Tone = tone;
+            IsDestructive = isDestructive && tone == MessageTone.Confirm;
         }
+
+        public bool IsDestructive { get; }
 
         public event Action<bool>? CloseRequested;
 

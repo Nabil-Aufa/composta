@@ -9,6 +9,13 @@ namespace Composta.Services
         private const string UndefinedTable = "42P01";
         private const string InvalidPassword = "28P01";
         private const string InvalidDatabase = "3D000";
+        private const string UniqueViolation = "23505";
+        private const string ForeignKeyViolation = "23503";
+        private const string CheckViolation = "23514";
+        private const string NotNullViolation = "23502";
+        private const string StringTooLong = "22001";
+        private const string NumericOutOfRange = "22003";
+        private const string UserEmailConstraint = "users_email_key";
 
         public static string From(Exception ex, string databaseInfo)
         {
@@ -30,6 +37,19 @@ namespace Composta.Services
                     case InvalidDatabase:
                         return "Database " + databaseInfo + " belum dibuat.\n\n"
                             + "Buat database tersebut lalu jalankan src/CompostaUI/Database/composta_postgres.sql.";
+                    case UniqueViolation:
+                        return postgres.ConstraintName == UserEmailConstraint
+                            ? "Email tersebut sudah terdaftar. Gunakan email lain atau pilih profil yang sudah ada."
+                            : "Data yang sama sudah tersimpan di database.";
+                    case ForeignKeyViolation:
+                        return "Data terkait tidak ditemukan di database, mungkin sudah dihapus. Muat ulang aplikasi lalu coba lagi.";
+                    case CheckViolation:
+                    case NotNullViolation:
+                        return "Data tidak memenuhi aturan database, periksa kembali isian yang dimasukkan.";
+                    case StringTooLong:
+                        return "Teks yang dimasukkan terlalu panjang untuk disimpan.";
+                    case NumericOutOfRange:
+                        return "Angka yang dimasukkan terlalu besar untuk disimpan.";
                 }
             }
 
