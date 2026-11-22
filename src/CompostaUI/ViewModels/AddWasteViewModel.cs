@@ -20,6 +20,7 @@ namespace Composta.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCompostable))]
         [NotifyPropertyChangedFor(nameof(IsNonCompostable))]
+        [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
         private WasteCategory? _selectedCategory;
 
         [ObservableProperty]
@@ -36,9 +37,6 @@ namespace Composta.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(MoistureText))]
         private double _moisture = 60;
-
-        [ObservableProperty]
-        private string _reason = string.Empty;
 
         [ObservableProperty]
         private string _previewTitle = string.Empty;
@@ -156,13 +154,12 @@ namespace Composta.ViewModels
             UpdatePreview();
         }
 
-        partial void OnReasonChanged(string value)
+        private bool CanSave()
         {
-            ClearInputError();
-            UpdatePreview();
+            return HasBatches && IsCompostable;
         }
 
-        [RelayCommand(CanExecute = nameof(HasBatches))]
+        [RelayCommand(CanExecute = nameof(CanSave))]
         private void Save()
         {
             if (SelectedBatch == null)
@@ -226,7 +223,7 @@ namespace Composta.ViewModels
                 return new CompostableWaste(name, weight, SelectedCategory, MaterialType, Moisture);
             }
 
-            return new NonCompostableWaste(name, weight, SelectedCategory, Reason.Trim());
+            return new NonCompostableWaste(name, weight, SelectedCategory, string.Empty);
         }
 
         private void ClearInputError()

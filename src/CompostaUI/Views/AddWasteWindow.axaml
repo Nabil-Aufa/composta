@@ -47,7 +47,12 @@
                                   AutomationProperties.Name="Kategori sampah">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:WasteCategory">
-                                    <TextBlock Text="{Binding Name}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding Name}" />
+                                        <TextBlock Text="(tidak dapat dikompos)" Classes="caption"
+                                                   VerticalAlignment="Center"
+                                                   IsVisible="{Binding !IsCompostable}" />
+                                    </StackPanel>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
@@ -87,11 +92,8 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel IsVisible="{Binding IsNonCompostable}">
-                    <TextBlock Classes="field" Text="Alasan tidak dapat dikomposkan" />
-                    <TextBox Text="{Binding Reason}" Watermark="Contoh: tidak dapat terurai secara alami"
-                             MaxLength="255" AutomationProperties.Name="Alasan tidak dapat dikomposkan" />
-                </StackPanel>
+                <TextBlock IsVisible="{Binding IsNonCompostable}" Classes="caption" TextWrapping="Wrap"
+                           Text="Sampah ini tidak dimasukkan ke batch kompos, jadi tidak perlu disimpan. Lihat saran pembuangannya di pratinjau." />
 
                 <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="error" />
             </StackPanel>

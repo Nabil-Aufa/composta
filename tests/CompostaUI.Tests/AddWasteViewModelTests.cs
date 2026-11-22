@@ -90,9 +90,29 @@ namespace Composta.UITests
             Assert.True(form.IsNonCompostable);
             Assert.True(form.IsPreviewWarning);
             Assert.Equal("Tidak dapat dikomposkan", form.PreviewTitle);
+            Assert.Contains("bank sampah", form.PreviewText);
+            Assert.False(form.SaveCommand.CanExecute(null));
 
             form.SaveCommand.Execute(null);
             Assert.Contains("anorganik", form.ErrorMessage);
+            Assert.Equal(11, Db.Count("SELECT COUNT(*) FROM waste_items"));
+        }
+
+        [SkippableFact]
+        public void SwitchingBackToCompostableCategory_EnablesSave()
+        {
+            RequireDatabase();
+
+            AddWasteViewModel form = NewForm();
+            bool saveStateChanged = false;
+            form.SaveCommand.CanExecuteChanged += (_, _) => saveStateChanged = true;
+
+            form.SelectedCategory = form.Categories.First(c => !c.IsCompostable);
+            Assert.False(form.SaveCommand.CanExecute(null));
+            Assert.True(saveStateChanged);
+
+            form.SelectedCategory = form.Categories.First(c => c.IsCompostable);
+            Assert.True(form.SaveCommand.CanExecute(null));
         }
 
         [SkippableFact]
