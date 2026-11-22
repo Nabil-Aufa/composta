@@ -101,7 +101,6 @@ namespace Composta.UITests
             CompostBatch batch = new CompostBatch(user.Id, new DateTime(2026, 11, 5), 30);
             repo.Add(batch);
 
-            // 0.25 kg * 0.5 = 0.125 -> Math.Round(0.125, 2) = 0.12 (banker's rounding)
             CompostableWaste item = new CompostableWaste("Sisa Buah", 0.25, null, BrownGreenType.Green, 60);
             item.DateAdded = new DateTime(2026, 11, 5, 10, 0, 0);
             repo.AddWasteItem(batch, item);
