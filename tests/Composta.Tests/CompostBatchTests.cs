@@ -197,5 +197,55 @@ namespace Composta.Tests
             Assert.Equal(100, TestData.Green(1, moisture: 150).MoistureContent);
             Assert.Equal(0, TestData.Green(1, moisture: -10).MoistureContent);
         }
+
+        [Fact]
+        public void RecalculateEstimatedMaturityDate_UsesLatestCompostableDateAndShiftsHarvestSchedule()
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 15, maturityDays: 60);
+            batch.GenerateDefaultSchedules();
+
+            CompostableWaste latestWaste = TestData.Green(2);
+            latestWaste.DateAdded = DateTime.Today.AddDays(-2);
+            batch.AddWasteItem(latestWaste);
+
+            bool changed = batch.RecalculateEstimatedMaturityDate(52);
+
+            Assert.True(changed);
+            Assert.Equal(latestWaste.DateAdded.AddDays(52), batch.EstimatedMaturityDate);
+
+            MaintenanceSchedule harvest = Assert.Single(batch.Schedules, s => s.TaskType == TaskType.Harvest);
+            Assert.Equal(batch.EstimatedMaturityDate, harvest.DueDate);
+        }
+
+        [Fact]
+        public void RecalculateEstimatedMaturityDate_DoesNotRegressStatusFromCuringToActive()
+        {
+            CompostBatch batch = FilledBatch(startedDaysAgo: 40, maturityDays: 60);
+            batch.UpdateProgress();
+            Assert.Equal(BatchStatus.Curing, batch.Status);
+
+            batch.RecalculateEstimatedMaturityDate(120);
+
+            Assert.Equal(BatchStatus.Curing, batch.Status);
+        }
+
+        [Fact]
+        public void RecalculateEstimatedMaturityDate_DoesNotModifyReadyOrArchivedBatch()
+        {
+            CompostBatch readyBatch = FilledBatch(startedDaysAgo: 61, maturityDays: 60);
+            readyBatch.UpdateProgress();
+            DateTime readyOriginalDate = readyBatch.EstimatedMaturityDate;
+
+            Assert.False(readyBatch.RecalculateEstimatedMaturityDate(90));
+            Assert.Equal(readyOriginalDate, readyBatch.EstimatedMaturityDate);
+            Assert.Equal(BatchStatus.Ready, readyBatch.Status);
+
+            CompostBatch archivedBatch = FilledBatch(startedDaysAgo: 70, maturityDays: 60);
+            archivedBatch.Status = BatchStatus.Archived;
+            DateTime archivedOriginalDate = archivedBatch.EstimatedMaturityDate;
+
+            Assert.False(archivedBatch.RecalculateEstimatedMaturityDate(90));
+            Assert.Equal(archivedOriginalDate, archivedBatch.EstimatedMaturityDate);
+        }
     }
 }

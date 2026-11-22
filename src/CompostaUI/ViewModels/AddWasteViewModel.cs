@@ -195,7 +195,8 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.BatchRepository.AddWasteItem(SelectedBatch.Batch, item);
+                int estimatedDays = AppData.Advisor.EstimateMaturityDays(AppData.Location);
+                AppData.BatchRepository.AddWasteItem(SelectedBatch.Batch, item, estimatedDays);
             }
             catch (Exception ex)
             {

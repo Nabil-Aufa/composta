@@ -385,15 +385,17 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
         {
+            int estimatedDays = AppData.Advisor.EstimateMaturityDays(AppData.Location);
+
             bool confirmed = await _dialogs.ConfirmAsync("Buat Batch Baru",
-                "Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk 60 hari ke depan akan dibuat otomatis.",
+                $"Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk {estimatedDays} hari ke depan akan dibuat otomatis.",
                 isDestructive: false);
             if (!confirmed)
             {
                 return;
             }
 
-            CompostBatch batch = new CompostBatch(AppData.CurrentUser.Id, DateTime.Now, 60);
+            CompostBatch batch = new CompostBatch(AppData.CurrentUser.Id, DateTime.Now, estimatedDays);
             try
             {
                 AppData.BatchRepository.Add(batch);

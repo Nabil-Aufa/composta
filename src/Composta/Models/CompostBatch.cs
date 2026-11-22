@@ -113,6 +113,43 @@ namespace Composta.Models
             return Math.Round(brown / green, 2);
         }
 
+        public DateTime GetMaturityAnchorDate()
+        {
+            DateTime? latestCompostableDate = _wasteItems
+                .OfType<CompostableWaste>()
+                .Select(w => (DateTime?)w.DateAdded)
+                .Max();
+
+            return latestCompostableDate ?? _startDate;
+        }
+
+        public bool RecalculateEstimatedMaturityDate(int maturityDays)
+        {
+            if (_status == BatchStatus.Archived || _status == BatchStatus.Ready)
+            {
+                return false;
+            }
+
+            int validDays = Math.Max(1, maturityDays);
+            DateTime newMaturityDate = GetMaturityAnchorDate().AddDays(validDays);
+
+            if (newMaturityDate == _estimatedMaturityDate)
+            {
+                return false;
+            }
+
+            _estimatedMaturityDate = newMaturityDate;
+
+            foreach (MaintenanceSchedule schedule in _schedules
+                .Where(s => s.TaskType == TaskType.Harvest && !s.IsCompleted))
+            {
+                schedule.DueDate = newMaturityDate;
+            }
+
+            UpdateProgress();
+            return true;
+        }
+
         public void UpdateProgress()
         {
             if (_status == BatchStatus.Archived)
@@ -128,21 +165,32 @@ namespace Composta.Models
                 return;
             }
 
+            if (_status == BatchStatus.Ready)
+            {
+                return;
+            }
+
             DateTime now = DateTime.Now;
             double totalDays = (_estimatedMaturityDate - _startDate).TotalDays;
             double elapsedDays = (now - _startDate).TotalDays;
 
+            BatchStatus calculatedStatus;
             if (totalDays <= 0 || now >= _estimatedMaturityDate)
             {
-                _status = BatchStatus.Ready;
+                calculatedStatus = BatchStatus.Ready;
             }
             else if (elapsedDays >= totalDays / 2)
             {
-                _status = BatchStatus.Curing;
+                calculatedStatus = BatchStatus.Curing;
             }
             else
             {
-                _status = BatchStatus.Active;
+                calculatedStatus = BatchStatus.Active;
+            }
+
+            if (calculatedStatus > _status)
+            {
+                _status = calculatedStatus;
             }
         }
 
@@ -169,30 +217,29 @@ namespace Composta.Models
 
         public void GenerateDefaultSchedules()
         {
-
-        if (_schedules.Count > 0)
+            if (_schedules.Count > 0)
             {
-                    return;
+                return;
             }
-        
-        int totalDays = Math.Max(1, (int)(_estimatedMaturityDate.Date - _startDate.Date).TotalDays);
 
-        for (int day = 2; day < totalDays; day += 2)
+            int totalDays = Math.Max(1, (int)(_estimatedMaturityDate.Date - _startDate.Date).TotalDays);
+
+            for (int day = 2; day < totalDays; day += 2)
             {
                 AddSchedule(new MaintenanceSchedule(TaskType.Water, _startDate.AddDays(day)));
             }
 
-        for (int day = 3; day < totalDays; day += 3)
+            for (int day = 3; day < totalDays; day += 3)
             {
                 AddSchedule(new MaintenanceSchedule(TaskType.Turn, _startDate.AddDays(day)));
             }
 
-        for (int day = 7; day < totalDays; day += 7)
+            for (int day = 7; day < totalDays; day += 7)
             {
                 AddSchedule(new MaintenanceSchedule(TaskType.CheckMoisture, _startDate.AddDays(day)));
             }
 
-        AddSchedule(new MaintenanceSchedule(TaskType.Harvest, _estimatedMaturityDate));
+            AddSchedule(new MaintenanceSchedule(TaskType.Harvest, _estimatedMaturityDate));
         }
     }
 }

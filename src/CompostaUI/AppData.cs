@@ -99,16 +99,21 @@ namespace Composta
             User user = UserRepository.GetById(userId)
                 ?? throw new InvalidOperationException("User tidak ditemukan.");
 
+            int estimatedMaturityDays = Advisor.EstimateMaturityDays(Location);
+
             foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
             {
                 BatchStatus oldStatus = batch.Status;
+                DateTime oldMaturityDate = batch.EstimatedMaturityDate;
+
+                batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
+                batch.RecalculateEstimatedMaturityDate(estimatedMaturityDays);
                 batch.UpdateProgress();
-                if (batch.Status != oldStatus)
+
+                if (batch.Status != oldStatus || batch.EstimatedMaturityDate != oldMaturityDate)
                 {
                     BatchRepository.Update(batch);
                 }
-
-                batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);
 
                 user.AddBatch(batch);
             }

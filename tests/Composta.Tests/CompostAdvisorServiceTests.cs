@@ -251,5 +251,57 @@ namespace Composta.Tests
             Assert.Contains("terlalu rendah", result.Message);
             Assert.Contains("target 2-3", result.Message);
         }
+
+        [Fact]
+        public void EstimateMaturityDays_OptimalTemperatureAndHumidity_SpeedsUpMaturity()
+        {
+            List<WeatherData> forecast = new List<WeatherData>
+            {
+                new WeatherData(28, 65, 0, "Cerah", DateTime.Now),
+                new WeatherData(30, 70, 0, "Berawan", DateTime.Now.AddDays(1))
+            };
+
+            int estimatedDays = CompostAdvisorService.EstimateMaturityDays(forecast);
+
+            Assert.Equal(52, estimatedDays);
+        }
+
+        [Fact]
+        public void EstimateMaturityDays_ColdAndHumidWeather_SlowsDownMaturity()
+        {
+            List<WeatherData> forecast = new List<WeatherData>
+            {
+                new WeatherData(12, 90, 5, "Hujan", DateTime.Now),
+                new WeatherData(14, 88, 2, "Hujan", DateTime.Now.AddDays(1))
+            };
+
+            int estimatedDays = CompostAdvisorService.EstimateMaturityDays(forecast);
+
+            Assert.Equal(78, estimatedDays);
+        }
+
+        [Theory]
+        [InlineData(20, 60, 64)]
+        [InlineData(38, 40, 71)]
+        public void EstimateMaturityDays_AppliesTemperatureAndHumidityAdjustments(
+            double temperature, double humidity, int expectedDays)
+        {
+            List<WeatherData> forecast = new List<WeatherData>
+            {
+                new WeatherData(temperature, humidity, 0, "Cerah", DateTime.Now)
+            };
+
+            Assert.Equal(expectedDays, CompostAdvisorService.EstimateMaturityDays(forecast));
+        }
+
+        [Fact]
+        public void EstimateMaturityDays_EmptyOrUnavailableForecast_FallsBackToDefault60Days()
+        {
+            CompostAdvisorService advisor = new CompostAdvisorService(new FakeWeatherService(null!));
+
+            Assert.Equal(60, CompostAdvisorService.EstimateMaturityDays((IReadOnlyList<WeatherData>?)null));
+            Assert.Equal(60, CompostAdvisorService.EstimateMaturityDays(new List<WeatherData>()));
+            Assert.Equal(60, advisor.EstimateMaturityDays("Yogyakarta"));
+        }
     }
 }
