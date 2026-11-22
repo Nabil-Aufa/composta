@@ -165,6 +165,7 @@ namespace Composta.ViewModels
         private async Task ShowMaintenanceReminderAsync()
         {
             var schedules = AppData.CurrentUser.Batches
+                .Where(batch => batch.Status != BatchStatus.Archived)
                 .SelectMany(batch => batch.Schedules
                     .Where(schedule =>
                         !schedule.IsCompleted &&
@@ -387,7 +388,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + ex.Message, MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -417,7 +418,7 @@ namespace Composta.ViewModels
             catch (Exception ex)
             {
                 batch.Status = BatchStatus.Ready;
-                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + ex.Message, MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -449,7 +450,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + ex.Message, MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 

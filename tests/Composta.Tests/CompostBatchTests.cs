@@ -38,10 +38,17 @@ namespace Composta.Tests
             Assert.Equal(2.5, batch.BrownGreenRatio);
         }
 
+        private static CompostBatch FilledBatch(int startedDaysAgo, int maturityDays = 60)
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo, maturityDays);
+            batch.AddWasteItem(TestData.Brown(2));
+            return batch;
+        }
+
         [Fact]
         public void UpdateProgress_BeforeHalfway_IsActive()
         {
-            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 10, maturityDays: 60);
+            CompostBatch batch = FilledBatch(startedDaysAgo: 10);
 
             batch.UpdateProgress();
 
@@ -51,7 +58,7 @@ namespace Composta.Tests
         [Fact]
         public void UpdateProgress_AfterHalfway_IsCuring()
         {
-            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 40, maturityDays: 60);
+            CompostBatch batch = FilledBatch(startedDaysAgo: 40);
 
             batch.UpdateProgress();
 
@@ -61,11 +68,45 @@ namespace Composta.Tests
         [Fact]
         public void UpdateProgress_AfterMaturityDate_IsReady()
         {
-            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 61, maturityDays: 60);
+            CompostBatch batch = FilledBatch(startedDaysAgo: 61);
 
             batch.UpdateProgress();
 
             Assert.Equal(BatchStatus.Ready, batch.Status);
+        }
+
+        [Theory]
+        [InlineData(40)]
+        [InlineData(61)]
+        public void UpdateProgress_EmptyBatch_StaysActive(int startedDaysAgo)
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo, maturityDays: 60);
+
+            batch.UpdateProgress();
+
+            Assert.Equal(BatchStatus.Active, batch.Status);
+        }
+
+        [Fact]
+        public void UpdateProgress_BatchWithOnlyNonCompostable_StaysActive()
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 61);
+            batch.AddWasteItem(new NonCompostableWaste("Kaleng", 1, TestData.Plastic, "Logam"));
+
+            batch.UpdateProgress();
+
+            Assert.Equal(BatchStatus.Active, batch.Status);
+        }
+
+        [Fact]
+        public void UpdateProgress_EmptyBatchMarkedReady_ReturnsToActive()
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 61);
+            batch.Status = BatchStatus.Ready;
+
+            batch.UpdateProgress();
+
+            Assert.Equal(BatchStatus.Active, batch.Status);
         }
 
         [Fact]
@@ -82,16 +123,26 @@ namespace Composta.Tests
         [Fact]
         public void IsReadyToHarvest_FollowsMaturityDateAndStatus()
         {
-            Assert.False(TestData.NewBatch(startedDaysAgo: 10).IsReadyToHarvest());
-            Assert.True(TestData.NewBatch(startedDaysAgo: 61).IsReadyToHarvest());
+            Assert.False(FilledBatch(startedDaysAgo: 10).IsReadyToHarvest());
+            Assert.True(FilledBatch(startedDaysAgo: 61).IsReadyToHarvest());
 
-            CompostBatch archived = TestData.NewBatch(startedDaysAgo: 61);
+            CompostBatch archived = FilledBatch(startedDaysAgo: 61);
             archived.Status = BatchStatus.Archived;
             Assert.False(archived.IsReadyToHarvest());
 
-            CompostBatch markedReady = TestData.NewBatch(startedDaysAgo: 1);
+            CompostBatch markedReady = FilledBatch(startedDaysAgo: 1);
             markedReady.Status = BatchStatus.Ready;
             Assert.True(markedReady.IsReadyToHarvest());
+        }
+
+        [Fact]
+        public void IsReadyToHarvest_EmptyBatch_IsFalse()
+        {
+            Assert.False(TestData.NewBatch(startedDaysAgo: 61).IsReadyToHarvest());
+
+            CompostBatch markedReady = TestData.NewBatch(startedDaysAgo: 1);
+            markedReady.Status = BatchStatus.Ready;
+            Assert.False(markedReady.IsReadyToHarvest());
         }
 
         [Fact]

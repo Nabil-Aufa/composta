@@ -139,6 +139,18 @@ namespace Composta.Tests
         }
 
         [Fact]
+        public void EmptyBatchPastMaturity_IsNotReadyToHarvest()
+        {
+            CompostBatch batch = TestData.NewBatch(startedDaysAgo: 70, maturityDays: 60);
+
+            CompostRecommendation result = Recommend(batch, TestData.NeutralWeather());
+
+            Assert.DoesNotContain("siap dipanen", result.Message);
+            Assert.Contains("Batch masih kosong", result.Message);
+            Assert.Equal(BatchStatus.Active, batch.Status);
+        }
+
+        [Fact]
         public void EmptyBatch_AsksToAddMaterial()
         {
             CompostRecommendation result = Recommend(TestData.NewBatch(), TestData.NeutralWeather());

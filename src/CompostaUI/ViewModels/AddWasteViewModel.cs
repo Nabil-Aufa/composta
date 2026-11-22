@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Composta.Enums;
 using Composta.Models;
+using Composta.Services;
 
 namespace Composta.ViewModels
 {
@@ -201,7 +202,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                ErrorMessage = "Gagal menyimpan ke database: " + ex.Message;
+                ErrorMessage = DatabaseErrorMessage.From(ex, AppData.DatabaseInfo);
                 return;
             }
 

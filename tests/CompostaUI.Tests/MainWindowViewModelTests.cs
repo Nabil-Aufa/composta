@@ -219,6 +219,31 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
+        public async Task Load_IgnoresOverdueSchedulesOfHarvestedBatch()
+        {
+            RequireDatabase();
+
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand(
+                    "UPDATE maintenance_schedules SET is_completed = TRUE; " +
+                    "INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) " +
+                    "VALUES ('d2f4b6c8-3e5a-4b7c-9d1e-000000000099', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000005', " +
+                    "'Water', NOW() - INTERVAL '30 days', FALSE)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+
+            Assert.True(vm.IsDatabaseConnected);
+            Assert.True(vm.Batches[0].IsArchived);
+            Assert.DoesNotContain(
+                _dialogs.Messages,
+                message => message.StartsWith("Pengingat Perawatan:"));
+        }
+
+        [SkippableFact]
         public async Task Load_DoesNotShowReminderWhenAllSchedulesAreCompleted()
         {
             RequireDatabase();
