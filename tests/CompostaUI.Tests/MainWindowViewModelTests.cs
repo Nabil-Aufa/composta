@@ -76,6 +76,7 @@ namespace Composta.UITests
             Assert.Equal("Kompos dari batch ini sudah dipanen.", vm.RecommendationText);
             Assert.True(vm.IsLowPriority);
             Assert.False(vm.HarvestCommand.CanExecute(null));
+            Assert.False(vm.DeleteBatchCommand.CanExecute(null));
 
             vm.SelectedBatch = null;
             Assert.Equal("Belum ada batch yang dipilih.", vm.RecommendationText);
@@ -266,6 +267,41 @@ namespace Composta.UITests
             Assert.DoesNotContain(vm.Batches, b => b.Batch.Id == target.Batch.Id);
             Assert.Equal(0, Db.Count(itemsOfTarget));
             Assert.True(_dialogs.DestructiveByTitle["Konfirmasi"]);
+        }
+
+        [SkippableFact]
+        public async Task DeleteBatch_KeepsHarvestedBatchAndCo2eHistory()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            BatchItemViewModel harvested = vm.Batches.Single(b => b.IsArchived);
+            string totalBefore = vm.TotalCo2eText;
+            vm.SelectedBatch = harvested;
+            _dialogs.ConfirmResult = true;
+
+            await vm.DeleteBatchCommand.ExecuteAsync(null);
+
+            Assert.Equal(4, vm.Batches.Count);
+            Assert.Equal(totalBefore, vm.TotalCo2eText);
+            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '" + harvested.Batch.Id + "'"));
+            Assert.Contains(_dialogs.Messages, m => m.StartsWith("Hapus Batch:") && m.Contains("tidak dapat dihapus"));
+            Assert.DoesNotContain(_dialogs.Messages, m => m.StartsWith("Konfirmasi:"));
+        }
+
+        [SkippableFact]
+        public async Task Harvest_DisablesDeleteForHarvestedBatch()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            vm.SelectedBatch = vm.Batches.Single(b => b.IsReady);
+            Assert.True(vm.DeleteBatchCommand.CanExecute(null));
+
+            await vm.HarvestCommand.ExecuteAsync(null);
+
+            Assert.True(vm.SelectedBatch?.IsArchived);
+            Assert.False(vm.DeleteBatchCommand.CanExecute(null));
         }
 
         [SkippableFact]

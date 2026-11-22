@@ -332,7 +332,7 @@ namespace Composta.ViewModels
 
         private bool CanDeleteBatch()
         {
-            return IsDatabaseConnected && SelectedBatch != null;
+            return IsDatabaseConnected && SelectedBatch != null && !SelectedBatch.IsArchived;
         }
 
         private bool CanCompleteSchedule(MaintenanceScheduleItemViewModel? item)
@@ -447,6 +447,14 @@ namespace Composta.ViewModels
             }
 
             string batchName = AppData.GetBatchName(batch);
+            if (batch.Status == BatchStatus.Archived)
+            {
+                await _dialogs.ShowMessageAsync("Hapus Batch",
+                    batchName + " sudah dipanen dan disimpan sebagai riwayat dampak CO2e, sehingga tidak dapat dihapus.",
+                    MessageTone.Info);
+                return;
+            }
+
             bool confirmed = await _dialogs.ConfirmAsync("Konfirmasi",
                 "Yakin ingin menghapus " + batchName + " beserta seluruh sampah di dalamnya?",
                 isDestructive: true);
