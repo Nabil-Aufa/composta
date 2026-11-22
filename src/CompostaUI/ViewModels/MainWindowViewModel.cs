@@ -233,7 +233,7 @@ namespace Composta.ViewModels
             UserName = user.Name;
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
-            double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));
+            double totalCo2e = AppData.CarbonCalculator.CalculateCO2eSaved(user.Batches.SelectMany(b => b.WasteItems).ToList());
             TotalCo2eText = totalCo2e.ToString("0.##") + " kg";
             ActiveBatchCountText = user.GetActiveBatches().Count.ToString();
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";

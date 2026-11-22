@@ -467,5 +467,18 @@ namespace Composta.UITests
             Assert.Equal(afterLoad, Db.Count(countSql));
             Assert.False(vm.RecommendationHistoryFailed);
         }
+
+        [SkippableFact]
+        public async Task TotalCo2e_IsTheSameOnDashboardProfileAndChart()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            ProfileViewModel profile = new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator);
+            double chartTotal = AppData.GetCO2eTimeline().Last().CumulativeCO2e;
+
+            Assert.Equal(vm.TotalCo2eText, chartTotal.ToString("0.##") + " kg");
+            Assert.Equal(vm.TotalCo2eText + " CO2e", profile.TotalCo2eText);
+        }
     }
 }
