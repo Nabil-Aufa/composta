@@ -59,17 +59,17 @@ namespace Composta.UITests
             CompostBatch batch = new CompostBatch(user.Id, new DateTime(2026, 11, 1), 30);
             repo.Add(batch);
 
-            // Hari 1: item tanpa kategori (fallback default factor = 0.5) -> 2.0 * 0.5 = 1.00
+            
             CompostableWaste item1 = new CompostableWaste("Sisa Dapur", 2.0, null, BrownGreenType.Green, 60);
             item1.DateAdded = new DateTime(2026, 11, 1, 9, 0, 0);
             repo.AddWasteItem(batch, item1);
 
-            // Hari 1 (jam berbeda): Daun Kering (factor = 0.3) -> 1.0 * 0.3 = 0.30 -> total hari 1 = 1.30
+            
             CompostableWaste item2 = new CompostableWaste("Daun", 1.0, leavesCategory, BrownGreenType.Brown, 30);
             item2.DateAdded = new DateTime(2026, 11, 1, 15, 0, 0);
             repo.AddWasteItem(batch, item2);
 
-            // Hari 2: Daun Kering (factor = 0.3) -> 4.0 * 0.3 = 1.20 -> akumulatif = 2.50
+            
             CompostableWaste item3 = new CompostableWaste("Ranting", 4.0, leavesCategory, BrownGreenType.Brown, 30);
             item3.DateAdded = new DateTime(2026, 11, 2, 10, 0, 0);
             repo.AddWasteItem(batch, item3);

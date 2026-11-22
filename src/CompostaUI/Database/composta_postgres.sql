@@ -163,7 +163,6 @@ BEGIN
 END;
 $$;
 
--- Catatan: Nilai default faktor emisi 0.5 harus selaras dengan CarbonCalculatorService.DefaultFactor
 CREATE OR REPLACE FUNCTION st_select_co2e_timeline(_user_id VARCHAR)
     RETURNS TABLE (tanggal DATE, co2e_harian NUMERIC, co2e_akumulatif NUMERIC)
     LANGUAGE plpgsql
