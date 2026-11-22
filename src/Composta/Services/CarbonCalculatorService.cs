@@ -7,7 +7,9 @@ namespace Composta.Services
     {
         private double _defaultFactor;
 
-        public CarbonCalculatorService() : this(0.5)
+        public const double FoodWasteAvoidedFactor = 0.717;
+
+        public CarbonCalculatorService() : this(FoodWasteAvoidedFactor)
         {
         }
 
@@ -37,11 +39,7 @@ namespace Composta.Services
                     continue;
                 }
 
-                double factor = item.GetCO2eFactor();
-                if (factor <= 0)
-                {
-                    factor = _defaultFactor;
-                }
+                double factor = item.Category != null ? item.GetCO2eFactor() : _defaultFactor;
 
                 total += item.Weight * factor;
             }

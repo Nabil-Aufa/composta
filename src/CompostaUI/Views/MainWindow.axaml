@@ -292,6 +292,8 @@
                             <ProgressBar IsIndeterminate="True" IsVisible="{Binding Weather.IsLoading}"
                                          Height="3" MinHeight="3" />
                             <StackPanel Orientation="Horizontal" Spacing="12">
+                                <TextBlock Text="{Binding Weather.Icon}" FontSize="28" VerticalAlignment="Center"
+                                           AutomationProperties.Name="{Binding Weather.ConditionText}" />
                                 <TextBlock Text="{Binding Weather.TemperatureText}" FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource ForestBrush}" />
                                 <TextBlock Text="{Binding Weather.ConditionText}" FontSize="14"

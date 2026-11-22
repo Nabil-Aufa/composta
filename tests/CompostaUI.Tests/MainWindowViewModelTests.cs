@@ -26,6 +26,7 @@ namespace Composta.UITests
 
         private async Task<MainWindowViewModel> LoadedViewModel()
         {
+            AppData.Login(DatabaseFixture.NabilId);
             MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
             await vm.LoadAsync();
             return vm;
@@ -51,6 +52,44 @@ namespace Composta.UITests
             _dialogs.Messages,
             message => message.StartsWith("Pengingat Perawatan:")
                 && message.Contains("Terlambat:"));
+        }
+
+        [SkippableFact]
+        public async Task Load_FillsCo2eChartFromTimelineMatchingTotal()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            List<Composta.Models.CO2eTimelinePoint> timeline = AppData.GetCO2eTimeline();
+
+            Assert.False(vm.Co2eChart.HasNoData);
+            var series = Assert.IsType<LiveChartsCore.SkiaSharpView.LineSeries<double>>(Assert.Single(vm.Co2eChart.Series));
+            double[] values = series.Values!.ToArray();
+            Assert.Equal(timeline.Select(p => p.CumulativeCO2e), values);
+            Assert.Equal(vm.TotalCo2eText, values.Last().ToString("0.##") + " kg");
+            Assert.Equal(timeline.Count, vm.Co2eChart.XAxes[0].Labels!.Count);
+        }
+
+        [SkippableFact]
+        public async Task Load_KeepsDashboardWhenTimelineFunctionIsMissing()
+        {
+            RequireDatabase();
+
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand("DROP FUNCTION st_select_co2e_timeline(VARCHAR)", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            MainWindowViewModel vm = await LoadedViewModel();
+
+            Assert.True(vm.IsDatabaseConnected);
+            Assert.Equal(4, vm.Batches.Count);
+            Assert.True(vm.Co2eChart.HasNoData);
+            Assert.Contains(_dialogs.Messages,
+                m => m.StartsWith("Grafik CO2e Gagal Dimuat:") && m.Contains("belum sesuai dengan versi aplikasi"));
+            Assert.Equal(MessageTone.Error, _dialogs.TonesByTitle["Grafik CO2e Gagal Dimuat"]);
         }
 
         [SkippableFact]
@@ -408,6 +447,62 @@ namespace Composta.UITests
             Assert.DoesNotContain(
                 _dialogs.Messages,
                 message => message.StartsWith("Pengingat Perawatan:"));
+        }
+
+        [SkippableFact]
+        public async Task Recommendation_IsSavedOnceUntilItChanges()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            string batchId = vm.SelectedBatch!.Batch.Id;
+            string countSql = "SELECT COUNT(*) FROM compost_recommendations WHERE batch_id = '" + batchId + "'";
+            long afterLoad = Db.Count(countSql);
+
+            BatchItemViewModel selected = vm.SelectedBatch;
+            vm.SelectedBatch = vm.Batches.First(b => b != selected);
+            vm.SelectedBatch = selected;
+
+            Assert.Equal(1, afterLoad);
+            Assert.Equal(afterLoad, Db.Count(countSql));
+            Assert.False(vm.RecommendationHistoryFailed);
+        }
+
+        [SkippableFact]
+        public async Task TotalCo2e_IsTheSameOnDashboardProfileAndChart()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            ProfileViewModel profile = new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator);
+            double chartTotal = AppData.GetCO2eTimeline().Last().CumulativeCO2e;
+
+            Assert.Equal(vm.TotalCo2eText, chartTotal.ToString("0.##") + " kg");
+            Assert.Equal(vm.TotalCo2eText + " CO2e", profile.TotalCo2eText);
+        }
+
+        [SkippableFact]
+        public async Task RecommendationHistoryFailure_IsReportedOnce()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand("DROP FUNCTION st_insert_recommendation", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            BatchItemViewModel first = vm.Batches.First(b => !b.IsArchived);
+            BatchItemViewModel second = vm.Batches.Last(b => !b.IsArchived && b != first);
+            vm.SelectedBatch = second;
+            vm.SelectedBatch = first;
+            vm.SelectedBatch = second;
+
+            Assert.True(vm.RecommendationHistoryFailed);
+            Assert.Single(_dialogs.Messages, m => m.StartsWith("Riwayat Rekomendasi Gagal Disimpan:"));
+            Assert.False(string.IsNullOrEmpty(vm.RecommendationText));
         }
     }
 }

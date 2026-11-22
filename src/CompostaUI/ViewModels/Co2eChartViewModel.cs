@@ -5,7 +5,6 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using Composta.Models;
-using Composta.Interfaces;
 
 namespace Composta.ViewModels
 {
@@ -81,38 +80,14 @@ namespace Composta.ViewModels
             };
         }
 
-        public void UpdateFromBatches(
-            IEnumerable<CompostBatch> batches,
-            ICarbonCalculator calculator)
+        public void UpdateFromTimeline(IEnumerable<CO2eTimelinePoint> timeline)
         {
-            var dailyTotals = batches
-                .SelectMany(batch => batch.WasteItems)
-                .Where(item => item is CompostableWaste)
-                .GroupBy(item => item.DateAdded.Date)
-                .OrderBy(group => group.Key)
-                .Select(group => new
-                {
-                    Date = group.Key,
-                    DailyCo2e = calculator.CalculateCO2eSaved(group.ToList())
-                })
-                .ToList();
+            List<CO2eTimelinePoint> points = timeline.OrderBy(point => point.Date).ToList();
 
-            double cumulative = 0;
-
-            double[] cumulativeValues = dailyTotals
-                .Select(day =>
-                {
-                    cumulative += day.DailyCo2e;
-                    return Math.Round(cumulative, 2);
-                })
-                .ToArray();
-
-            UpdateChart(cumulativeValues);
+            UpdateChart(points.Select(point => point.CumulativeCO2e));
             XAxes = new[]
             {
-                CreateXAxis(dailyTotals
-                    .Select(day => day.Date.ToString("dd MMM"))
-                    .ToArray())
+                CreateXAxis(points.Select(point => point.Date.ToString("dd MMM")).ToArray())
             };
         }
     }

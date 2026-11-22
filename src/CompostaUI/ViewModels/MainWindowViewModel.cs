@@ -71,6 +71,9 @@ namespace Composta.ViewModels
             Weather = weather ?? new WeatherViewModel(AppData.WeatherService);
             Weather.WeatherUpdated += () =>
             {
+            
+                _ = RefreshMaturityEstimateInBackgroundAsync();
+
                 if (SelectedBatch != null)
                 {
                     ShowRecommendation(SelectedBatch.Batch);
@@ -151,6 +154,8 @@ namespace Composta.ViewModels
 
         public async Task LoadAsync()
         {
+            await Task.Run(() => AppData.RefreshEstimatedMaturityDays(Weather.Location));
+
             await Task.WhenAll(
                 LoadDashboardAsync(null),
                 Weather.RefreshCommand.ExecuteAsync(null)
@@ -159,6 +164,60 @@ namespace Composta.ViewModels
             if (IsDatabaseConnected)
             {
                 await ShowMaintenanceReminderAsync();
+            }
+        }
+
+        
+        private async Task RefreshMaturityEstimateInBackgroundAsync()
+        {
+            string location = Weather.Location;
+            int estimatedDays = await Task.Run(() => AppData.RefreshEstimatedMaturityDays(location));
+
+            if (!IsDatabaseConnected)
+            {
+                return;
+            }
+
+            List<CompostBatch> batchesSnapshot = AppData.CurrentUser.Batches.ToList();
+            bool anyUpdated = false;
+
+            foreach (CompostBatch batch in batchesSnapshot)
+            {
+                BatchStatus oldStatus = batch.Status;
+                DateTime oldMaturityDate = batch.EstimatedMaturityDate;
+
+                batch.RecalculateEstimatedMaturityDate(estimatedDays);
+                batch.UpdateProgress();
+
+                if (batch.Status != oldStatus || batch.EstimatedMaturityDate != oldMaturityDate)
+                {
+                    try
+                    {
+                        AppData.BatchRepository.Update(batch, AppData.CurrentUser.Id);
+                        anyUpdated = true;
+                    }
+                    catch
+                    {
+                        // Abaikan kegagalan sinkronisasi background agar UI tidak terganggu
+                    }
+                }
+            }
+
+            if (anyUpdated && IsDatabaseConnected)
+            {
+                string? currentSelectedId = SelectedBatch?.Batch.Id;
+                List<CompostBatch> latestBatches = AppData.CurrentUser.Batches.ToList();
+
+                Batches.Clear();
+                foreach (CompostBatch batch in latestBatches)
+                {
+                    Batches.Add(new BatchItemViewModel(batch));
+                }
+
+                SelectedBatch = Batches.FirstOrDefault(b => b.Batch.Id == currentSelectedId)
+                    ?? Batches.FirstOrDefault(b => !b.IsArchived)
+                    ?? Batches.FirstOrDefault();
+                RefreshMaintenanceSchedules();
             }
         }
 
@@ -233,11 +292,7 @@ namespace Composta.ViewModels
             UserName = user.Name;
             Greeting = "Halo, " + user.Name + "! Ayo ubah sampah organik jadi kompos.";
 
-            double totalCo2e = user.Batches.Sum(b => AppData.CarbonCalculator.CalculateBatchImpact(b));
-            Co2eChart.UpdateFromBatches(
-                user.Batches,
-                AppData.CarbonCalculator
-            );
+            double totalCo2e = AppData.CarbonCalculator.CalculateCO2eSaved(user.Batches.SelectMany(b => b.WasteItems).ToList());
             TotalCo2eText = totalCo2e.ToString("0.##") + " kg";
             ActiveBatchCountText = user.GetActiveBatches().Count.ToString();
             TotalWeightText = user.Batches.Sum(b => b.GetTotalWeight()).ToString("0.##") + " kg";
@@ -257,6 +312,22 @@ namespace Composta.ViewModels
             if (SelectedBatch == null)
             {
                 ShowEmptyRecommendation();
+            }
+
+            await LoadCo2eChartAsync();
+        }
+
+        private async Task LoadCo2eChartAsync()
+        {
+            try
+            {
+                Co2eChart.UpdateFromTimeline(AppData.GetCO2eTimeline());
+            }
+            catch (Exception ex)
+            {
+                Co2eChart.UpdateFromTimeline(Array.Empty<CO2eTimelinePoint>());
+                await _dialogs.ShowMessageAsync("Grafik CO2e Gagal Dimuat",
+                    DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
             }
         }
 
@@ -311,7 +382,35 @@ namespace Composta.ViewModels
             CompostRecommendation recommendation = AppData.Advisor.GenerateRecommendation(batch, weather);
             RecommendationText = recommendation.Message;
             Priority = recommendation.Priority;
+            SaveRecommendationHistory(recommendation);
         }
+
+        private void SaveRecommendationHistory(CompostRecommendation recommendation)
+        {
+            if (!IsDatabaseConnected)
+            {
+                return;
+            }
+
+            try
+            {
+                AppData.SaveRecommendationIfChanged(recommendation);
+            }
+            catch (Exception ex)
+            {
+                if (RecommendationHistoryFailed)
+                {
+                    return;
+                }
+
+                RecommendationHistoryFailed = true;
+                _ = _dialogs.ShowMessageAsync("Riwayat Rekomendasi Gagal Disimpan",
+                    "Rekomendasi tetap ditampilkan, tetapi riwayatnya tidak tersimpan.\n\n"
+                    + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Warning);
+            }
+        }
+
+        public bool RecommendationHistoryFailed { get; private set; }
 
         private void ShowEmptyRecommendation()
         {
@@ -385,7 +484,8 @@ namespace Composta.ViewModels
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
         {
-            int estimatedDays = AppData.Advisor.EstimateMaturityDays(AppData.Location);
+
+            int estimatedDays = await Task.Run(() => AppData.RefreshEstimatedMaturityDays(Weather.Location));
 
             bool confirmed = await _dialogs.ConfirmAsync("Buat Batch Baru",
                 $"Buat batch kompos baru mulai hari ini? Jadwal perawatan untuk {estimatedDays} hari ke depan akan dibuat otomatis.",
@@ -426,7 +526,7 @@ namespace Composta.ViewModels
             string batchName = AppData.GetBatchName(batch);
             try
             {
-                AppData.BatchRepository.Harvest(batch);
+                AppData.BatchRepository.Harvest(batch, AppData.CurrentUser.Id);
             }
             catch (Exception ex)
             {
@@ -467,7 +567,7 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.BatchRepository.Delete(batch.Id);
+                AppData.BatchRepository.Delete(batch, AppData.CurrentUser.Id);
             }
             catch (Exception ex)
             {

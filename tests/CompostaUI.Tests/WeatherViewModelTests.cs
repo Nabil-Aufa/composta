@@ -1,3 +1,4 @@
+using System.Net;
 using Composta.Interfaces;
 using Composta.Models;
 using Composta.Services;
@@ -39,6 +40,21 @@ namespace Composta.UITests
         }
 
         [Fact]
+        public async Task UnreachableOpenWeatherMap_FallsBackToOfflineWithoutLeakingApiKey()
+        {
+            OpenWeatherMapService service = new OpenWeatherMapService("kunci-rahasia", "http://127.0.0.1:1");
+            WeatherViewModel vm = new WeatherViewModel(service, TimeSpan.FromSeconds(5));
+
+            await vm.RefreshCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsOffline);
+            Assert.NotNull(vm.CurrentWeather);
+            Assert.Contains("simulasi", vm.StatusText);
+            Assert.DoesNotContain("kunci-rahasia", vm.StatusText);
+            Assert.False(vm.IsLoading);
+        }
+
+        [Fact]
         public async Task ProviderFailure_FallsBackAndCanBeRetriedWithoutLeakingError()
         {
             bool failing = true;
@@ -57,7 +73,62 @@ namespace Composta.UITests
             failing = false;
             await vm.RefreshCommand.ExecuteAsync(null);
             Assert.False(vm.IsOffline);
-            Assert.Equal("Clear", vm.ConditionText);
+            Assert.Equal("Cerah", vm.ConditionText);
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.NotFound, "lokasi \"Yogya\" tidak ditemukan")]
+        [InlineData(HttpStatusCode.Unauthorized, "API key cuaca tidak valid")]
+        [InlineData(HttpStatusCode.InternalServerError, "tidak dapat terhubung ke layanan cuaca")]
+        public async Task HttpFailure_ExplainsCauseAndFallsBack(HttpStatusCode status, string expected)
+        {
+            StubWeatherService service = new StubWeatherService(_ =>
+                throw new HttpRequestException("appid=rahasia", null, status));
+            WeatherViewModel vm = new WeatherViewModel(service) { Location = "Yogya" };
+
+            await vm.RefreshCommand.ExecuteAsync(null);
+
+            Assert.True(vm.IsOffline);
+            Assert.StartsWith("Gagal memuat cuaca", vm.StatusText);
+            Assert.Contains(expected, vm.StatusText);
+            Assert.Contains("data simulasi offline", vm.StatusText);
+            Assert.DoesNotContain("rahasia", vm.StatusText);
+            Assert.NotNull(vm.CurrentWeather);
+        }
+
+        [Fact]
+        public async Task NoInternet_IsReportedAsConnectionProblem()
+        {
+            StubWeatherService service = new StubWeatherService(_ =>
+                throw new HttpRequestException("Name or service not known"));
+            WeatherViewModel vm = new WeatherViewModel(service);
+
+            await vm.RefreshCommand.ExecuteAsync(null);
+
+            Assert.Contains("tidak dapat terhubung ke layanan cuaca", vm.StatusText);
+            Assert.Contains("Coba Refresh lagi", vm.StatusText);
+        }
+
+        [Theory]
+        [InlineData("Clear", "Cerah")]
+        [InlineData("Clouds", "Berawan")]
+        [InlineData("Rain", "Hujan")]
+        [InlineData("Drizzle", "Gerimis")]
+        [InlineData("Thunderstorm", "Badai petir")]
+        [InlineData("Mist", "Berkabut")]
+        [InlineData("Haze", "Berkabut tipis")]
+        [InlineData("clouds", "Berawan")]
+        [InlineData("Cerah Berawan", "Cerah Berawan")]
+        [InlineData("", "Kondisi tidak diketahui")]
+        public async Task Condition_IsShownInIndonesian(string condition, string expected)
+        {
+            WeatherViewModel vm = new WeatherViewModel(new StubWeatherService(_ =>
+                new WeatherData(30, 60, 0, condition, DateTime.Now)));
+
+            await vm.RefreshCommand.ExecuteAsync(null);
+
+            Assert.Equal(expected, vm.ConditionText);
+            Assert.Equal(condition, vm.CurrentWeather?.Condition);
         }
 
         [Fact]
@@ -137,7 +208,8 @@ namespace Composta.UITests
         [InlineData("Hujan Ringan", 0, "🌧")]
         [InlineData("Clear", 3, "🌧")]
         [InlineData("Thunderstorm", 2, "⛈")]
-        [InlineData("Unknown", 0, "?")]
+        [InlineData("Haze", 0, "🌫")]
+        [InlineData("Unknown", 0, "🌡")]
         public async Task Icon_FollowsWeatherCondition(string condition, double rainfall, string expected)
         {
             WeatherViewModel vm = new WeatherViewModel(new StubWeatherService(_ =>

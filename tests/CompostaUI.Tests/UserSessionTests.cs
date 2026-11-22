@@ -27,13 +27,13 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
-        public void Load_WithoutLogin_UsesFirstUser_AndReloadKeepsActiveUser()
+        public void Load_WithoutLogin_IsRejected_AndReloadKeepsActiveUser()
         {
             RequireDatabase();
 
-            AppData.Load();
-            Assert.True(AppData.IsLoggedIn);
-            Assert.Equal(DatabaseFixture.NabilId, AppData.CurrentUser.Id);
+            InvalidOperationException error = Assert.Throws<InvalidOperationException>(AppData.Load);
+            Assert.Contains("Pilih profil", error.Message);
+            Assert.False(AppData.IsLoggedIn);
 
             AppData.Login(DatabaseFixture.DemoUserId);
             AppData.Load();

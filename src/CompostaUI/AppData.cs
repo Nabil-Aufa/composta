@@ -48,6 +48,9 @@ namespace Composta
         public static bool IsLoggedIn { get; private set; }
         public static List<WasteCategory> Categories { get; private set; }
 
+        // [TAMBAHAN] Cache estimasi hari matang agar Login/Load dan AddWaste tidak memblokir UI
+        public static int CachedMaturityDays { get; private set; } = CompostAdvisorService.DefaultMaturityDays;
+
         public static string DatabaseInfo
         {
             get
@@ -59,15 +62,12 @@ namespace Composta
 
         public static void Load()
         {
-            if (IsLoggedIn)
+            if (!IsLoggedIn)
             {
-                Login(CurrentUser.Id);
-                return;
+                throw new InvalidOperationException("Belum ada profil yang masuk. Pilih profil terlebih dahulu.");
             }
 
-            User user = UserRepository.GetAll().FirstOrDefault()
-                ?? throw new InvalidOperationException("Tabel users masih kosong.");
-            Login(user.Id);
+            Login(CurrentUser.Id);
         }
 
         public static List<User> GetUsers()
@@ -99,7 +99,8 @@ namespace Composta
             User user = UserRepository.GetById(userId)
                 ?? throw new InvalidOperationException("User tidak ditemukan.");
 
-            int estimatedMaturityDays = Advisor.EstimateMaturityDays(Location);
+            // [UBAH] Gunakan nilai cache agar proses Login tidak membekukan UI selama 5 detik
+            int estimatedMaturityDays = CachedMaturityDays;
 
             foreach (CompostBatch batch in BatchRepository.GetByUser(user.Id))
             {
@@ -112,7 +113,7 @@ namespace Composta
 
                 if (batch.Status != oldStatus || batch.EstimatedMaturityDate != oldMaturityDate)
                 {
-                    BatchRepository.Update(batch);
+                    BatchRepository.Update(batch, user.Id);
                 }
 
                 user.AddBatch(batch);
@@ -123,10 +124,19 @@ namespace Composta
             IsLoggedIn = true;
         }
 
+        // [TAMBAHAN] Dipanggil dari background task menggunakan lokasi aktif pada kartu cuaca
+        public static int RefreshEstimatedMaturityDays(string? location = null)
+        {
+            string targetLocation = string.IsNullOrWhiteSpace(location) ? Location : location.Trim();
+            CachedMaturityDays = Advisor.EstimateMaturityDays(targetLocation);
+            return CachedMaturityDays;
+        }
+
         public static void Logout()
         {
             CurrentUser = new User();
             IsLoggedIn = false;
+            CachedMaturityDays = CompostAdvisorService.DefaultMaturityDays;
         }
 
         public static IWeatherService CreateWeatherService(string? apiKey)
@@ -155,11 +165,18 @@ namespace Composta
             return ScheduleRepository.GetDueOrOverdueByUser(CurrentUser.Batches);
         }
 
-        public static CompostRecommendation GenerateAndSaveRecommendation(CompostBatch batch)
+        public static bool SaveRecommendationIfChanged(CompostRecommendation recommendation)
         {
-            CompostRecommendation recommendation = Advisor.GenerateRecommendation(batch, Location);
+            ArgumentNullException.ThrowIfNull(recommendation);
+
+            CompostRecommendation? latest = ScheduleRepository.GetRecommendationsByBatch(recommendation.BatchId).FirstOrDefault();
+            if (latest != null && latest.Message == recommendation.Message && latest.Priority == recommendation.Priority)
+            {
+                return false;
+            }
+
             ScheduleRepository.AddRecommendation(recommendation);
-            return recommendation;
+            return true;
         }
 
         public static List<CompostRecommendation> GetBatchRecommendations(string batchId)

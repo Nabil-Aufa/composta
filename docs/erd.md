@@ -109,7 +109,7 @@ disimpan.
 |---|---|---|---|
 | `id` | VARCHAR(36) | PK | GUID string. |
 | `name` | VARCHAR(50) | | Nama kategori, mis. "Sisa sayur", "Daun kering". |
-| `co2e_factor_per_kg` | NUMERIC(6,3) | | Faktor emisi kg CO2e per kg sampah; 3 desimal cukup presisi, maksimal 999.999. |
+| `co2e_factor_per_kg` | NUMERIC(6,3) | | Faktor emisi yang dicegah, kg CO2e per kg sampah; 3 desimal cukup presisi, maksimal 999.999. Sumber nilai: [faktor-co2e.md](faktor-co2e.md). |
 | `is_compostable` | BOOLEAN | | Benar/salah; bila salah `GetFactor()` bernilai 0. |
 
 ### `waste_items`
