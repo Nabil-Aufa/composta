@@ -99,24 +99,24 @@ Gunakan properti `bool` di ViewModel dan style class di `App.axaml`, bukan warna
 - Jika `COMPOSTA_WEATHER_KEY` kosong/tidak diatur, aplikasi otomatis memakai `OfflineWeatherService` tanpa error.
 - Saat menggunakan `OpenWeatherMapService`, pemanggilan `GetCurrentWeather` dijalankan di background dengan batas waktu 10 detik. Jika internet terputus, timeout, atau API key tidak valid, kartu otomatis melakukan fallback ke `OfflineWeatherService` dengan label simulasi.
 
-    #### Mengatur API key cuaca (`COMPOSTA_WEATHER_KEY`)
-    1. Daftar dan buat API key gratis di [OpenWeatherMap](https://openweathermap.org/api).
-    2. Atur environment variable `COMPOSTA_WEATHER_KEY` sebelum menjalankan aplikasi (jangan menyimpan API key di dalam kode/repository):
-      - **Windows (PowerShell):**
-        ```powershell
-        $env:COMPOSTA_WEATHER_KEY="api_key_anda"
-        dotnet run
-        ```
-      - **Windows (Command Prompt / CMD):**
-        ```cmd
-        set COMPOSTA_WEATHER_KEY=api_key_anda
-        dotnet run
-        ```
-      - **macOS / Linux:**
-        ```bash
-        export COMPOSTA_WEATHER_KEY="api_key_anda"
-        dotnet run
-        ```
+#### Mengatur API key cuaca (`COMPOSTA_WEATHER_KEY`)
+1. Daftar dan buat API key gratis di [OpenWeatherMap](https://openweathermap.org/api).
+2. Atur environment variable `COMPOSTA_WEATHER_KEY` sebelum menjalankan aplikasi (jangan menyimpan API key di dalam kode/repository):
+  - **Windows (PowerShell):**
+    ```powershell
+    $env:COMPOSTA_WEATHER_KEY="api_key_anda"
+    dotnet run
+    ```
+  - **Windows (Command Prompt / CMD):**
+    ```cmd
+    set COMPOSTA_WEATHER_KEY=api_key_anda
+    dotnet run
+    ```
+  - **macOS / Linux:**
+    ```bash
+    export COMPOSTA_WEATHER_KEY="api_key_anda"
+    dotnet run
+    ```
 
 ### Pengujian kartu cuaca
 ```bash
