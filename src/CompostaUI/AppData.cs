@@ -102,7 +102,7 @@ namespace Composta
                 batch.UpdateProgress();
                 if (batch.Status != oldStatus)
                 {
-                    BatchRepository.Update(batch);
+                    BatchRepository.Update(batch, user.Id);
                 }
 
                 batch.Schedules = ScheduleRepository.GetByBatch(batch.Id);

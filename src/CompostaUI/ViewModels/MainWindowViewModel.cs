@@ -456,7 +456,7 @@ namespace Composta.ViewModels
             string batchName = AppData.GetBatchName(batch);
             try
             {
-                AppData.BatchRepository.Harvest(batch);
+                AppData.BatchRepository.Harvest(batch, AppData.CurrentUser.Id);
             }
             catch (Exception ex)
             {
@@ -497,7 +497,7 @@ namespace Composta.ViewModels
 
             try
             {
-                AppData.BatchRepository.Delete(batch);
+                AppData.BatchRepository.Delete(batch, AppData.CurrentUser.Id);
             }
             catch (Exception ex)
             {

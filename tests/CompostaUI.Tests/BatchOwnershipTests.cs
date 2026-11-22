@@ -1,4 +1,5 @@
 using Composta.Data;
+using Composta.Enums;
 using Composta.Models;
 
 namespace Composta.UITests
@@ -11,31 +12,25 @@ namespace Composta.UITests
 
         private CompostBatchRepository Repository => new CompostBatchRepository(Db.Connstring);
 
-        private CompostBatch DemoBatch()
+        private CompostBatch DemoBatch(BatchStatus? status = null)
         {
-            return Repository.GetByUser(DatabaseFixture.DemoUserId).First();
+            return Repository.GetByUser(DatabaseFixture.DemoUserId)
+                .First(b => status == null || b.Status == status);
         }
 
-        private CompostBatch WithOwner(CompostBatch batch, string userId)
+        private long BatchCount(string batchId)
         {
-            return new CompostBatch
-            {
-                Id = batch.Id,
-                UserId = userId,
-                StartDate = batch.StartDate,
-                EstimatedMaturityDate = batch.EstimatedMaturityDate,
-                Status = batch.Status
-            };
+            return Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '" + batchId + "'");
         }
 
         [SkippableFact]
-        public void Delete_ByOtherUser_IsRejected()
+        public void Delete_ByOtherLoggedInUser_IsRejected()
         {
             RequireDatabase();
             CompostBatch batch = DemoBatch();
 
-            Assert.Throws<InvalidOperationException>(() => Repository.Delete(WithOwner(batch, DatabaseFixture.NabilId)));
-            Assert.Equal(1, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '" + batch.Id + "'"));
+            Assert.Throws<InvalidOperationException>(() => Repository.Delete(batch, DatabaseFixture.NabilId));
+            Assert.Equal(1, BatchCount(batch.Id));
         }
 
         [SkippableFact]
@@ -44,30 +39,47 @@ namespace Composta.UITests
             RequireDatabase();
             CompostBatch batch = DemoBatch();
 
-            Repository.Delete(batch);
+            Repository.Delete(batch, DatabaseFixture.DemoUserId);
 
-            Assert.Equal(0, Db.Count("SELECT COUNT(*) FROM compost_batches WHERE id = '" + batch.Id + "'"));
+            Assert.Equal(0, BatchCount(batch.Id));
         }
 
         [SkippableFact]
-        public void Update_ByOtherUser_IsRejected()
+        public void DeleteById_RemovesBatch()
         {
             RequireDatabase();
             CompostBatch batch = DemoBatch();
-            CompostBatch foreign = WithOwner(batch, DatabaseFixture.NabilId);
-            foreign.EstimatedMaturityDate = batch.EstimatedMaturityDate.AddDays(10);
 
-            Assert.Throws<InvalidOperationException>(() => Repository.Update(foreign));
-            CompostBatch reloaded = Repository.GetByUser(DatabaseFixture.DemoUserId).Single(b => b.Id == batch.Id);
-            Assert.Equal(batch.EstimatedMaturityDate, reloaded.EstimatedMaturityDate);
+            Repository.Delete(batch.Id);
+
+            Assert.Equal(0, BatchCount(batch.Id));
+            Assert.Throws<InvalidOperationException>(() => Repository.Delete(batch.Id));
         }
 
-        [Fact]
-        public void DeleteById_IsNotSupported()
+        [SkippableFact]
+        public void Update_ByOtherLoggedInUser_IsRejected()
         {
-            CompostBatchRepository repository = new CompostBatchRepository("Host=127.0.0.1;Port=1;Database=tidak_dipakai");
+            RequireDatabase();
+            CompostBatch batch = DemoBatch();
+            DateTime original = batch.EstimatedMaturityDate;
+            batch.EstimatedMaturityDate = original.AddDays(10);
 
-            Assert.Throws<NotSupportedException>(() => repository.Delete("batch-1"));
+            Assert.Throws<InvalidOperationException>(() => Repository.Update(batch, DatabaseFixture.NabilId));
+            CompostBatch reloaded = Repository.GetByUser(DatabaseFixture.DemoUserId).Single(b => b.Id == batch.Id);
+            Assert.Equal(original, reloaded.EstimatedMaturityDate);
+        }
+
+        [SkippableFact]
+        public void AddWasteItem_ByOtherLoggedInUser_IsRejectedAndRolledBack()
+        {
+            RequireDatabase();
+            CompostBatch batch = DemoBatch(BatchStatus.Active);
+            long itemsBefore = Db.Count("SELECT COUNT(*) FROM waste_items WHERE batch_id = '" + batch.Id + "'");
+            CompostableWaste item = new CompostableWaste("Sisa sayur", 1, null, BrownGreenType.Green, 60);
+
+            Assert.Throws<InvalidOperationException>(() => Repository.AddWasteItem(batch, item, DatabaseFixture.NabilId));
+            Assert.Equal(itemsBefore, Db.Count("SELECT COUNT(*) FROM waste_items WHERE batch_id = '" + batch.Id + "'"));
+            Assert.DoesNotContain(item, batch.WasteItems);
         }
     }
 }
