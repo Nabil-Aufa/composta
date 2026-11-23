@@ -306,7 +306,7 @@ namespace Composta.ViewModels
         {
             try
             {
-                AppData.Load();
+                await Task.Run(AppData.Load);
             }
             catch (Exception ex)
             {
