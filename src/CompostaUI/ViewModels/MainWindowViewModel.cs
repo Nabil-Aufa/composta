@@ -19,6 +19,10 @@ namespace Composta.ViewModels
         private string _userName = string.Empty;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(LogoutCommand))]
+        private bool _isCreatingBatch;
+
+        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AddWasteCommand))]
         [NotifyCanExecuteChangedFor(nameof(NewBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
@@ -100,7 +104,9 @@ namespace Composta.ViewModels
             return _dialogs.ShowProfileAsync(new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator));
         }
 
-        [RelayCommand]
+        private bool CanLogout() => !IsCreatingBatch;
+
+        [RelayCommand(CanExecute = nameof(CanLogout))]
         private void Logout()
         {
             _session.Logout();
@@ -508,6 +514,19 @@ namespace Composta.ViewModels
 
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
+        {
+            IsCreatingBatch = true;
+            try
+            {
+                await CreateBatchAsync();
+            }
+            finally
+            {
+                IsCreatingBatch = false;
+            }
+        }
+
+        private async Task CreateBatchAsync()
         {
             int estimatedDays;
             if (AppData.HasRefreshedMaturityDays)
