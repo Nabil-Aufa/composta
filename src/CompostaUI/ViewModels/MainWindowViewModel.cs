@@ -485,7 +485,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Update Gagal",
+                await _dialogs.ShowMessageAsync("Gagal Memperbarui",
                     item.TaskName + " gagal ditandai selesai.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo),
                     MessageTone.Error);
                 return;
@@ -546,7 +546,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Gagal Menyimpan", "Batch baru gagal disimpan.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -574,7 +574,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Gagal Memperbarui", batchName + " gagal diperbarui.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -615,7 +615,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Gagal Menghapus", batchName + " gagal dihapus.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
