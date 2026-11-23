@@ -3,6 +3,10 @@ DROP TABLE IF EXISTS compost_recommendations, maintenance_schedules, waste_items
 
 DROP FUNCTION IF EXISTS st_update_batch(VARCHAR, VARCHAR, NUMERIC, TIMESTAMP);
 DROP FUNCTION IF EXISTS st_delete_batch(VARCHAR);
+DROP FUNCTION IF EXISTS st_insert_schedule(VARCHAR, VARCHAR, VARCHAR, TIMESTAMP, BOOLEAN);
+DROP FUNCTION IF EXISTS st_complete_schedule(VARCHAR);
+DROP FUNCTION IF EXISTS st_delete_schedule(VARCHAR);
+DROP FUNCTION IF EXISTS st_insert_recommendation(VARCHAR, VARCHAR, VARCHAR, VARCHAR, TIMESTAMP);
 
 CREATE TABLE users (
     id          VARCHAR(36)  PRIMARY KEY,
@@ -31,7 +35,7 @@ CREATE TABLE compost_batches (
     start_date              TIMESTAMP    NOT NULL,
     status                  VARCHAR(10)  NOT NULL DEFAULT 'Active'
                             CHECK (status IN ('Active', 'Curing', 'Ready', 'Archived')),
-    brown_green_ratio       NUMERIC(5,2) NOT NULL DEFAULT 0,
+    brown_green_ratio       NUMERIC(10,2) NOT NULL DEFAULT 0,
     estimated_maturity_date TIMESTAMP    NOT NULL
 );
 
@@ -208,25 +212,34 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION st_insert_schedule(_id VARCHAR, _batch_id VARCHAR, _task_type VARCHAR,
-                                              _due_date TIMESTAMP, _is_completed BOOLEAN DEFAULT FALSE)
+                                              _due_date TIMESTAMP, _is_completed BOOLEAN DEFAULT FALSE,
+                                              _user_id VARCHAR DEFAULT NULL)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
 BEGIN
+    IF _user_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM compost_batches b WHERE b.id = _batch_id AND b.user_id = _user_id
+    ) THEN
+        RETURN 0;
+    END IF;
+
     INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed)
     VALUES (_id, _batch_id, _task_type, _due_date, _is_completed);
     RETURN 1;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION st_complete_schedule(_id VARCHAR)
+CREATE OR REPLACE FUNCTION st_complete_schedule(_id VARCHAR, _user_id VARCHAR DEFAULT NULL)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
 BEGIN
-    UPDATE maintenance_schedules
+    UPDATE maintenance_schedules s
     SET is_completed = TRUE
-    WHERE id = _id;
+    WHERE s.id = _id
+      AND (_user_id IS NULL OR EXISTS (
+          SELECT 1 FROM compost_batches b WHERE b.id = s.batch_id AND b.user_id = _user_id));
 
     IF FOUND THEN
         RETURN 1;
@@ -236,12 +249,15 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION st_delete_schedule(_id VARCHAR)
+CREATE OR REPLACE FUNCTION st_delete_schedule(_id VARCHAR, _user_id VARCHAR DEFAULT NULL)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
 BEGIN
-    DELETE FROM maintenance_schedules WHERE id = _id;
+    DELETE FROM maintenance_schedules s
+    WHERE s.id = _id
+      AND (_user_id IS NULL OR EXISTS (
+          SELECT 1 FROM compost_batches b WHERE b.id = s.batch_id AND b.user_id = _user_id));
 
     IF FOUND THEN
         RETURN 1;
@@ -265,11 +281,18 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION st_insert_recommendation(_id VARCHAR, _batch_id VARCHAR, _message VARCHAR,
-                                                    _priority VARCHAR, _created_at TIMESTAMP)
+                                                    _priority VARCHAR, _created_at TIMESTAMP,
+                                                    _user_id VARCHAR DEFAULT NULL)
     RETURNS INTEGER
     LANGUAGE plpgsql
 AS $$
 BEGIN
+    IF _user_id IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM compost_batches b WHERE b.id = _batch_id AND b.user_id = _user_id
+    ) THEN
+        RETURN 0;
+    END IF;
+
     INSERT INTO compost_recommendations (id, batch_id, message, priority, created_at)
     VALUES (_id, _batch_id, _message, _priority, _created_at);
     RETURN 1;

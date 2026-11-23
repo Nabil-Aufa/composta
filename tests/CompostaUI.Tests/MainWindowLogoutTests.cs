@@ -39,6 +39,19 @@ namespace Composta.UITests
             Assert.True(vm.HasNoBatches);
         }
 
+        [Fact]
+        public void Logout_IsDisabledWhileCreatingBatch()
+        {
+            FakeUserSessionService session = new FakeUserSessionService();
+            MainWindowViewModel vm = new MainWindowViewModel(new FakeDialogService(), session: session);
+
+            vm.IsCreatingBatch = true;
+            Assert.False(vm.LogoutCommand.CanExecute(null));
+
+            vm.IsCreatingBatch = false;
+            Assert.True(vm.LogoutCommand.CanExecute(null));
+        }
+
         private class FakeUserSessionService : IUserSessionService
         {
             public bool LogoutCalled { get; private set; }

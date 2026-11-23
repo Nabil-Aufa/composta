@@ -102,10 +102,15 @@ namespace Composta.Data
 
         public void AddRecommendation(CompostRecommendation recommendation)
         {
+            AddRecommendation(recommendation, null);
+        }
+
+        public void AddRecommendation(CompostRecommendation recommendation, string? actingUserId)
+        {
             ArgumentNullException.ThrowIfNull(recommendation);
 
             EnsureSuccess(ExecuteFunction(
-                "SELECT st_insert_recommendation(:_id, :_batch_id, :_message, :_priority, :_created_at)",
+                "SELECT st_insert_recommendation(:_id, :_batch_id, :_message, :_priority, :_created_at, :_user_id)",
                 p =>
                 {
                     p.AddWithValue("_id", recommendation.Id);
@@ -113,6 +118,7 @@ namespace Composta.Data
                     p.AddWithValue("_message", recommendation.Message);
                     p.AddWithValue("_priority", recommendation.Priority);
                     p.AddWithValue("_created_at", recommendation.CreatedAt);
+                    p.AddWithValue("_user_id", NpgsqlTypes.NpgsqlDbType.Varchar, (object?)actingUserId ?? DBNull.Value);
                 }), "Gagal menyimpan riwayat rekomendasi ke database.");
         }
 

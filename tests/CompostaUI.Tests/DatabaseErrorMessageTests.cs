@@ -86,7 +86,7 @@ namespace Composta.UITests
 
             Composta.Models.CompostBatch batch = new Composta.Models.CompostBatch(DatabaseFixture.DemoUserId, DateTime.Now, 60)
             {
-                BrownGreenRatio = 1000
+                BrownGreenRatio = 100000000
             };
             Exception ex = Capture(() => new CompostBatchRepository(Db.Connstring).Add(batch));
 

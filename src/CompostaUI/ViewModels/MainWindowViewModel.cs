@@ -19,6 +19,10 @@ namespace Composta.ViewModels
         private string _userName = string.Empty;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(LogoutCommand))]
+        private bool _isCreatingBatch;
+
+        [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(AddWasteCommand))]
         [NotifyCanExecuteChangedFor(nameof(NewBatchCommand))]
         [NotifyCanExecuteChangedFor(nameof(HarvestCommand))]
@@ -100,7 +104,9 @@ namespace Composta.ViewModels
             return _dialogs.ShowProfileAsync(new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator));
         }
 
-        [RelayCommand]
+        private bool CanLogout() => !IsCreatingBatch;
+
+        [RelayCommand(CanExecute = nameof(CanLogout))]
         private void Logout()
         {
             _session.Logout();
@@ -300,7 +306,7 @@ namespace Composta.ViewModels
         {
             try
             {
-                AppData.Load();
+                await Task.Run(AppData.Load);
             }
             catch (Exception ex)
             {
@@ -412,7 +418,7 @@ namespace Composta.ViewModels
 
         private void SaveRecommendationHistory(CompostRecommendation recommendation)
         {
-            if (!IsDatabaseConnected)
+            if (!IsDatabaseConnected || Weather.IsOffline)
             {
                 return;
             }
@@ -485,7 +491,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Update Gagal",
+                await _dialogs.ShowMessageAsync("Gagal Memperbarui",
                     item.TaskName + " gagal ditandai selesai.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo),
                     MessageTone.Error);
                 return;
@@ -508,6 +514,19 @@ namespace Composta.ViewModels
 
         [RelayCommand(CanExecute = nameof(CanModifyData))]
         private async Task NewBatchAsync()
+        {
+            IsCreatingBatch = true;
+            try
+            {
+                await CreateBatchAsync();
+            }
+            finally
+            {
+                IsCreatingBatch = false;
+            }
+        }
+
+        private async Task CreateBatchAsync()
         {
             int estimatedDays;
             if (AppData.HasRefreshedMaturityDays)
@@ -546,7 +565,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Insert Gagal", "Batch baru gagal disimpan.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Gagal Menyimpan", "Batch baru gagal disimpan.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -574,7 +593,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Update Gagal", batchName + " gagal diperbarui.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Gagal Memperbarui", batchName + " gagal diperbarui.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 
@@ -615,7 +634,7 @@ namespace Composta.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowMessageAsync("Delete Gagal", batchName + " gagal dihapus.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
+                await _dialogs.ShowMessageAsync("Gagal Menghapus", batchName + " gagal dihapus.\n\n" + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo), MessageTone.Error);
                 return;
             }
 

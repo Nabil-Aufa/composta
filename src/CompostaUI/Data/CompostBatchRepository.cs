@@ -143,6 +143,7 @@ namespace Composta.Data
             using NpgsqlTransaction tx = conn.BeginTransaction();
 
             DateTime previousMaturityDate = batch.EstimatedMaturityDate;
+            BatchStatus previousStatus = batch.Status;
             Dictionary<string, DateTime> previousHarvestDueDates = batch.Schedules
                 .Where(s => s.TaskType == TaskType.Harvest && !s.IsCompleted)
                 .ToDictionary(s => s.Id, s => s.DueDate);
@@ -164,6 +165,7 @@ namespace Composta.Data
                 batch.WasteItems.Remove(item);
                 batch.BrownGreenRatio = batch.CalculateRatio();
                 batch.EstimatedMaturityDate = previousMaturityDate;
+                batch.Status = previousStatus;
                 foreach (MaintenanceSchedule schedule in batch.Schedules.Where(s => previousHarvestDueDates.ContainsKey(s.Id)))
                 {
                     schedule.DueDate = previousHarvestDueDates[schedule.Id];
@@ -219,6 +221,11 @@ namespace Composta.Data
 
         public List<MaintenanceSchedule> CompleteScheduleWithEarlier(CompostBatch batch, MaintenanceSchedule schedule)
         {
+            return CompleteScheduleWithEarlier(batch, schedule, null);
+        }
+
+        public List<MaintenanceSchedule> CompleteScheduleWithEarlier(CompostBatch batch, MaintenanceSchedule schedule, string? actingUserId)
+        {
             ArgumentNullException.ThrowIfNull(batch);
             ArgumentNullException.ThrowIfNull(schedule);
 
@@ -235,8 +242,12 @@ namespace Composta.Data
 
             foreach (MaintenanceSchedule item in toComplete)
             {
-                EnsureSuccess(ExecuteFunction(conn, tx, "SELECT st_complete_schedule(:_id)",
-                    p => p.AddWithValue("_id", item.Id)),
+                EnsureSuccess(ExecuteFunction(conn, tx, "SELECT st_complete_schedule(:_id, :_user_id)",
+                    p =>
+                    {
+                        p.AddWithValue("_id", item.Id);
+                        p.AddWithValue("_user_id", NpgsqlTypes.NpgsqlDbType.Varchar, (object?)actingUserId ?? DBNull.Value);
+                    }),
                     "Gagal memperbarui status jadwal perawatan di database.");
             }
 

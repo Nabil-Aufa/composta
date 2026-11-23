@@ -1,7 +1,7 @@
 # Checklist Uji Manual Sebelum Demo
 
 Jalankan checklist ini pada database yang baru di-reset dengan `src/CompostaUI/Database/composta_postgres.sql`.
-Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi setelah issue terkait selesai.
+Centang setiap baris yang hasilnya sesuai.
 
 ## Persiapan
 - [ ] `dotnet test tests/Composta.Tests` lolos semua
@@ -9,10 +9,10 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 - [ ] Database `composta` di-reset dengan `composta_postgres.sql`
 - [ ] Aplikasi dibuka dengan `dotnet run` dari `src/CompostaUI`
 
-## Dashboard
+## Login dan Dashboard
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
-| 1 | Buka aplikasi | Sapaan "Halo, Nabil Aufa Danaputra!", status "Terhubung ke PostgreSQL", 4 batch tampil | [ ] |
+| 1 | Buka aplikasi, pilih "Nabil Aufa Danaputra", klik "Masuk ke profil" | Jendela "Composta - Pilih Pengguna" tampil lebih dulu; setelah masuk muncul pengingat jadwal perawatan yang terlambat, lalu dashboard dengan sapaan "Halo, Nabil Aufa Danaputra!", status "Terhubung ke PostgreSQL", 4 batch tampil | [ ] |
 | 2 | Lihat kartu ringkasan | CO2e dicegah 6,13 kg, batch berjalan 3, total sampah 30,5 kg | [ ] |
 | 3 | Lihat daftar batch | Keempat status tampil dengan warna berbeda: Sudah Dipanen, Siap Panen, Pematangan, Aktif | [ ] |
 | 4 | Lihat batch terpilih saat dibuka | Batch 2 (Siap Panen) terpilih, rekomendasi "Kompos sudah matang dan siap dipanen", prioritas tinggi | [ ] |
@@ -24,9 +24,9 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
 | 8 | Klik "+ Batch Baru", jawab "Ya, lanjutkan" | Muncul konfirmasi dengan tombol hijau, lalu pesan "Batch 5 berhasil ditambahkan", Batch 5 berstatus Aktif dan terpilih | [ ] |
-| 9 | Pilih Batch 2, klik "Panen" | Pesan "Batch 2 berhasil dipanen", status menjadi Sudah Dipanen, batch berjalan berkurang 1 | [ ] |
-| 10 | Pilih Batch 5, klik "Hapus", jawab "Batal" | Batch tidak terhapus | [ ] |
-| 11 | Pilih Batch 5, klik "Hapus", jawab "Ya, lanjutkan" | Pesan berhasil dihapus, Batch 5 hilang dari daftar | [ ] |
+| 9 | Pilih Batch 2, klik "Panen batch" | Pesan "Batch 2 berhasil dipanen", status menjadi Sudah Dipanen, batch berjalan berkurang 1 | [ ] |
+| 10 | Pilih Batch 5, klik "Hapus batch", jawab "Batal" | Batch tidak terhapus | [ ] |
+| 11 | Pilih Batch 5, klik "Hapus batch", jawab "Ya, lanjutkan" | Pesan berhasil dihapus, Batch 5 hilang dari daftar | [ ] |
 
 ## Catat Sampah
 | No | Langkah | Hasil yang diharapkan | OK |
@@ -43,20 +43,20 @@ Centang setiap baris yang hasilnya sesuai. Baris bertanda *(menyusul)* diisi set
 ## Kondisi Gagal
 | No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
-| 20 | Hentikan server PostgreSQL lalu buka aplikasi | Pesan "Tidak dapat terhubung ke server PostgreSQL", status merah, semua tombol nonaktif, aplikasi tidak crash | [ ] |
+| 20 | Hentikan server PostgreSQL lalu buka aplikasi | Jendela pilih pengguna menampilkan pesan "Tidak dapat terhubung ke server PostgreSQL", daftar pengguna kosong, aplikasi tidak crash; setelah server dinyalakan, "↻ Muat ulang" menampilkan daftar pengguna lagi | [ ] |
 | 21 | Atur `COMPOSTA_DB` ke database yang belum dibuat | Pesan "Database ... belum dibuat" | [ ] |
 | 22 | Jalankan aplikasi pada database dengan skema lama | Pesan "Skema database ... belum sesuai dengan versi aplikasi ini" | [ ] |
-| 23 | Jalankan tanpa `COMPOSTA_WEATHER_KEY`, lalu dengan API key salah atau internet dimatikan, tekan Refresh cuaca | Aplikasi tetap berjalan, kartu cuaca berlabel "simulasi", pesan tidak menampilkan API key, rekomendasi tetap muncul | [ ] |
+| 23 | Jalankan tanpa `COMPOSTA_WEATHER_KEY`, lalu dengan API key salah atau internet dimatikan, tekan "↻ Muat ulang" pada kartu cuaca | Aplikasi tetap berjalan, kartu cuaca berlabel "simulasi", pesan tidak menampilkan API key, rekomendasi tetap muncul | [ ] |
 
-## Fitur Menyusul
-| No | Fitur | Issue | OK |
+## Fitur Lanjutan
+| No | Langkah | Hasil yang diharapkan | OK |
 |---|---|---|---|
-| 24 | Window login, pilih user, buat user baru, ganti user | #11 | [ ] |
-| 25 | Daftar jadwal perawatan dan tombol selesai | #7, #10 | [ ] |
-| 26 | Cuaca dari API, tombol refresh, pilihan lokasi | #6, #9 | [ ] |
-| 27 | Estimasi waktu matang berbasis cuaca | #16 | [ ] |
-| 28 | Grafik CO2e akumulatif | #17, #18 | [ ] |
-| 29 | Badge dan notifikasi badge baru | #8, #12 | [ ] |
+| 24 | Buka menu nama pengguna, pilih "Ganti pengguna", lalu buat profil baru di tab "Buat profil baru" | Kembali ke jendela pilih pengguna; profil baru tersimpan dan bisa langsung dipakai masuk dengan dashboard kosong | [ ] |
+| 25 | Masuk lagi sebagai Nabil, pilih Batch 3, klik "Selesai" pada jadwal yang terlambat | Jadwal tersebut dan jadwal sejenis yang lebih awal ditandai selesai, label "Terlambat" hilang | [ ] |
+| 26 | Klik "Ubah lokasi", isi "Bandung", klik "Muat cuaca" | Judul kartu menjadi "Cuaca · Bandung"; dengan `COMPOSTA_WEATHER_KEY` valid data berlabel waktu pembaruan, tanpa key berlabel simulasi | [ ] |
+| 27 | Klik "+ Batch Baru" | Status menampilkan "Menghitung estimasi panen...", menu "Ganti pengguna" nonaktif sampai proses selesai, konfirmasi menyebut jumlah hari estimasi | [ ] |
+| 28 | Lihat grafik CO2e di dashboard, lalu buka "Lihat profil" | Grafik akumulatif naik sesuai tanggal sampah; total di profil sama dengan kartu CO2e dicegah (6,13 kg) | [ ] |
+| 29 | Badge dan notifikasi badge baru | Menunggu PR badge (#8, #12) | [ ] |
 
 ## Video Demo
 - [ ] Rekam alur: buka aplikasi, lihat rekomendasi tiap batch, buat batch baru, catat sampah, panen, hapus, dan contoh pesan error
