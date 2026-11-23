@@ -57,7 +57,11 @@ namespace Composta.Models
         {
             return _rainfallMm > 0 ||
                    _condition.Contains("rain", StringComparison.OrdinalIgnoreCase) ||
-                   _condition.Contains("hujan", StringComparison.OrdinalIgnoreCase);
+                   _condition.Contains("hujan", StringComparison.OrdinalIgnoreCase) ||
+                   _condition.Contains("drizzle", StringComparison.OrdinalIgnoreCase) ||
+                   _condition.Contains("gerimis", StringComparison.OrdinalIgnoreCase) ||
+                   _condition.Contains("thunderstorm", StringComparison.OrdinalIgnoreCase) ||
+                   _condition.Contains("badai", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
