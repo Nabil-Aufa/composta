@@ -6,7 +6,8 @@ dan menghitung emisi CO2e yang berhasil dicegah.
 ## 1. Yang perlu disiapkan
 - **PostgreSQL** (diuji dengan versi 16 dan 18). Saat instalasi, catat password user `postgres` dan port-nya
   (bawaan `5432`).
-- Paket aplikasi sesuai sistem operasi:
+- Paket aplikasi sesuai sistem operasi, diunduh dari
+  [GitHub Releases](https://github.com/Nabil-Aufa/composta/releases/latest):
   - Windows: `Composta-Windows.zip` (berisi `Composta.exe`, tidak perlu install .NET)
   - macOS (Apple Silicon): `Composta-macOS.zip`
 - Opsional: API key gratis dari [OpenWeatherMap](https://openweathermap.org/api) untuk cuaca aktual.

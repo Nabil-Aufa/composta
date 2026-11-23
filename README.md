@@ -41,7 +41,8 @@ Anggota 2: Gilbert S. H. Nainggolan - 24/543841/TK/60447
 
 ## Instalasi Cepat (Paket Siap Pakai)
 
-Paket aplikasi tidak memerlukan .NET SDK, cukup PostgreSQL.
+**Unduh paket aplikasi di [GitHub Releases](https://github.com/Nabil-Aufa/composta/releases/latest).** Paket tidak
+memerlukan .NET SDK, cukup PostgreSQL.
 
 | Sistem operasi | Isi paket |
 |---|---|
@@ -49,14 +50,17 @@ Paket aplikasi tidak memerlukan .NET SDK, cukup PostgreSQL.
 | macOS (Apple Silicon) | `Composta`, `setup-database.command`, `composta_postgres.sql`, `PANDUAN.md` |
 
 1. Install [PostgreSQL](https://www.postgresql.org/download/) dan catat password user `postgres`.
-2. Jalankan `setup-database.bat` (Windows) atau `./setup-database.command` (macOS). Skrip membuat database
+2. Unduh dan ekstrak `Composta-Windows.zip` atau `Composta-macOS.zip` dari
+   [Releases](https://github.com/Nabil-Aufa/composta/releases/latest).
+3. Jalankan `setup-database.bat` (Windows) atau `./setup-database.command` (macOS). Skrip membuat database
    `composta` beserta tabel, fungsi, dan data demo.
-3. Jalankan `Composta.exe` (Windows) atau `./Composta` (macOS).
+4. Jalankan `Composta.exe` (Windows) atau `./Composta` (macOS), lalu pilih profil **Nabil Aufa Danaputra** untuk data
+   demo lengkap.
 
 Panduan lengkap instalasi, konfigurasi database dan API key, cara penggunaan, serta solusi masalah umum ada di
 [docs/panduan-instalasi.md](docs/panduan-instalasi.md).
 
-Paket dibuat dari source code dengan:
+Untuk membuat paket sendiri dari source code:
 
 ```bash
 ./scripts/build-release.sh
