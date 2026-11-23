@@ -80,6 +80,19 @@ namespace Composta.UITests
             Assert.Throws<InvalidOperationException>(() => Repository.AddWasteItem(batch, item, DatabaseFixture.NabilId));
             Assert.Equal(itemsBefore, Db.Count("SELECT COUNT(*) FROM waste_items WHERE batch_id = '" + batch.Id + "'"));
             Assert.DoesNotContain(item, batch.WasteItems);
+            Assert.Equal(BatchStatus.Active, batch.Status);
+        }
+
+        [SkippableFact]
+        public void AddWasteItem_FailureAfterStatusChange_RestoresStatus()
+        {
+            RequireDatabase();
+            CompostBatch batch = DemoBatch(BatchStatus.Active);
+            batch.StartDate = DateTime.Now.AddDays(-200);
+            CompostableWaste item = new CompostableWaste("Sisa sayur", 1, null, BrownGreenType.Green, 60);
+
+            Assert.Throws<InvalidOperationException>(() => Repository.AddWasteItem(batch, item, DatabaseFixture.NabilId, 60));
+            Assert.Equal(BatchStatus.Active, batch.Status);
         }
 
         [SkippableFact]
