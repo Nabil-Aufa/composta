@@ -70,7 +70,9 @@ namespace Composta.Models
                 case "BATCH":
                     return user.Batches.Count >= target;
                 case "HARVEST":
-                    return user.Batches.Count(b => b.Status == BatchStatus.Ready || b.Status == BatchStatus.Archived) >= target;
+                    return user.Batches.Count(b => b.Status == BatchStatus.Archived) >= target;
+                case "WEIGHT":
+                    return user.GetTotalCompostableWeight() >= target;
                 default:
                     return false;
             }

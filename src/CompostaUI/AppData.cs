@@ -22,6 +22,7 @@ namespace Composta
             CategoryRepository = new WasteCategoryRepository(Connstring);
             BatchRepository = new CompostBatchRepository(Connstring);
             ScheduleRepository = new MaintenanceScheduleRepository(Connstring);
+            BadgeRepository = new BadgeRepository(Connstring);
 
             string? weatherKey = Environment.GetEnvironmentVariable("COMPOSTA_WEATHER_KEY");
             WeatherService = CreateWeatherService(weatherKey);
@@ -39,6 +40,7 @@ namespace Composta
         public static WasteCategoryRepository CategoryRepository { get; }
         public static CompostBatchRepository BatchRepository { get; }
         public static MaintenanceScheduleRepository ScheduleRepository { get; }
+        public static BadgeRepository BadgeRepository { get; }
 
         public static IWeatherService WeatherService { get; private set; }
         public static ICarbonCalculator CarbonCalculator { get; }
@@ -199,6 +201,24 @@ namespace Composta
         public static string GetBatchName(CompostBatch batch)
         {
             return "Batch " + (CurrentUser.Batches.IndexOf(batch) + 1);
+        }
+
+        public static List<UserBadgeStatus> GetUserBadges()
+        {
+            if (!IsLoggedIn)
+            {
+                return new List<UserBadgeStatus>();
+            }
+            return BadgeRepository.GetBadgesByUser(CurrentUser.Id);
+        }
+
+        public static List<Badge> CheckAndAwardBadges()
+        {
+            if (!IsLoggedIn)
+            {
+                return new List<Badge>();
+            }
+            return BadgeRepository.EvaluateAndAwardBadges(CurrentUser);
         }
 
         public static string GetStatusText(BatchStatus status)

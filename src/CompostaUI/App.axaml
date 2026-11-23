@@ -43,6 +43,7 @@
             <Setter Property="FontFamily" Value="{StaticResource ManropeFont}" />
         </Style>
         <Style Selector="Window">
+            <Setter Property="Icon" Value="avares://CompostaUI/Assets/Images/composta.ico" />
             <Setter Property="Background" Value="{StaticResource CanvasBrush}" />
             <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
         </Style>

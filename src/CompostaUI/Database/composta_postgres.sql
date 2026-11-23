@@ -382,6 +382,36 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION st_select_badges_by_user(_user_id VARCHAR)
+    RETURNS TABLE (id VARCHAR, name VARCHAR, criteria VARCHAR, icon_path VARCHAR, earned_at TIMESTAMP)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT b.id, b.name, b.criteria, b.icon_path, ub.earned_at
+    FROM badges b
+    LEFT JOIN user_badges ub ON ub.badge_id = b.id AND ub.user_id = _user_id
+    ORDER BY b.id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION st_insert_user_badge(_user_id VARCHAR, _badge_id VARCHAR, _earned_at TIMESTAMP)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO user_badges (user_id, badge_id, earned_at)
+    VALUES (_user_id, _badge_id, _earned_at)
+    ON CONFLICT (user_id, badge_id) DO NOTHING;
+
+    IF FOUND THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END IF;
+END;
+$$;
+
 INSERT INTO users (id, name, email, joined_at) VALUES
     ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', 'Nabil Aufa Danaputra', 'nabil@composta.id', NOW() - INTERVAL '90 days'),
     ('3f1c2a9e-5b7d-4c1e-9a2f-000000000002', 'Pengguna Demo', 'demo@composta.id', NOW() - INTERVAL '30 days');
@@ -445,3 +475,16 @@ INSERT INTO waste_items (id, batch_id, category_id, item_type, name, weight, dat
 INSERT INTO maintenance_schedules (id, batch_id, task_type, due_date, is_completed) VALUES
     ('d2f4b6c8-3e5a-4b7c-9d1e-000000000001', 'b8d0e6f2-4a1b-4c2d-9e3f-000000000002',
      'Turn', NOW() - INTERVAL '2 days', FALSE);
+
+INSERT INTO badges (id, name, criteria, icon_path) VALUES
+    ('9e1b3d5f-2a4c-4e6f-8a0b-000000000001', 'Batch Pertama',    'BATCH:1',   'badge_first_batch.png'),
+    ('9e1b3d5f-2a4c-4e6f-8a0b-000000000002', 'Panen Pertama',    'HARVEST:1', 'badge_first_harvest.png'),
+    ('9e1b3d5f-2a4c-4e6f-8a0b-000000000003', '10 kg Sampah',     'WEIGHT:10', 'badge_10kg_waste.png'),
+    ('9e1b3d5f-2a4c-4e6f-8a0b-000000000004', '5 kg CO2e Dicegah', 'CO2E:5',    'badge_5kg_co2e.png');
+
+INSERT INTO user_badges (user_id, badge_id, earned_at) VALUES
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000001', NOW() - INTERVAL '85 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000002', NOW() - INTERVAL '25 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000003', NOW() - INTERVAL '40 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000004', NOW() - INTERVAL '8 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000002', '9e1b3d5f-2a4c-4e6f-8a0b-000000000001', NOW() - INTERVAL '5 days');
