@@ -100,8 +100,8 @@ disimpan.
 | `user_id` | VARCHAR(36) | FK → `users.id` | Pemilik batch. |
 | `start_date` | TIMESTAMP | | Tanggal mulai pengomposan. |
 | `status` | VARCHAR(10) | | Enum `BatchStatus`: `Active`, `Curing`, `Ready`, `Archived` (terpanjang 8 karakter). |
-| `brown_green_ratio` | NUMERIC(5,2) | | Hasil `CalculateRatio()` yang dibulatkan 2 desimal; maksimal 999.99. |
-| `estimated_maturity_date` | TIMESTAMP | | `start_date` + jumlah hari pematangan (default 60 hari). |
+| `brown_green_ratio` | NUMERIC(10,2) | | Hasil `CalculateRatio()` yang dibulatkan 2 desimal; maksimal 99.999.999,99 agar rasio ekstrem (misalnya 1.000 kg brown dengan 0,5 kg green) tetap bisa disimpan. |
+| `estimated_maturity_date` | TIMESTAMP | | Tanggal sampah kompos terakhir (atau `start_date` bila belum ada sampah) + jumlah hari pematangan dari estimasi cuaca (default 60 hari). |
 
 ### `waste_categories`
 
