@@ -345,6 +345,46 @@
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
         </Style>
 
+        <Style Selector="Border.badge">
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+        <Style Selector="Border.badgeIcon">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="CornerRadius" Value="22" />
+            <Setter Property="Background" Value="{StaticResource LeafBrush}" />
+        </Style>
+        <Style Selector="Border.badgeIcon TextBlock">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.badgeName">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
+        </Style>
+        <Style Selector="TextBlock.badgeStatus">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource ForestBrush}" />
+        </Style>
+        <Style Selector="Border.badge.locked">
+            <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
+        </Style>
+        <Style Selector="Border.badge.locked Border.badgeIcon">
+            <Setter Property="Background" Value="{StaticResource LineBrush}" />
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+        <Style Selector="Border.badge.locked TextBlock.badgeName, Border.badge.locked TextBlock.badgeStatus">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+        </Style>
+
         <Style Selector="ProgressBar.thin">
             <Setter Property="Height" Value="4" />
             <Setter Property="MinHeight" Value="4" />

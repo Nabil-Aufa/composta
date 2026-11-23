@@ -503,6 +503,43 @@ namespace Composta.UITests
         }
 
         [SkippableFact]
+        public async Task ShowProfile_LoadsBadgeCollectionOfLoggedInUser()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            await vm.ShowProfileCommand.ExecuteAsync(null);
+
+            ProfileViewModel profile = Assert.IsType<ProfileViewModel>(_dialogs.LastProfile);
+            Assert.False(profile.HasBadgeError);
+            Assert.Equal(4, profile.Badges.Count);
+            Assert.All(profile.Badges, b => Assert.True(b.IsUnlocked));
+            Assert.Equal("4 dari 4 badge diperoleh", profile.BadgeSummaryText);
+        }
+
+        [SkippableFact]
+        public async Task ShowProfile_StillOpensWhenBadgesFailToLoad()
+        {
+            RequireDatabase();
+
+            MainWindowViewModel vm = await LoadedViewModel();
+            using (Npgsql.NpgsqlConnection conn = new Npgsql.NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using var cmd = new Npgsql.NpgsqlCommand("DROP FUNCTION st_select_badges_by_user", conn);
+                cmd.ExecuteNonQuery();
+            }
+
+            await vm.ShowProfileCommand.ExecuteAsync(null);
+
+            ProfileViewModel profile = Assert.IsType<ProfileViewModel>(_dialogs.LastProfile);
+            Assert.True(profile.HasBadgeError);
+            Assert.Empty(profile.Badges);
+            Assert.Equal("Koleksi badge gagal dimuat.", profile.BadgeSummaryText);
+            Assert.Equal("Nabil Aufa Danaputra", profile.Name);
+        }
+
+        [SkippableFact]
         public async Task RecommendationHistoryFailure_IsReportedOnce()
         {
             RequireDatabase();

@@ -56,7 +56,8 @@ Centang setiap baris yang hasilnya sesuai.
 | 26 | Klik "Ubah lokasi", isi "Bandung", klik "Muat cuaca" | Judul kartu menjadi "Cuaca · Bandung"; dengan `COMPOSTA_WEATHER_KEY` valid data berlabel waktu pembaruan, tanpa key berlabel simulasi | [ ] |
 | 27 | Klik "+ Batch Baru" | Status menampilkan "Menghitung estimasi panen...", menu "Ganti pengguna" nonaktif sampai proses selesai, konfirmasi menyebut jumlah hari estimasi | [ ] |
 | 28 | Lihat grafik CO2e di dashboard, lalu buka "Lihat profil" | Grafik akumulatif naik sesuai tanggal sampah; total di profil sama dengan kartu CO2e dicegah (6,13 kg) | [ ] |
-| 29 | Badge dan notifikasi badge baru | Menunggu PR badge (#8, #12) | [ ] |
+| 29 | Masuk sebagai "Pengguna Demo", buka "Lihat profil" | Bagian "Koleksi badge" menampilkan "1 dari 4 badge diperoleh"; "Batch Pertama" berwarna dengan tanggal diperoleh, tiga badge lain abu-abu dengan progres (misalnya "Belum diperoleh • 4 / 10 kg") | [ ] |
+| 30 | Tutup profil, catat sampah 6 kg "Daun Kering & Ranting", lalu buka "Lihat profil" lagi | Muncul pesan "Badge Baru Terbuka!" berisi "10 kg Sampah"; di profil badge itu berwarna dan ringkasan menjadi "2 dari 4 badge diperoleh" | [ ] |
 
 ## Video Demo
 - [ ] Rekam alur: buka aplikasi, lihat rekomendasi tiap batch, buat batch baru, catat sampah, panen, hapus, dan contoh pesan error

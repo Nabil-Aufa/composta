@@ -51,30 +51,48 @@ namespace Composta.Models
 
         public bool IsUnlocked(User user)
         {
-            if (user == null || string.IsNullOrWhiteSpace(_criteria))
+            if (user == null || !TryGetTarget(out double target))
             {
                 return false;
             }
 
-            string[] parts = _criteria.Split(':');
-            if (parts.Length != 2 ||
-                !double.TryParse(parts[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double target))
+            double? progress = GetProgress(user);
+            return progress.HasValue && progress.Value >= target;
+        }
+
+        public string GetCriteriaType()
+        {
+            string[] parts = (_criteria ?? string.Empty).Split(':');
+            return parts.Length == 2 ? parts[0].Trim().ToUpperInvariant() : string.Empty;
+        }
+
+        public bool TryGetTarget(out double target)
+        {
+            target = 0;
+            string[] parts = (_criteria ?? string.Empty).Split(':');
+            return parts.Length == 2 &&
+                   double.TryParse(parts[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out target);
+        }
+
+        public double? GetProgress(User user)
+        {
+            if (user == null)
             {
-                return false;
+                return null;
             }
 
-            switch (parts[0].Trim().ToUpperInvariant())
+            switch (GetCriteriaType())
             {
                 case "CO2E":
-                    return user.GetTotalCO2eSaved() >= target;
+                    return user.GetTotalCO2eSaved();
                 case "BATCH":
-                    return user.Batches.Count >= target;
+                    return user.Batches.Count;
                 case "HARVEST":
-                    return user.Batches.Count(b => b.Status == BatchStatus.Archived) >= target;
+                    return user.Batches.Count(b => b.Status == BatchStatus.Archived);
                 case "WEIGHT":
-                    return user.GetTotalCompostableWeight() >= target;
+                    return user.GetTotalCompostableWeight();
                 default:
-                    return false;
+                    return null;
             }
         }
     }

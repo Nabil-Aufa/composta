@@ -5,7 +5,7 @@
         x:Class="Composta.Views.ProfileWindow"
         x:DataType="vm:ProfileViewModel" x:CompileBindings="True"
         Title="Composta - Profil Pengguna"
-        Width="760" Height="480" MinWidth="560" MinHeight="420"
+        Width="760" Height="700" MinWidth="560" MinHeight="420"
         WindowStartupLocation="CenterOwner">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="32,32,32,28" Spacing="20" MaxWidth="960">
@@ -45,6 +45,42 @@
                         </StackPanel>
                     </Grid>
                 </Border>
+            </StackPanel>
+
+            <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="Koleksi badge" FontSize="14" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Text="{Binding BadgeSummaryText}" Classes="caption"
+                               VerticalAlignment="Center" />
+                </Grid>
+                <TextBlock Text="{Binding BadgeErrorText}" Classes="error" TextWrapping="Wrap"
+                           IsVisible="{Binding HasBadgeError}" />
+                <ItemsControl ItemsSource="{Binding Badges}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:BadgeItemViewModel">
+                            <Border Classes="badge" Classes.locked="{Binding IsLocked}"
+                                    Width="216" Margin="0,0,12,12">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Classes="badgeIcon" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Icon}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="3">
+                                        <TextBlock Text="{Binding Name}" Classes="badgeName" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding DescriptionText}" Classes="caption"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding StatusText}" Classes="badgeStatus"
+                                                   TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>
