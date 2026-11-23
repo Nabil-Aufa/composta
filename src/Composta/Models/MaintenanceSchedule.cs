@@ -62,7 +62,7 @@ namespace Composta.Models
 
         public bool IsOverdue()
         {
-            return !_isCompleted && DateTime.Now > _dueDate;
+            return !_isCompleted && DateTime.Today > _dueDate.Date;
         }
     }
 }
