@@ -164,7 +164,7 @@ namespace Composta
 
         public static List<MaintenanceSchedule> CompleteSchedule(CompostBatch batch, MaintenanceSchedule schedule)
         {
-            return BatchRepository.CompleteScheduleWithEarlier(batch, schedule);
+            return BatchRepository.CompleteScheduleWithEarlier(batch, schedule, CurrentUser.Id);
         }
 
         public static List<MaintenanceSchedule> GetDueOrOverdueSchedules()
@@ -182,7 +182,7 @@ namespace Composta
                 return false;
             }
 
-            ScheduleRepository.AddRecommendation(recommendation);
+            ScheduleRepository.AddRecommendation(recommendation, CurrentUser.Id);
             return true;
         }
 
