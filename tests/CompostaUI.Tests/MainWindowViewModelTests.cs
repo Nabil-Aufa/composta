@@ -26,10 +26,10 @@ namespace Composta.UITests
             cmd.ExecuteNonQuery();
         }
 
-        private async Task<MainWindowViewModel> LoadedViewModel()
+        private async Task<MainWindowViewModel> LoadedViewModel(WeatherViewModel? weather = null)
         {
             AppData.Login(DatabaseFixture.NabilId);
-            MainWindowViewModel vm = new MainWindowViewModel(_dialogs);
+            MainWindowViewModel vm = new MainWindowViewModel(_dialogs, weather);
             await vm.LoadAsync();
             await vm.MaturityRefreshTask;
             return vm;
@@ -457,7 +457,7 @@ namespace Composta.UITests
         {
             RequireDatabase();
 
-            MainWindowViewModel vm = await LoadedViewModel();
+            MainWindowViewModel vm = await LoadedViewModel(OnlineWeather());
             string batchId = vm.SelectedBatch!.Batch.Id;
             string countSql = "SELECT COUNT(*) FROM compost_recommendations WHERE batch_id = '" + batchId + "'";
             long afterLoad = Db.Count(countSql);
@@ -469,6 +469,24 @@ namespace Composta.UITests
             Assert.Equal(1, afterLoad);
             Assert.Equal(afterLoad, Db.Count(countSql));
             Assert.False(vm.RecommendationHistoryFailed);
+        }
+
+        [SkippableFact]
+        public async Task Recommendation_FromSimulatedWeather_IsNotSaved()
+        {
+            RequireDatabase();
+
+            long before = Db.Count("SELECT COUNT(*) FROM compost_recommendations");
+            MainWindowViewModel vm = await LoadedViewModel(new WeatherViewModel(new Composta.Services.OfflineWeatherService()));
+
+            Assert.True(vm.Weather.IsOffline);
+            Assert.False(string.IsNullOrEmpty(vm.RecommendationText));
+            Assert.Equal(before, Db.Count("SELECT COUNT(*) FROM compost_recommendations"));
+        }
+
+        private static WeatherViewModel OnlineWeather()
+        {
+            return new WeatherViewModel(new FakeForecastWeatherService(new WeatherData(29, 70, 0, "Clear", DateTime.Now)));
         }
 
         [SkippableFact]
@@ -489,7 +507,7 @@ namespace Composta.UITests
         {
             RequireDatabase();
 
-            MainWindowViewModel vm = await LoadedViewModel();
+            MainWindowViewModel vm = await LoadedViewModel(OnlineWeather());
             using (var conn = new Npgsql.NpgsqlConnection(Db.Connstring))
             {
                 conn.Open();

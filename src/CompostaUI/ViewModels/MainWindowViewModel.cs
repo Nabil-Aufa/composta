@@ -412,7 +412,7 @@ namespace Composta.ViewModels
 
         private void SaveRecommendationHistory(CompostRecommendation recommendation)
         {
-            if (!IsDatabaseConnected)
+            if (!IsDatabaseConnected || Weather.IsOffline)
             {
                 return;
             }
