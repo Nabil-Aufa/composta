@@ -85,7 +85,7 @@ Gunakan properti `bool` di ViewModel dan style class di `App.axaml`, bukan warna
   method baru di `IDialogService`.
 
 ## Kartu cuaca (#9)
-- Isi nama lokasi (default Yogyakarta), lalu tekan **Refresh**. Lokasi pada judul menunjukkan lokasi
+- Isi nama lokasi (default Yogyakarta), lalu tekan **Muat ulang**. Lokasi pada judul menunjukkan lokasi
   permintaan terakhir yang selesai; mengedit kotak lokasi saja belum mengambil data baru.
 - Saat mengambil cuaca, indikator **Memuat cuaca...** tampil dan input/refresh dinonaktifkan.
 - Ikon mengikuti kondisi cerah, berawan, hujan, petir, salju, atau kabut. Kondisi tidak dikenal memakai `?`.

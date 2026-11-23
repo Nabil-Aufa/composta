@@ -71,7 +71,7 @@ namespace Composta.ViewModels
             string location = Location?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(location))
             {
-                StatusText = "Isi lokasi terlebih dahulu, lalu tekan Refresh.";
+                StatusText = "Isi lokasi terlebih dahulu, lalu tekan Muat ulang.";
                 return;
             }
 
@@ -166,10 +166,10 @@ namespace Composta.ViewModels
 
             if (http != null || FindException<TimeoutException>(ex) != null || FindException<TaskCanceledException>(ex) != null)
             {
-                return "Gagal memuat cuaca: tidak dapat terhubung ke layanan cuaca." + Fallback + " Coba Refresh lagi.";
+                return "Gagal memuat cuaca: tidak dapat terhubung ke layanan cuaca." + Fallback + " Coba tekan Muat ulang lagi.";
             }
 
-            return "Gagal memuat cuaca." + Fallback + " Coba Refresh lagi.";
+            return "Gagal memuat cuaca." + Fallback + " Coba tekan Muat ulang lagi.";
         }
 
         private static T? FindException<T>(Exception ex) where T : Exception

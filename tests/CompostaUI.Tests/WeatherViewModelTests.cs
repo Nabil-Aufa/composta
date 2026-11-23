@@ -106,7 +106,7 @@ namespace Composta.UITests
             await vm.RefreshCommand.ExecuteAsync(null);
 
             Assert.Contains("tidak dapat terhubung ke layanan cuaca", vm.StatusText);
-            Assert.Contains("Coba Refresh lagi", vm.StatusText);
+            Assert.Contains("Coba tekan Muat ulang lagi", vm.StatusText);
         }
 
         [Theory]
