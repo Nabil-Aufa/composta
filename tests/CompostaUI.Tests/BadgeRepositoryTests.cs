@@ -1,4 +1,5 @@
 using Composta.Models;
+using Npgsql;
 
 namespace Composta.UITests
 {
@@ -44,6 +45,14 @@ namespace Composta.UITests
         public void EvaluateAndAwardBadges_UnlocksEligibleBadgesOnce()
         {
             RequireDatabase();
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(Db.Connstring))
+            {
+                conn.Open();
+                using NpgsqlCommand cmd = new NpgsqlCommand(
+                    $"DELETE FROM user_badges WHERE user_id = '{DatabaseFixture.DemoUserId}'", conn);
+                cmd.ExecuteNonQuery();
+            }
 
             AppData.Login(DatabaseFixture.DemoUserId);
             List<Badge> firstPass = AppData.CheckAndAwardBadges();

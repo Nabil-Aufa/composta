@@ -503,6 +503,15 @@ namespace Composta.ViewModels
             if (saved)
             {
                 await LoadDashboardAsync(addWaste.SavedBatchId);
+                if (addWaste.BadgeCheckError != null)
+                {
+                    await _dialogs.ShowMessageAsync(
+                        "Pengecekan Badge Gagal",
+                        "Sampah berhasil disimpan, tetapi badge baru gagal diperiksa.\n\n" + addWaste.BadgeCheckError,
+                        MessageTone.Warning);
+                    return;
+                }
+
                 await NotifyUnlockedBadgesAsync(addWaste.UnlockedBadges);
             }
         }
@@ -556,7 +565,7 @@ namespace Composta.ViewModels
             CompostBatch? savedBatch = AppData.CurrentUser.Batches.FirstOrDefault(b => b.Id == batch.Id);
             string batchName = savedBatch != null ? AppData.GetBatchName(savedBatch) : "Batch baru";
             await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil ditambahkan ke database.", MessageTone.Success);
-            await NotifyUnlockedBadgesAsync(AppData.CheckAndAwardBadges());
+            await CheckAndNotifyNewBadgesAsync();
         }
 
         [RelayCommand(CanExecute = nameof(CanHarvest))]
@@ -582,10 +591,31 @@ namespace Composta.ViewModels
 
             await LoadDashboardAsync(batch.Id);
             await _dialogs.ShowMessageAsync("Berhasil", batchName + " berhasil dipanen.", MessageTone.Success);
-            await NotifyUnlockedBadgesAsync(AppData.CheckAndAwardBadges());
+            await CheckAndNotifyNewBadgesAsync();
         }
 
         public IReadOnlyList<Badge> LastUnlockedBadges { get; private set; } = Array.Empty<Badge>();
+
+        private async Task CheckAndNotifyNewBadgesAsync()
+        {
+            IReadOnlyList<Badge> badges;
+            try
+            {
+                badges = AppData.CheckAndAwardBadges();
+            }
+            catch (Exception ex)
+            {
+                LastUnlockedBadges = Array.Empty<Badge>();
+                await _dialogs.ShowMessageAsync(
+                    "Pengecekan Badge Gagal",
+                    "Data utama sudah tersimpan, tetapi badge baru gagal diperiksa.\n\n"
+                    + DatabaseErrorMessage.From(ex, AppData.DatabaseInfo),
+                    MessageTone.Warning);
+                return;
+            }
+
+            await NotifyUnlockedBadgesAsync(badges);
+        }
 
         private async Task NotifyUnlockedBadgesAsync(IReadOnlyList<Badge> badges)
         {

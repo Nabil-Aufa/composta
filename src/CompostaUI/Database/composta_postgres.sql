@@ -458,3 +458,10 @@ INSERT INTO badges (id, name, criteria, icon_path) VALUES
     ('9e1b3d5f-2a4c-4e6f-8a0b-000000000002', 'Panen Pertama',    'HARVEST:1', 'badge_first_harvest.png'),
     ('9e1b3d5f-2a4c-4e6f-8a0b-000000000003', '10 kg Sampah',     'WEIGHT:10', 'badge_10kg_waste.png'),
     ('9e1b3d5f-2a4c-4e6f-8a0b-000000000004', '5 kg CO2e Dicegah', 'CO2E:5',    'badge_5kg_co2e.png');
+
+INSERT INTO user_badges (user_id, badge_id, earned_at) VALUES
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000001', NOW() - INTERVAL '85 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000002', NOW() - INTERVAL '25 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000003', NOW() - INTERVAL '40 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000001', '9e1b3d5f-2a4c-4e6f-8a0b-000000000004', NOW() - INTERVAL '8 days'),
+    ('3f1c2a9e-5b7d-4c1e-9a2f-000000000002', '9e1b3d5f-2a4c-4e6f-8a0b-000000000001', NOW() - INTERVAL '5 days');

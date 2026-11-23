@@ -59,12 +59,12 @@ namespace Composta.Tests
             Badge badge = new Badge("5 kg CO2e Dicegah", "CO2E:5", "badge_5kg_co2e.png");
 
             CompostBatch batch = new CompostBatch(user.Id, DateTime.Today, 30);
-            batch.AddWasteItem(TestData.Green(8)); // 8 * 0.5 = 4.0 kg CO2e
+            batch.AddWasteItem(TestData.Green(8));
             user.AddBatch(batch);
 
             Assert.False(badge.IsUnlocked(user));
 
-            batch.AddWasteItem(TestData.Green(2)); // + 1.0 = 5.0 kg CO2e
+            batch.AddWasteItem(TestData.Green(2));
             Assert.True(badge.IsUnlocked(user));
         }
 
