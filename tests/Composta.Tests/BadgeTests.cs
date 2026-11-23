@@ -94,5 +94,34 @@ namespace Composta.Tests
             Assert.True(unlocked.IsEarned);
             Assert.Equal(earnedTime, unlocked.EarnedAt);
         }
+
+        [Fact]
+        public void Progress_FollowsTheSameRuleAsUnlock()
+        {
+            User user = new User("Nabil", "nabil@example.com");
+            CompostBatch batch = new CompostBatch(user.Id, DateTime.Today, 30);
+            batch.AddWasteItem(new NonCompostableWaste("Botol plastik", 15, TestData.Plastic, "Plastik"));
+            batch.AddWasteItem(TestData.Green(6));
+            user.AddBatch(batch);
+            Badge weight = new Badge("10 kg Sampah", "WEIGHT:10", "");
+
+            Assert.Equal("WEIGHT", weight.GetCriteriaType());
+            Assert.True(weight.TryGetTarget(out double target));
+            Assert.Equal(10, target);
+            Assert.Equal(6, weight.GetProgress(user)!.Value, 2);
+            Assert.Equal(1, new Badge("Batch", "batch:1", "").GetProgress(user));
+            Assert.Equal(0, new Badge("Panen", "HARVEST:1", "").GetProgress(user));
+        }
+
+        [Fact]
+        public void Progress_IsNullForUnknownCriteriaOrUser()
+        {
+            User user = new User("Nabil", "nabil@example.com");
+
+            Assert.Null(new Badge("Tipe Asing", "UNKNOWN:1", "").GetProgress(user));
+            Assert.Null(new Badge("Kosong", "", "").GetProgress(user));
+            Assert.Null(new Badge("Null User", "BATCH:1", "").GetProgress(null!));
+            Assert.False(new Badge("Format Salah", "BATCH:satu", "").TryGetTarget(out _));
+        }
     }
 }

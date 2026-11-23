@@ -23,7 +23,7 @@ Dari folder `src/CompostaUI`: `dotnet run`.
 | Folder | Isi |
 |---|---|
 | `Views/` | Tampilan `.axaml`. Code-behind (`.axaml.cs`) hanya berisi `InitializeComponent()`. |
-| `ViewModels/` | Data dan perintah yang ditampilkan View: `LoginViewModel`, `MainWindowViewModel`, `AddWasteViewModel`, `BatchItemViewModel`, `WeatherViewModel`, `Co2eChartViewModel`, `MaintenanceScheduleItemViewModel`, `ProfileViewModel`, `MessageViewModel`. |
+| `ViewModels/` | Data dan perintah yang ditampilkan View: `LoginViewModel`, `MainWindowViewModel`, `AddWasteViewModel`, `BatchItemViewModel`, `WeatherViewModel`, `Co2eChartViewModel`, `MaintenanceScheduleItemViewModel`, `ProfileViewModel`, `BadgeItemViewModel`, `MessageViewModel`. |
 | `Data/` | Repository PostgreSQL. `PostgresRepository<T>` adalah kelas induk abstrak (encapsulation connection string, method abstrak `MapRow`). |
 | `Services/` | `DialogService` (pesan, konfirmasi, membuka jendela), `UserSessionService`, `UserValidator`, `DatabaseErrorMessage`, dan `OfflineWeatherService`. `OpenWeatherMapService` ada di `src/Composta/Services`. |
 | `Database/` | Script skema, fungsi `st_*`, dan data awal. Satu-satunya sumber skema database. |
@@ -147,6 +147,14 @@ total sampah, estimasi CO2e, serta jumlah seluruh batch (termasuk yang sudah dip
 Perhitungan memakai `CarbonCalculatorService` yang sama dengan dashboard.
 **Ganti user / Keluar** mengosongkan sesi dan dashboard lama, lalu kembali ke layar pilih profil.
 Menutup layar pilih profil menutup aplikasi; tidak ada fallback login ke user pertama pada alur startup UI.
+
+## Koleksi badge (#12)
+Jendela Profil menampilkan semua badge dari tabel `badges` (dimuat lewat `AppData.GetUserBadges()` di background).
+Badge yang sudah diperoleh tampil berwarna dengan tanggal perolehan dan diletakkan paling depan. Badge yang belum
+diperoleh tampil abu-abu (style class `locked`) dengan progres menuju target, misalnya `4 / 10 kg`. Progres
+dihitung oleh `Badge.GetProgress(user)`, aturan yang sama dengan `Badge.IsUnlocked`. Jika badge gagal dimuat,
+profil tetap terbuka dan menampilkan pesan kesalahan di bagian koleksi. Pop-up badge baru setelah catat sampah,
+buat batch, atau panen berasal dari #8.
 
 ### Struktur dan integrasi
 - `LoginViewModel` berisi pilihan user, form profil, validasi, status proses/error, dan command.

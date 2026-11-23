@@ -99,9 +99,22 @@ namespace Composta.ViewModels
         public event Action? LogoutRequested;
 
         [RelayCommand(CanExecute = nameof(CanModifyData))]
-        private Task ShowProfileAsync()
+        private async Task ShowProfileAsync()
         {
-            return _dialogs.ShowProfileAsync(new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator));
+            List<UserBadgeStatus> badges;
+            string? badgeError = null;
+            try
+            {
+                badges = await Task.Run(AppData.GetUserBadges);
+            }
+            catch (Exception ex)
+            {
+                badges = new List<UserBadgeStatus>();
+                badgeError = DatabaseErrorMessage.From(ex, AppData.DatabaseInfo);
+            }
+
+            await _dialogs.ShowProfileAsync(
+                new ProfileViewModel(AppData.CurrentUser, AppData.CarbonCalculator, badges, badgeError));
         }
 
         private bool CanLogout() => !IsCreatingBatch;
